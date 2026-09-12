@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="CS 172: Computer Vision — course overview, syllabus, and teaching team."
+    />
+    <meta name="theme-color" content="#f5f1e8" />
+    <title>CS 172 — Computer Vision</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="script.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="nav-shell">
+        <a class="wordmark" href="#top" aria-label="CS 172 home">
+          <span class="wordmark-mark" aria-hidden="true"></span>
+          <span>CS <strong>172</strong></span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+          <span></span><span></span>
+          <span class="sr-only">Toggle navigation</span>
+        </button>
+
+        <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+          <a href="#overview">Overview</a>
+          <a href="#syllabus">Syllabus</a>
+          <a href="#staff">Staff</a>
+        </nav>
+
+        <button class="theme-toggle" type="button" aria-label="Toggle color theme">
+          <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3.5"></circle>
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.5 14.1A8.6 8.6 0 0 1 9.9 3.5 8.6 8.6 0 1 0 20.5 14.1Z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section id="top" class="hero section-shell">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">ShanghaiTech University · Fall 2026</p>
+          <h1>Computer<br /><em>Vision</em></h1>
+          <p class="hero-intro">
+            From pixels to perception. Learn the geometry, learning systems, and practical tools
+            that let machines understand the visual world.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#syllabus">Explore the syllabus</a>
+            <a class="text-link" href="#overview">
+              Read course overview
+              <span aria-hidden="true">↘</span>
+            </a>
+          </div>
+        </div>
+
+        <figure class="vision-figure reveal">
+          <div class="figure-frame">
+            <img
+              src="assets/figures/lincoln-pixel-values.png"
+              alt="A highly pixelated grayscale portrait of Abraham Lincoln"
+              width="221"
+              height="290"
+            />
+          </div>
+          <figcaption>
+            <p class="figure-question">
+              <span>Pixels → perception</span>
+              What do you see in this image?
+            </p>
+            <p class="figure-reference">
+              Adapted from Golan Levin’s pixel data diagram in
+              <a
+                href="https://openframeworks.cc/ofBook/chapters/image_processing_computer_vision.html"
+                target="_blank"
+                rel="noreferrer"
+              >“Image Processing and Computer Vision,” openFrameworks ofBook ↗</a>
+            </p>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="overview" class="overview-section section-shell">
+        <div class="overview-header reveal">
+          <p class="section-number">01 / Overview</p>
+          <h2>Course <em>overview.</em></h2>
+        </div>
+        <div class="overview-topics reveal">
+          <h3 class="overview-label">Topics covered</h3>
+          <ul class="compact-topic-list">
+            <li>Image formation</li>
+            <li>Image processing</li>
+            <li>Features</li>
+            <li>Recognition</li>
+            <li>3D reconstruction</li>
+            <li>Deep learning</li>
+          </ul>
+        </div>
+        <div class="overview-objectives">
+          <h3 class="overview-label reveal">Learning objectives</h3>
+          <div class="learning-grid">
+            <article class="learning-card reveal">
+              <span class="card-index">01</span>
+              <div class="card-icon icon-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              <h3>Represent</h3>
+              <p>Model images, cameras, motion, and geometry with the right mathematical abstractions.</p>
+            </article>
+            <article class="learning-card reveal">
+              <span class="card-index">02</span>
+              <div class="card-icon icon-layers" aria-hidden="true"><i></i><i></i><i></i></div>
+              <h3>Learn</h3>
+              <p>Train and diagnose neural models for classification, detection, and dense prediction.</p>
+            </article>
+            <article class="learning-card reveal">
+              <span class="card-index">03</span>
+              <div class="card-icon icon-focus" aria-hidden="true"><i></i></div>
+              <h3>Build</h3>
+              <p>Turn research ideas into reproducible vision pipelines using PyTorch and modern tooling.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="syllabus" class="content-section section-shell syllabus-section">
+        <div class="syllabus-header reveal">
+          <p class="section-number">02 / Syllabus</p>
+          <h2>Course <em>syllabus.</em></h2>
+        </div>
+
+        <p class="table-hint">Scroll sideways to view slides and readings <span aria-hidden="true">→</span></p>
+        <div class="syllabus-table-wrap reveal" tabindex="0" aria-label="Syllabus table; scroll sideways for all columns">
+          <table class="syllabus-table">
+            <thead>
+              <tr>
+                <th scope="col">Lecture</th>
+                <th scope="col">Title</th>
+                <th scope="col">Slide</th>
+                <th scope="col">Reading</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>Camera</td><td><a href="#" aria-label="Slides for lecture 1, Camera">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>2</td><td>Lighting</td><td><a href="#" aria-label="Slides for lecture 2, Lighting">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>3</td><td>Color</td><td><a href="#" aria-label="Slides for lecture 3, Color">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>4</td><td>Filtering</td><td><a href="#" aria-label="Slides for lecture 4, Filtering">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>5</td><td>Feature Detection</td><td><a href="#" aria-label="Slides for lecture 5, Feature Detection">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>6</td><td>Fitting</td><td><a href="#" aria-label="Slides for lecture 6, Fitting">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>7</td><td>Hough</td><td><a href="#" aria-label="Slides for lecture 7, Hough">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>8</td><td>Deep Learning for Computer Vision</td><td><a href="#" aria-label="Slides for lecture 8, Deep Learning for Computer Vision">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>9</td><td>Image Classification</td><td><a href="#" aria-label="Slides for lecture 9, Image Classification">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>10</td><td>Segmentation</td><td><a href="#" aria-label="Slides for lecture 10, Segmentation">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>11</td><td>Object Detection</td><td><a href="#" aria-label="Slides for lecture 11, Object Detection">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>12</td><td>Camera Calibration</td><td><a href="#" aria-label="Slides for lecture 12, Camera Calibration">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>13</td><td>Single-View Geometry</td><td><a href="#" aria-label="Slides for lecture 13, Single-View Geometry">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>14</td><td>Epipolar Geometry</td><td><a href="#" aria-label="Slides for lecture 14, Epipolar Geometry">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>15</td><td>Image Stitching</td><td><a href="#" aria-label="Slides for lecture 15, Image Stitching">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>16</td><td>Stereo Vision</td><td><a href="#" aria-label="Slides for lecture 16, Stereo Vision">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr><td>17</td><td>Structure from Motion</td><td><a href="#" aria-label="Slides for lecture 17, Structure from Motion">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="staff" class="content-section section-shell staff-section">
+        <div class="section-heading reveal">
+          <p class="section-number">03 / Course team</p>
+          <h2>Here to <em>help.</em></h2>
+        </div>
+        <div class="staff-content reveal">
+          <article class="instructor-card">
+            <img
+              class="instructor-photo"
+              src="assets/figures/instructor.jpg"
+              alt="Portrait of Jiayuan Gu"
+              width="800"
+              height="1200"
+              loading="lazy"
+            />
+            <div>
+              <span class="staff-role">Instructor</span>
+              <h3>Jiayuan Gu</h3>
+              <p class="instructor-title">Assistant Professor · ShanghaiTech University</p>
+              <a href="mailto:gujy1@shanghaitech.edu.cn">gujy1@shanghaitech.edu.cn ↗</a>
+            </div>
+          </article>
+          <section class="ta-section" aria-labelledby="ta-heading">
+            <h3 id="ta-heading" class="staff-role">Teaching Assistants</h3>
+            <ul class="ta-list">
+              <li>Ruiqi Huang</li>
+              <li>Xuebing Li</li>
+              <li>Yuanji Lu</li>
+              <li>Kaixin Yao</li>
+              <li>Jingxuan Zhang</li>
+              <li>Boyi Zhao</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="section-shell footer-grid">
+        <div>
+          <a class="wordmark footer-wordmark" href="#top"><span class="wordmark-mark"></span><span>CS <strong>172</strong></span></a>
+          <p>Computer Vision · Fall 2026</p>
+        </div>
+        <p>Built for curious minds and visual thinkers.</p>
+        <div class="footer-links"><a href="#top">Back to top ↑</a></div>
+      </div>
+    </footer>
+  </body>
+</html>
