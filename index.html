@@ -142,35 +142,93 @@
           <h2>Course <em>syllabus.</em></h2>
         </div>
 
-        <p class="table-hint">Scroll sideways to view slides and readings <span aria-hidden="true">→</span></p>
+        <ul class="syllabus-legend" aria-label="Syllabus topics">
+          <li class="topic-formation">Image formation</li>
+          <li class="topic-processing">Image processing</li>
+          <li class="topic-fitting">Fitting &amp; optimization</li>
+          <li class="topic-recognition">Recognition</li>
+          <li class="topic-reconstruction">3D reconstruction</li>
+        </ul>
+        <p class="table-hint">Scroll sideways to view PDFs and readings <span aria-hidden="true">→</span></p>
         <div class="syllabus-table-wrap reveal" tabindex="0" aria-label="Syllabus table; scroll sideways for all columns">
           <table class="syllabus-table">
             <thead>
               <tr>
                 <th scope="col">Lecture</th>
                 <th scope="col">Title</th>
-                <th scope="col">Slide</th>
+                <th scope="col">PDF</th>
                 <th scope="col">Reading</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td>1</td><td>Camera</td><td><a href="#" aria-label="Slides for lecture 1, Camera">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>2</td><td>Lighting</td><td><a href="#" aria-label="Slides for lecture 2, Lighting">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>3</td><td>Color</td><td><a href="#" aria-label="Slides for lecture 3, Color">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>4</td><td>Filtering</td><td><a href="#" aria-label="Slides for lecture 4, Filtering">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>5</td><td>Feature Detection</td><td><a href="#" aria-label="Slides for lecture 5, Feature Detection">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>6</td><td>Fitting</td><td><a href="#" aria-label="Slides for lecture 6, Fitting">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>7</td><td>Hough</td><td><a href="#" aria-label="Slides for lecture 7, Hough">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>8</td><td>Deep Learning for Computer Vision</td><td><a href="#" aria-label="Slides for lecture 8, Deep Learning for Computer Vision">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>9</td><td>Image Classification</td><td><a href="#" aria-label="Slides for lecture 9, Image Classification">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>10</td><td>Segmentation</td><td><a href="#" aria-label="Slides for lecture 10, Segmentation">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>11</td><td>Object Detection</td><td><a href="#" aria-label="Slides for lecture 11, Object Detection">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>12</td><td>Camera Calibration</td><td><a href="#" aria-label="Slides for lecture 12, Camera Calibration">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>13</td><td>Single-View Geometry</td><td><a href="#" aria-label="Slides for lecture 13, Single-View Geometry">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>14</td><td>Epipolar Geometry</td><td><a href="#" aria-label="Slides for lecture 14, Epipolar Geometry">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>15</td><td>Image Stitching</td><td><a href="#" aria-label="Slides for lecture 15, Image Stitching">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>16</td><td>Stereo Vision</td><td><a href="#" aria-label="Slides for lecture 16, Stereo Vision">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
-              <tr><td>17</td><td>Structure from Motion</td><td><a href="#" aria-label="Slides for lecture 17, Structure from Motion">[slides]</a></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-formation topic-start">
+                <td>1</td><td>Camera</td>
+                <td><a href="assets/pdf/01%20camera.pdf" aria-label="PDF for lecture 1, Camera">[pdf]</a></td>
+                <td><details class="reading-details"><summary>Readings</summary><ul>
+                  <li><a href="https://szeliski.org/Book/">Szeliski</a>, Ch. 2: §§2.1.4, 2.1.5, 2.2.3</li>
+                  <li><a href="https://www.pearson.com/en-us/subject-catalog/p/Forsyth-Computer-Vision-A-Modern-Approach-Subscription-2nd-Edition/P200000003374/9780133001921">Forsyth &amp; Ponce</a>, Ch. 1: §§1.1.1–1.1.3, 1.2.2–1.2.5</li>
+                  <li><a href="https://web.stanford.edu/class/cs231a/course_notes/01-camera-models.pdf">Stanford CS231A, Camera Models</a></li>
+                  <li>Berkeley CS180/280A course materials</li>
+                </ul></details></td>
+              </tr>
+              <tr class="topic-formation">
+                <td>2</td><td>Light and Shading</td>
+                <td><a href="assets/pdf/02%20light%20and%20shading.pdf" aria-label="PDF for lecture 2, Light and Shading">[pdf]</a></td>
+                <td><details class="reading-details"><summary>Readings</summary><ul>
+                  <li><a href="https://www.pearson.com/en-us/subject-catalog/p/Forsyth-Computer-Vision-A-Modern-Approach-Subscription-2nd-Edition/P200000003374/9780133001921">Forsyth &amp; Ponce</a>, Ch. 2: §§2.1, 2.2.4</li>
+                  <li><a href="https://szeliski.org/Book/">Szeliski</a>, Ch. 2: lighting, reflectance, and shading</li>
+                  <li>Berkeley CS180/280A, Capturing Light</li>
+                  <li><a href="https://www.cs.ubc.ca/~woodham/papers/Woodham80c.pdf">Woodham, “Photometric method for determining surface orientation from multiple images” (1980)</a></li>
+                </ul></details></td>
+              </tr>
+              <tr class="topic-formation">
+                <td>3</td><td>Color</td>
+                <td><a href="assets/pdf/03%20color.pdf" aria-label="PDF for lecture 3, Color">[pdf]</a></td>
+                <td><details class="reading-details"><summary>Readings</summary><ul>
+                  <li><a href="https://szeliski.org/Book/">Szeliski</a>, §§2.3.2, 3.1.2; optional §10.3.1</li>
+                  <li><a href="https://www.pearson.com/en-us/subject-catalog/p/Forsyth-Computer-Vision-A-Modern-Approach-Subscription-2nd-Edition/P200000003374/9780133001921">Forsyth &amp; Ponce</a>, Ch. 3</li>
+                  <li><a href="https://www.pearson.com/en-us/subject-catalog/p/digital-image-processing/P200000003224/9780133356748">Gonzalez &amp; Woods</a>, Chs. 2 and 6</li>
+                  <li><a href="https://www.eecs.yorku.ca/~mbrown/ICCV2023_Brown.html" target="_blank" rel="noreferrer">M. S. Brown, ICCV 2023 Camera Pipeline Tutorial ↗</a></li>
+                </ul></details></td>
+              </tr>
+              <tr class="topic-processing topic-start">
+                <td>4</td><td>Filtering</td>
+                <td><a href="assets/pdf/04%20filtering.pdf" aria-label="PDF for lecture 4, Filtering">[pdf]</a></td>
+                <td><details class="reading-details"><summary>Readings</summary><ul>
+                  <li><a href="https://szeliski.org/Book/">Szeliski</a>, Ch. 3: §§3.2–3.3</li>
+                  <li><a href="https://www.pearson.com/en-us/subject-catalog/p/Forsyth-Computer-Vision-A-Modern-Approach-Subscription-2nd-Edition/P200000003374/9780133001921">Forsyth &amp; Ponce</a>, Ch. 4</li>
+                  <li><a href="https://docs.opencv.org/4.x/dc/dd3/tutorial_gausian_median_blur_bilateral_filter.html">OpenCV filtering tutorial</a></li>
+                </ul></details></td>
+              </tr>
+              <tr class="topic-processing">
+                <td>5</td><td>Feature Detection</td>
+                <td>Edges <a href="assets/pdf/05%20edge.pdf" aria-label="Edge detection PDF for lecture 5">[pdf]</a><br />Corners <a href="assets/pdf/06%20corner.pdf" aria-label="Corner detection PDF for lecture 5">[pdf]</a></td>
+                <td>
+                  <details class="reading-details"><summary>Edges readings</summary><ul>
+                    <li><a href="https://szeliski.org/Book/">Szeliski</a> §§3.2, 7.2.1; <a href="https://www.pearson.com/en-us/subject-catalog/p/Forsyth-Computer-Vision-A-Modern-Approach-Subscription-2nd-Edition/P200000003374/9780133001921">Forsyth &amp; Ponce</a> §§5.1–5.2, 6.1</li>
+                    <li><a href="https://doi.org/10.1109/TPAMI.1986.4767851">Canny, “A Computational Approach to Edge Detection” (1986)</a></li>
+                    <li><a href="https://docs.opencv.org/5.0/tutorials/imgproc/imgtrans/canny_detector/canny_detector.html">OpenCV Canny tutorial</a>; <a href="https://bigwww.epfl.ch/demo/ip/demos/edgeDetector/">EPFL edge detector demo</a></li>
+                    <li><a href="https://doi.org/10.1145/882262.882269">Pérez, Gangnet &amp; Blake, “Poisson Image Editing” (2003)</a></li>
+                  </ul></details>
+                  <details class="reading-details"><summary>Corners readings</summary><ul>
+                    <li><a href="https://szeliski.org/Book/">Szeliski</a> §§7.1–7.1.1; <a href="https://www.pearson.com/en-us/subject-catalog/p/Forsyth-Computer-Vision-A-Modern-Approach-Subscription-2nd-Edition/P200000003374/9780133001921">Forsyth &amp; Ponce</a> §§5.1, 5.3–5.3.1</li>
+                    <li><a href="https://www.bmva-archive.org.uk/bmvc/1988/avc-88-023.html">Harris &amp; Stephens, “A Combined Corner and Edge Detector” (1988)</a></li>
+                    <li><a href="https://publications.ri.cmu.edu/good-features-to-track">Shi &amp; Tomasi, “Good Features to Track” (1994)</a>; <a href="https://docs.opencv.org/5.0/tutorials/features/trackingmotion/harris_detector/harris_detector.html">OpenCV Harris tutorial</a></li>
+                  </ul></details>
+                </td>
+              </tr>
+              <tr class="topic-fitting topic-start"><td>6</td><td>Fitting</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-fitting"><td>7</td><td>Hough</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-recognition topic-start"><td>8</td><td>Deep Learning for Computer Vision</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-recognition"><td>9</td><td>Image Classification</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-recognition"><td>10</td><td>Segmentation</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-recognition"><td>11</td><td>Object Detection</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-reconstruction topic-start"><td>12</td><td>Camera Calibration</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-reconstruction"><td>13</td><td>Single-View Geometry</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-reconstruction"><td>14</td><td>Epipolar Geometry</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-reconstruction"><td>15</td><td>Image Stitching</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-reconstruction"><td>16</td><td>Stereo Vision</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
+              <tr class="topic-reconstruction"><td>17</td><td>Structure from Motion</td><td><span class="pending">TBA</span></td><td><span class="pending">TBA</span></td></tr>
             </tbody>
           </table>
         </div>
