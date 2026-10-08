@@ -104,7 +104,7 @@ html[data-theme="dark"] .moon-icon { display: block; }
 h1, h2 { font-family: var(--serif); font-weight: 500; letter-spacing: -.055em; line-height: .9; margin: 0; }
 h1 { font-size: clamp(5rem, 8.5vw, 8rem); }
 h1 em, h2 em { color: var(--accent); font-weight: 500; }
-.hero-intro { max-width: 520px; margin: 1.85rem 0 1.85rem; font-size: clamp(.97rem, 1.3vw, 1.1rem); line-height: 1.72; color: var(--muted); }
+.hero-intro { max-width: 600px; margin: 1.85rem 0 1.85rem; font-size: clamp(.97rem, 1.3vw, 1.1rem); line-height: 1.72; color: var(--muted); }
 .hero-actions { display: flex; align-items: center; gap: 1.8rem; flex-wrap: wrap; }
 .button { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 1.2rem; font-size: .76rem; font-weight: 700; transition: transform 180ms ease, background 180ms ease; }
 .button:hover { transform: translateY(-2px); }
