@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="An interactive lab: explore camera projection with a few simple controls, then check your understanding with a quiz." />
+  <meta name="theme-color" content="#f4f0e7" />
+  <title>Camera Projection Lab</title>
+  <style>
+    :root {
+      --bg: #f4f0e7;
+      --card: #fff;
+      --ink: #17211f;
+      --muted: #59645f;
+      --line: #dcded7;
+      --blue: #2563eb;
+      --orange: #b76b00;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+    button, input, select { font: inherit; }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+    [hidden] { display: none !important; }
+    header { padding: 24px max(24px, calc((100vw - 1392px) / 2)); color: white; background: #162522; }
+    header a { color: #dae5da; font-size: 13px; }
+    header h1 { margin: 12px 0 4px; font: 500 clamp(28px, 4vw, 38px)/1.2 Georgia, serif; }
+    header p { margin: 0; color: #dae5da; font-size: 14px; }
+    .skip-link { position: absolute; top: -80px; left: 20px; padding: 12px; background: white; z-index: 2; }
+    .skip-link:focus { top: 12px; }
+    .tabs { display: flex; gap: 8px; padding: 0 max(24px, calc((100vw - 1392px) / 2)); background: white; border-bottom: 1px solid var(--line); }
+    .tab { padding: 14px 12px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); font-size: 14px; font-weight: 700; cursor: pointer; }
+    .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    main { max-width: 1440px; margin: auto; padding: 20px 24px 32px; }
+    .intro { margin: 0 0 16px; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 16px; align-items: start; }
+    .card { min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+    .controls { padding: 18px; }
+    .controls h2 { margin: 0 0 16px; font-size: 16px; }
+    .row { margin: 0 0 20px; }
+    .row label { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+    .row label span:last-child { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; }
+    input[type=range] { width: 100%; margin: 0; accent-color: var(--blue); }
+    input[type=radio] { flex-shrink: 0; accent-color: var(--blue); }
+    select { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px; color: var(--ink); background: white; }
+    .small-note { font-size: 13px; color: var(--muted); }
+    .controls .small-note { margin: 0 0 14px; }
+    .action { padding: 8px 12px; border: 1px solid #b8c6e3; border-radius: 8px; background: #f8fbff; color: #1e3a8a; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .action:hover { background: #eef5ff; }
+    .visuals { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 16px; }
+    .canvas-card { overflow: hidden; }
+    .canvas-title { padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 700; }
+    canvas { display: block; width: 100%; height: 370px; background: #fbfcff; }
+    #imageCanvas { cursor: grab; touch-action: pan-y; }
+    #imageCanvas.dragging { cursor: grabbing; }
+    .canvas-caption { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+    .object-key { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 4px; }
+    .object-key span::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 2px; background: var(--orange); }
+    .object-key span:last-child::before { background: var(--blue); }
+    .formula { margin-top: 16px; padding: 14px 16px; }
+    .formula .big { font: 22px/1.5 Georgia, serif; overflow-wrap: anywhere; }
+    .formula .small-note { margin-top: 4px; }
+    .quiz { max-width: 880px; margin: auto; padding: 20px; }
+    .scorebox { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    #score { font-size: 14px; font-variant-numeric: tabular-nums; }
+    .qcard { padding: 20px 0; border-top: 1px solid var(--line); }
+    .qcard h3 { margin: 0 0 12px; font-size: 16px; }
+    .question-context { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+    .options { display: grid; gap: 8px; }
+    .option { display: flex; gap: 10px; align-items: baseline; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fafcff; cursor: pointer; font-size: 14px; }
+    .option:hover { border-color: #9db7eb; }
+    .option:has(input:checked) { outline: 2px solid var(--blue); background: #eff6ff; }
+    .feedback { margin-top: 12px; font-size: 14px; }
+    .feedback:empty { display: none; }
+    .feedback.ok { color: #166534; }
+    .feedback.no { color: #b91c1c; }
+    .qcard .action { margin-top: 12px; }
+    .btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
+    @media (max-width: 1000px) {
+      .grid { grid-template-columns: 1fr; }
+      .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+      .controls h2 { grid-column: 1 / -1; }
+      .controls .action { justify-self: start; align-self: start; }
+      canvas { height: 320px; }
+    }
+    @media (max-width: 640px) {
+      header { padding: 20px 16px; }
+      main { padding: 16px 12px 24px; }
+      .tabs { padding: 0 8px; }
+      .tab { padding: 12px 10px; font-size: 13px; }
+      .controls { column-gap: 16px; padding: 14px; }
+      .row label { flex-wrap: wrap; gap: 2px 8px; }
+      .visuals { grid-template-columns: 1fr; }
+      canvas { height: 280px; }
+      .quiz { padding: 16px; }
+      .scorebox { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#main">Skip to lab</a>
+  <header>
+    <h1>Camera Projection Lab</h1>
+    <p>Explore how a camera turns a 3D scene into a 2D image.</p>
+  </header>
+  <nav class="tabs" role="tablist" aria-label="Lab sections">
+    <button class="tab active" id="tab-explore" role="tab" aria-selected="true" aria-controls="explore" data-tab="explore">1 · Interactive exploration</button>
+    <button class="tab" id="tab-quiz" role="tab" aria-selected="false" aria-controls="quiz" tabindex="-1" data-tab="quiz">2 · Quiz</button>
+  </nav>
+  <main id="main">
+    <section id="explore" role="tabpanel" aria-labelledby="tab-explore" tabindex="0">
+      <p class="intro">These boxes are the same size. Change one setting at a time and watch their images.</p>
+      <div class="grid">
+        <div class="card controls">
+          <h2>Camera and scene</h2>
+          <div class="row"><label for="model">Projection model</label><select id="model">
+            <option value="perspective">Perspective</option>
+            <option value="weak">Weak perspective</option>
+            <option value="ortho">Orthographic</option>
+          </select></div>
+          <div class="row" id="focalRow"><label for="focal"><span>Focal length</span><span><b id="fVal">140</b> px</span></label><input id="focal" type="range" min="60" max="260" value="140" /></div>
+          <div class="row"><label for="meanZ"><span>Scene distance</span><span><b id="zVal">8.0</b> units</span></label><input id="meanZ" type="range" min="3" max="18" step="0.1" value="8" /></div>
+          <div class="row"><label for="depthSpread"><span>Depth separation</span><span><b id="dzVal">3.0</b> units</span></label><input id="depthSpread" type="range" min="0" max="8" step="0.1" value="3" aria-label="Depth separation between box centers" /></div>
+          <div class="row"><label for="nearX"><span>Near box position</span><span><b id="nearXVal">-1.4</b> units</span></label><input id="nearX" type="range" min="-3" max="3" step="0.1" value="-1.4" aria-label="Near box horizontal position" /></div>
+          <div class="row"><label for="farX"><span>Far box position</span><span><b id="farXVal">1.5</b> units</span></label><input id="farX" type="range" min="-3" max="3" step="0.1" value="1.5" aria-label="Far box horizontal position" /></div>
+          <p class="small-note">Move either box sideways with its slider or by dragging its colored dot.</p>
+          <button class="action" id="resetScene">Reset scene</button>
+        </div>
+        <div>
+          <div class="visuals">
+            <div class="card canvas-card">
+              <div class="canvas-title">Scene · Top view</div>
+              <canvas id="geometryCanvas" role="img" aria-label="Top view of the camera and two boxes.">Use the labeled sliders to change the scene.</canvas>
+              <div class="canvas-caption">Perspective rays shown for reference. Image-plane position is schematic.</div>
+            </div>
+            <div class="card canvas-card">
+              <div class="canvas-title">Projected image</div>
+              <canvas id="imageCanvas" role="img" aria-describedby="imageHelp" aria-label="Projection of two equal-size boxes.">Use the box position sliders as an alternative to dragging.</canvas>
+              <div class="canvas-caption" id="imageHelp"><div class="object-key"><span>Near box</span><span>Far box</span></div>Solid: front face · Dashed: back face</div>
+            </div>
+          </div>
+          <div class="card formula">
+            <div class="big" id="formulaText">u = fX/Z, &nbsp; v = fY/Z</div>
+            <div class="small-note" id="formulaNote">Each point scales by f/Z. Closer points appear larger.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="quiz" role="tabpanel" aria-labelledby="tab-quiz" tabindex="0" hidden>
+      <div class="card quiz">
+        <div class="scorebox">
+          <div><b>Check your understanding</b><br><span class="small-note">Choose one answer per question, then check your answers.</span></div>
+          <div><b id="score" role="status">0 / 5 answered</b></div>
+        </div>
+        <div class="qcard" data-answer="2">
+          <h3 id="q1">1. Which change leaves both normalized perspective coordinates x = X/Z and y = Y/Z unchanged?</h3>
+          <p class="question-context">X, Y, and Z are measured relative to the camera. Assume X and Y are nonzero and Z &gt; 0.</p>
+          <div class="options" role="radiogroup" aria-labelledby="q1">
+            <label class="option"><input type="radio" name="q1" value="0" />Double X only</label>
+            <label class="option"><input type="radio" name="q1" value="1" />Double Z only</label>
+            <label class="option"><input type="radio" name="q1" value="2" />Double X, Y, and Z</label>
+            <label class="option"><input type="radio" name="q1" value="3" />Double X and Y only</label>
+          </div><div class="feedback" aria-live="polite"></div>
+        </div>
+        <div class="qcard" data-answer="1">
+          <h3 id="q2">2. Two boxes have the same dimensions and orientation but different depths. Under perspective projection, which appears taller?</h3>
+          <div class="options" role="radiogroup" aria-labelledby="q2">
+            <label class="option"><input type="radio" name="q2" value="0" />The farther box</label>
+            <label class="option"><input type="radio" name="q2" value="1" />The nearer box</label>
+            <label class="option"><input type="radio" name="q2" value="2" />They always have equal image heights</label>
+            <label class="option"><input type="radio" name="q2" value="3" />It depends only on the principal point</label>
+          </div><div class="feedback" aria-live="polite"></div>
+        </div>
+        <div class="qcard" data-answer="0">
+          <h3 id="q3">3. When is weak perspective most appropriate as an approximation to perspective?</h3>
+          <div class="options" role="radiogroup" aria-labelledby="q3">
+            <label class="option"><input type="radio" name="q3" value="0" />When scene depth variation is small relative to mean camera depth</label>
+            <label class="option"><input type="radio" name="q3" value="1" />When the camera is inside the object</label>
+            <label class="option"><input type="radio" name="q3" value="2" />When focal length is exactly zero</label>
+            <label class="option"><input type="radio" name="q3" value="3" />When all image lines are curved</label>
+          </div><div class="feedback" aria-live="polite"></div>
+        </div>
+        <div class="qcard" data-answer="2">
+          <h3 id="q4">4. A photographer increases focal length without moving or rotating the camera. What happens to the image?</h3>
+          <div class="options" role="radiogroup" aria-labelledby="q4">
+            <label class="option"><input type="radio" name="q4" value="0" />Near and far objects change size by different factors</label>
+            <label class="option"><input type="radio" name="q4" value="1" />Near and far objects exchange their depth order</label>
+            <label class="option"><input type="radio" name="q4" value="2" />Everything is magnified by the same factor; relative sizes of near and far objects stay the same</label>
+            <label class="option"><input type="radio" name="q4" value="3" />Parallel lines become curved</label>
+          </div><div class="feedback" aria-live="polite"></div>
+        </div>
+        <div class="qcard" data-answer="1">
+          <h3 id="q5">5. In perspective projection, why do a box’s front and back faces become more offset in the image when you move the box sideways?</h3>
+          <p class="question-context" id="q5-context">Keep the camera fixed and move the box right without rotating it. The front face is closer to the camera than the back face.</p>
+          <div class="options" role="radiogroup" aria-labelledby="q5" aria-describedby="q5-context">
+            <label class="option"><input type="radio" name="q5" value="0" />The principal point moves automatically</label>
+            <label class="option"><input type="radio" name="q5" value="1" />The closer front face has a larger scale f/Z, so the same sideways movement shifts it farther in the image</label>
+            <label class="option"><input type="radio" name="q5" value="2" />Straight edges curve when the box moves away from the image center</label>
+            <label class="option"><input type="radio" name="q5" value="3" />Moving sideways changes the projection from perspective to orthographic</label>
+          </div><div class="feedback" aria-live="polite"></div>
+          <button class="action" id="trySideways">Try this in Explore</button>
+        </div>
+        <div class="btnrow"><button class="action" id="checkQuiz">Check answers</button><button class="action" id="resetQuiz">Reset quiz</button></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const $ = id => document.getElementById(id);
+      const defaults = { model: "perspective", f: 140, meanZ: 8, spread: 3, nearX: -1.4, farX: 1.5 };
+      const state = { ...defaults, dragging: null, dragOffsetX: 0, projectedCenters: [] };
+      const orthoScale = 17.5; // Fixed pixels per world unit, independent of f and Z.
+      const controlKeys = { model: "model", focal: "f", meanZ: "meanZ", depthSpread: "spread", nearX: "nearX", farX: "farX" };
+      const tabs = [...document.querySelectorAll(".tab")];
+      let activeTab = "explore";
+      const nearDepth = () => state.meanZ - state.spread / 2;
+      const farDepth = () => state.meanZ + state.spread / 2;
+
+      function openTab(id, focus = false) {
+        activeTab = id;
+        tabs.forEach(tab => {
+          const selected = tab.dataset.tab === id;
+          tab.classList.toggle("active", selected);
+          tab.setAttribute("aria-selected", String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+          const panel = $(tab.dataset.tab);
+          panel.hidden = !selected;
+        });
+        renderAll();
+        if (focus) $("tab-" + id).focus();
+      }
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => openTab(tab.dataset.tab));
+        tab.addEventListener("keydown", event => {
+          let next;
+          if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+          else if (event.key === "ArrowLeft") next = (index + tabs.length - 1) % tabs.length;
+          else if (event.key === "Home") next = 0;
+          else if (event.key === "End") next = tabs.length - 1;
+          else return;
+          event.preventDefault();
+          openTab(tabs[next].dataset.tab, true);
+        });
+      });
+      function constrainDepth() {
+        // All box vertices must have positive depth; do not silently move a box.
+        const maxSpread = Math.min(8, 2 * (state.meanZ - 1.2));
+        $("depthSpread").max = maxSpread.toFixed(1);
+        state.spread = Math.min(state.spread, maxSpread);
+        $("depthSpread").value = state.spread;
+      }
+      function handleControls() {
+        Object.entries(controlKeys).forEach(([id, key]) => {
+          state[key] = id === "model" ? $(id).value : Number($(id).value);
+        });
+        constrainDepth();
+        updateLabels();
+        renderAll();
+      }
+      Object.keys(controlKeys).forEach(id => $(id).addEventListener("input", handleControls));
+
+      function applyPreset(preset = "reset") {
+        Object.assign(state, defaults, preset === "edge" ? { meanZ: 6.5, spread: 3.4, f: 155, nearX: 2.2 } : {});
+        constrainDepth();
+        Object.entries(controlKeys).forEach(([id, key]) => $(id).value = state[key]);
+        updateLabels();
+        renderAll();
+      }
+      $("resetScene").addEventListener("click", () => applyPreset());
+      $("trySideways").addEventListener("click", () => {
+        applyPreset("edge");
+        openTab("explore", true);
+        $("imageCanvas").scrollIntoView({ block: "center" });
+      });
+
+      function updateLabels() {
+        const values = { fVal: state.f.toFixed(0), zVal: state.meanZ.toFixed(1), dzVal: state.spread.toFixed(1), nearXVal: state.nearX.toFixed(1), farXVal: state.farX.toFixed(1) };
+        Object.entries(values).forEach(([id, value]) => $(id).textContent = value);
+        $("focalRow").hidden = state.model === "ortho";
+        $("focal").disabled = state.model === "ortho";
+        if (state.model === "perspective") {
+          $("formulaText").innerHTML = "u = fX/Z, &nbsp; v = fY/Z";
+          $("formulaNote").textContent = "Each point scales by f/Z. Closer points appear larger. X and Y are measured from the camera; Z is depth.";
+        } else if (state.model === "weak") {
+          $("formulaText").innerHTML = "u ≈ sX, &nbsp; v ≈ sY, &nbsp; s = f / Z<sub>avg</sub>";
+          $("formulaNote").textContent = "One scale for all points. Best when the scene’s full depth range is small relative to its mean depth Zavg.";
+        } else {
+          $("formulaText").innerHTML = "u = s<sub>o</sub>X, &nbsp; v = s<sub>o</sub>Y";
+          $("formulaNote").textContent = "Fixed scale: 17.5 px/unit. Depth does not change image size.";
+        }
+        $("imageCanvas").setAttribute("aria-label", `${state.model === "weak" ? "Weak perspective" : state.model === "ortho" ? "Orthographic" : "Perspective"} view. Near box center depth ${nearDepth().toFixed(1)}, horizontal position ${state.nearX.toFixed(1)}; far box center depth ${farDepth().toFixed(1)}, horizontal position ${state.farX.toFixed(1)}.`);
+      }
+
+      function fitCanvas(canvas) {
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        const ctx = canvas.getContext("2d");
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { ctx, w: rect.width, h: rect.height };
+      }
+      function project(point, model = state.model) {
+        const x = point.x;
+        const scale = model === "perspective" ? state.f / point.z : model === "weak" ? state.f / state.meanZ : orthoScale;
+        return { u: scale * x, v: scale * point.y };
+      }
+      function makeBox(x, y, z, color) {
+        const points = [];
+        for (const dx of [-.9, .9]) for (const dy of [-1.1, 1.1]) for (const dz of [-1, 1]) {
+          points.push({ x: x + dx, y: y + dy, z: z + dz });
+        }
+        const edges = [];
+        for (let i = 0; i < 8; i++) for (const mask of [1, 2, 4]) {
+          const j = i ^ mask;
+          if (i < j) edges.push([i, j]);
+        }
+        return { points, edges, color, center: { x, y, z } };
+      }
+      function sceneObjects() {
+        return [makeBox(state.nearX, .25, nearDepth(), "#b76b00"), makeBox(state.farX, .15, farDepth(), "#2563eb")];
+      }
+      function lineImage(ctx, w, h, a, b) {
+        ctx.beginPath();
+        ctx.moveTo(w / 2 + a.u, h * .58 - a.v);
+        ctx.lineTo(w / 2 + b.u, h * .58 - b.v);
+        ctx.stroke();
+      }
+      function drawGrid(ctx, w, h, model) {
+        ctx.save();
+        ctx.strokeStyle = "#e5eaf2";
+        ctx.lineWidth = 1;
+        for (let z = 3; z <= 24; z += 1.5) {
+          lineImage(ctx, w, h, project({ x: -12, y: -1.2, z }, model), project({ x: 12, y: -1.2, z }, model));
+        }
+        for (let x = -12; x <= 12; x += 2) {
+          lineImage(ctx, w, h, project({ x, y: -1.2, z: 3 }, model), project({ x, y: -1.2, z: 24 }, model));
+        }
+        ctx.restore();
+      }
+      function drawProjectedScene(canvas, model = state.model) {
+        const { ctx, w, h } = fitCanvas(canvas);
+        ctx.fillStyle = "#fbfcff";
+        ctx.fillRect(0, 0, w, h);
+        drawGrid(ctx, w, h, model);
+        state.projectedCenters = [];
+        let clipped = false;
+        sceneObjects().forEach((object, index) => {
+          const points = object.points.map(point => project(point, model));
+          clipped ||= points.some(point => w / 2 + point.u < 0 || w / 2 + point.u > w || h * .58 - point.v < 12 || h * .58 - point.v > h - 24);
+          ctx.strokeStyle = object.color;
+          ctx.lineWidth = 2.5;
+          object.edges.forEach(([i, j]) => {
+            // Back-face edges are dashed to make the two faces easier to compare.
+            ctx.setLineDash(i % 2 === 1 && j % 2 === 1 ? [5, 4] : []);
+            lineImage(ctx, w, h, points[i], points[j]);
+          });
+          ctx.setLineDash([]);
+          const center = project(object.center, model);
+          const screen = { x: w / 2 + center.u, y: h * .58 - center.v, index };
+          state.projectedCenters.push(screen);
+          ctx.fillStyle = object.color;
+          ctx.beginPath();
+          ctx.arc(screen.x, screen.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.font = "700 12px system-ui";
+          ctx.fillText(index === 0 ? "near" : "far", screen.x + 8, screen.y - 8);
+        });
+        ctx.strokeStyle = "#aab4c5";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([3, 5]);
+        lineImage(ctx, w, h, { u: 0, v: h * .58 - 52 }, { u: 0, v: h * .58 - h + 28 });
+        lineImage(ctx, w, h, { u: 16 - w / 2, v: 0 }, { u: w / 2 - 16, v: 0 });
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#17211f";
+        ctx.beginPath();
+        ctx.arc(w / 2, h * .58, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.font = "12px system-ui";
+        // The fixed camera places its principal point at the image origin.
+        ctx.fillText("principal point", Math.max(12, Math.min(w - 98, w / 2 + 8)), h * .58 + 18);
+        ctx.font = "12px system-ui";
+        ctx.fillStyle = "#59645f";
+        if (clipped) ctx.fillText("Reduce focal length or move the box inward.", 12, h - 12);
+      }
+      function drawGeometry() {
+        const { ctx, w, h } = fitCanvas($("geometryCanvas"));
+        ctx.fillStyle = "#fbfcff";
+        ctx.fillRect(0, 0, w, h);
+        const pad = 28, maxZ = Math.max(19, farDepth() + 2);
+        const zToX = z => pad + z / maxZ * (w - 2 * pad);
+        const lateralExtent = Math.max(5, Math.abs(state.nearX) + 1, Math.abs(state.farX) + 1);
+        const lateralScale = (h - 160) / (2 * lateralExtent);
+        const xToY = x => h / 2 - x * lateralScale;
+        const camera = { x: zToX(0), y: xToY(0) };
+        ctx.font = "12px system-ui";
+        ctx.fillStyle = "#59645f";
+        ctx.fillText("X ↑    Z →    (schematic)", 14, 22);
+        ctx.strokeStyle = "#94a3b8";
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(camera.x, camera.y); ctx.lineTo(w - pad, camera.y); ctx.stroke();
+        ctx.setLineDash([]);
+        const planeX = zToX(1);
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(planeX, 90); ctx.lineTo(planeX, h - 80); ctx.stroke();
+        ctx.fillStyle = "#334155";
+        ctx.fillText("image plane", 14, h - 65);
+        sceneObjects().forEach((object, index) => {
+          const left = zToX(object.center.z - 1), right = zToX(object.center.z + 1);
+          const top = xToY(object.center.x + .9), bottom = xToY(object.center.x - .9);
+          ctx.fillStyle = object.color + "22";
+          ctx.fillRect(left, top, right - left, bottom - top);
+          ctx.strokeStyle = object.color; ctx.lineWidth = 2;
+          ctx.strokeRect(left, top, right - left, bottom - top);
+          ctx.fillStyle = object.color; ctx.font = "700 12px system-ui";
+          ctx.fillText(`${index === 0 ? "near" : "far"}: ${object.center.z.toFixed(1)}`, left, top - 9);
+          ctx.strokeStyle = "#2563eb"; ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(camera.x, camera.y); ctx.lineTo(left, top);
+          ctx.moveTo(camera.x, camera.y); ctx.lineTo(left, bottom);
+          ctx.stroke();
+        });
+        ctx.fillStyle = "#17211f";
+        ctx.beginPath(); ctx.arc(camera.x, camera.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "700 12px system-ui";
+        ctx.fillText("C", camera.x - 15, camera.y - 10);
+        function dimension(z1, z2, y, label, below = false) {
+          const a = zToX(z1), b = zToX(z2);
+          ctx.strokeStyle = "#475569"; ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(a, y); ctx.lineTo(b, y);
+          ctx.moveTo(a, y - 5); ctx.lineTo(a, y + 5);
+          ctx.moveTo(b, y - 5); ctx.lineTo(b, y + 5);
+          ctx.stroke();
+          ctx.fillStyle = "#334155"; ctx.font = "13px system-ui";
+          ctx.textAlign = "center";
+          ctx.fillText(label, (a + b) / 2, y + (below ? 19 : -10));
+          ctx.textAlign = "left";
+        }
+        dimension(nearDepth() - 1, farDepth() + 1, 52, "Full depth range", true);
+        dimension(0, state.meanZ, h - 30, "Mean depth");
+      }
+
+      const dragCanvas = $("imageCanvas");
+      const pointerInCanvas = event => {
+        const rect = dragCanvas.getBoundingClientRect();
+        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      };
+      dragCanvas.addEventListener("pointerdown", event => {
+        if (event.button !== 0) return;
+        const point = pointerInCanvas(event);
+        const closest = state.projectedCenters.reduce((best, center) => {
+          const distance = Math.hypot(point.x - center.x, point.y - center.y);
+          return distance < best.distance ? { center, distance } : best;
+        }, { center: null, distance: 40 });
+        if (!closest.center) return;
+        state.dragging = closest.center.index;
+        state.dragOffsetX = point.x - closest.center.x;
+        dragCanvas.classList.add("dragging");
+        dragCanvas.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+      dragCanvas.addEventListener("pointermove", event => {
+        if (state.dragging === null) return;
+        const point = pointerInCanvas(event);
+        const u = point.x - state.dragOffsetX - dragCanvas.getBoundingClientRect().width / 2;
+        const key = state.dragging === 0 ? "nearX" : "farX";
+        const z = state.dragging === 0 ? nearDepth() : farDepth();
+        const scale = state.model === "perspective" ? state.f / z : state.model === "weak" ? state.f / state.meanZ : orthoScale;
+        // Match the slider's 0.1-unit resolution.
+        state[key] = Math.round(Math.max(-3, Math.min(3, u / scale)) * 10) / 10;
+        $(key).value = state[key];
+        updateLabels();
+        renderAll();
+        event.preventDefault();
+      });
+      function endDrag(event) {
+        state.dragging = null;
+        dragCanvas.classList.remove("dragging");
+        if (dragCanvas.hasPointerCapture(event.pointerId)) dragCanvas.releasePointerCapture(event.pointerId);
+      }
+      ["pointerup", "pointercancel", "lostpointercapture"].forEach(type => dragCanvas.addEventListener(type, endDrag));
+      function renderAll() {
+        if (activeTab === "explore") {
+          drawGeometry();
+          drawProjectedScene($("imageCanvas"));
+        }
+      }
+      window.addEventListener("resize", renderAll);
+
+      const questions = [...document.querySelectorAll(".qcard")];
+      const explanations = [
+        "Multiplying X, Y, and Z by the same factor leaves X/Z and Y/Z unchanged. A single image cannot distinguish points at different distances along the same viewing ray.",
+        "Image height is proportional to f/Z. The nearer box has a larger scale and appears taller.",
+        "When the full depth range is small relative to mean depth, replacing each Z with Zavg changes the scale only slightly.",
+        "With the camera fixed, multiplying f multiplies all offsets from the principal point by the same factor. Depth ratios and perspective relationships stay the same.",
+        "A sideways movement ΔX produces an image shift fΔX/Z. The front face has smaller Z, so it shifts farther than the back face. The edges remain straight; this effect comes from perspective geometry."
+      ];
+      function updateQuizProgress() {
+        const answered = questions.filter(card => card.querySelector("input:checked")).length;
+        $("score").textContent = `${answered} / ${questions.length} answered`;
+      }
+      questions.forEach(card => {
+        card.querySelectorAll("input").forEach(input => input.addEventListener("change", () => {
+          card.querySelector(".feedback").textContent = "";
+          updateQuizProgress();
+        }));
+      });
+      $("checkQuiz").addEventListener("click", () => {
+        let score = 0, answered = 0;
+        questions.forEach((card, index) => {
+          const selected = card.querySelector("input:checked");
+          const feedback = card.querySelector(".feedback");
+          if (!selected) {
+            feedback.className = "feedback no";
+            feedback.textContent = "Choose an answer, then check again.";
+            return;
+          }
+          answered++;
+          const correct = Number(selected.value) === Number(card.dataset.answer);
+          if (correct) score++;
+          feedback.className = "feedback " + (correct ? "ok" : "no");
+          feedback.textContent = (correct ? "Correct. " : "Not quite. ") + explanations[index];
+        });
+        $("score").textContent = `${score} / ${questions.length} correct` + (answered < questions.length ? ` · ${questions.length - answered} unanswered` : "");
+      });
+      $("resetQuiz").addEventListener("click", () => {
+        questions.forEach(card => {
+          card.querySelectorAll("input").forEach(input => input.checked = false);
+          card.querySelector(".feedback").textContent = "";
+        });
+        updateQuizProgress();
+      });
+      constrainDepth();
+      updateLabels();
+      renderAll();
+    })();
+  </script>
+</body>
+</html>

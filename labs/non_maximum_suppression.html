@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Non-Maximum Suppression — Edge Detection</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['\\(', '\\)']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --line:#dbe2ea;
+    --panel:#f8fafc;
+    --accent:#7c3aed;
+    --keep:#16a34a;
+    --drop:#dc2626;
+    --gold:#f59e0b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:var(--bg); color:var(--ink);
+  }
+  .wrap{width:min(1500px,96vw);margin:0 auto;padding:28px}
+  h1{font-size:clamp(30px,4vw,58px);margin:0 0 8px;letter-spacing:-.035em}
+  .sub{font-size:clamp(16px,1.5vw,22px);color:var(--muted);margin-bottom:20px;line-height:1.4}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}
+  .panel h2{margin:2px 4px 6px;font-size:clamp(18px,1.8vw,28px)}
+  .cap{margin:0 4px 10px;color:var(--muted);font-size:14px}
+  canvas{width:100%;aspect-ratio:16/10;display:block;background:#000;border-radius:12px}
+  .lower{display:grid;grid-template-columns:1.06fr .94fr;gap:18px;margin-top:18px}
+  .card{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:#fff}
+  .controls{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;margin-bottom:12px}
+  button{border:1px solid #cbd5e1;background:#fff;color:var(--ink);padding:10px 15px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer}
+  button.primary{background:#111827;color:#fff;border-color:#111827}
+  label{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:15px}
+  input[type=range]{width:150px}
+  .rule{font-size:clamp(17px,1.35vw,21px);line-height:1.5}
+  .status{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  .pill{padding:7px 11px;border-radius:999px;background:#f1f5f9;font-weight:700}
+  .keep{background:#dcfce7;color:#166534}
+  .drop{background:#fee2e2;color:#991b1b}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:11px;color:var(--muted);font-size:14px}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+  pre{margin:0;background:#0f172a;color:#e2e8f0;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.55;overflow:auto}
+  .code-line{display:block;padding:1px 8px;border-radius:8px;margin:1px -8px}
+  .hl{background:rgba(245,158,11,.20);outline:1px solid rgba(245,158,11,.45)}
+  .note{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.45}
+  .important{color:#334155;font-weight:700}
+  @media(max-width:980px){.grid,.lower{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Non-Maximum Suppression</h1>
+  <div class="sub">
+    Compare every pixel against the <b>original gradient-magnitude image</b>.
+    Suppression changes only the output image; it must never change the values used for later comparisons.
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Raw gradient magnitude \(M\)</h2>
+      <p class="cap">Immutable input used for every local-maximum test.</p>
+      <canvas id="src"></canvas>
+    </section>
+
+    <section class="panel">
+      <h2>NMS output</h2>
+      <p class="cap">Begins as a copy of \(M\); non-maxima are progressively suppressed to zero.</p>
+      <canvas id="dst"></canvas>
+    </section>
+  </div>
+
+  <div class="lower">
+    <div class="card">
+      <div class="controls">
+        <button class="primary" id="play">Play</button>
+        <button id="step">Step</button>
+        <button id="reset">Reset</button>
+        <label>Speed <input id="speed" type="range" min="25" max="350" step="10" value="90"></label>
+      </div>
+
+      <div class="rule">
+        For pixel \(p\), sample the <span class="important">raw</span> magnitude image at
+        \(p-\hat n\) and \(p+\hat n\), where \(\hat n\) is the gradient direction.
+        Keep \(p\) only if it is no smaller than both neighbors.
+      </div>
+
+      <div class="status">
+        <span class="pill" id="progress">Ready</span>
+        <span class="pill" id="vals"><i>M</i><sub>−</sub> = — &nbsp;&nbsp; <i>M</i>(<i>p</i>) = — &nbsp;&nbsp; <i>M</i><sub>+</sub> = —</span>
+        <span class="pill" id="decision">Ready</span>
+      </div>
+
+      <div class="legend">
+        <span><span class="dot" style="background:#7c3aed"></span>gradient direction</span>
+        <span><span class="dot" style="background:#f59e0b"></span>current pixel</span>
+        <span><span class="dot" style="background:#16a34a"></span>kept maximum</span>
+        <span><span class="dot" style="background:#dc2626"></span>suppressed</span>
+      </div>
+
+      <div class="note">
+        Pixels are animated from highest to lowest \(M(p)\) only for presentation.
+        The comparison itself always reads from the unchanged raw map, so processing order cannot affect the final NMS result.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 10px;font-size:20px">Pseudo code</h3>
+      <pre><span class="code-line" data-line="1">M_raw = gradient_magnitude.copy()</span>
+<span class="code-line" data-line="2">M_nms = M_raw.copy()</span>
+<span class="code-line" data-line="3">for p in pixels sorted by descending M_raw[p]:</span>
+<span class="code-line" data-line="4">    n  = unit_gradient_direction[p]</span>
+<span class="code-line" data-line="5">    m- = interpolate(M_raw, p - n)</span>
+<span class="code-line" data-line="6">    m+ = interpolate(M_raw, p + n)</span>
+<span class="code-line" data-line="7">    if M_raw[p] &lt; m- or M_raw[p] &lt; m+:</span>
+<span class="code-line" data-line="8">        M_nms[p] = 0</span>
+<span class="code-line" data-line="9">    else:</span>
+<span class="code-line" data-line="10">        M_nms[p] = M_raw[p]</span></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const src = document.getElementById('src');
+  const dst = document.getElementById('dst');
+  const sctx = src.getContext('2d');
+  const dctx = dst.getContext('2d');
+
+  const COLS = 35, ROWS = 21;
+  let W=0,H=0,cw=0,ch=0;
+
+  // IMPORTANT:
+  // rawMag is immutable and is the ONLY array used for all NMS comparisons.
+  // nmsMag is a separate output buffer that may be modified by suppression.
+  let rawMag = [];
+  let nmsMag = [];
+  let state = []; // 0 unprocessed, 1 kept, -1 suppressed
+  let candidates = [];
+  let idx = 0;
+  let current = null;
+  let timer = null;
+  let playing = false;
+
+  // A diagonal edge. The gradient is normal to the edge.
+  const slope = 0.50;
+  const edgeOffset = 9.5;
+  const normLen = Math.sqrt(1 + slope*slope);
+  const normal = {x:-slope/normLen, y:1/normLen};
+  const sigma = 1.45;
+
+  const $ = id => document.getElementById(id);
+
+  function createField(){
+    rawMag = Array.from({length:ROWS},()=>Array(COLS).fill(0));
+    nmsMag = Array.from({length:ROWS},()=>Array(COLS).fill(0));
+    state = Array.from({length:ROWS},()=>Array(COLS).fill(0));
+    candidates = [];
+
+    // Make the ridge strength constant along the edge.
+    // This produces a visually clean, pedagogical NMS result.
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const d = (y - (slope*x + edgeOffset)) / normLen;
+        const v = Math.exp(-(d*d)/(2*sigma*sigma));
+        rawMag[y][x] = v;
+        nmsMag[y][x] = v;
+
+        // Process all meaningful interior pixels, not only the brightest band.
+        if(x>1 && x<COLS-2 && y>1 && y<ROWS-2 && v>0.003){
+          candidates.push({x,y,v});
+        }
+      }
+    }
+
+    // Presentation order only: strongest gradient first.
+    candidates.sort((a,b)=>{
+      if(Math.abs(b.v-a.v)>1e-12) return b.v-a.v;
+      if(a.y!==b.y) return a.y-b.y;
+      return a.x-b.x;
+    });
+
+    // Anything outside the meaningful candidate region is already treated as background
+    // so the final image does not retain an unsuppressed low-valued halo.
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        const interior = x>1 && x<COLS-2 && y>1 && y<ROWS-2;
+        if(!interior || rawMag[y][x] <= 0.003){
+          nmsMag[y][x] = 0;
+          state[y][x] = -1;
+        }
+      }
+    }
+
+    idx=0;
+    current=null;
+    updateText();
+    highlightPseudo();
+  }
+
+  function sampleRaw(x,y){
+    // Bilinear interpolation from immutable rawMag only.
+    x=Math.max(0,Math.min(COLS-1.001,x));
+    y=Math.max(0,Math.min(ROWS-1.001,y));
+    const x0=Math.floor(x), y0=Math.floor(y);
+    const x1=Math.min(COLS-1,x0+1), y1=Math.min(ROWS-1,y0+1);
+    const tx=x-x0, ty=y-y0;
+    return (1-tx)*(1-ty)*rawMag[y0][x0]
+         + tx*(1-ty)*rawMag[y0][x1]
+         + (1-tx)*ty*rawMag[y1][x0]
+         + tx*ty*rawMag[y1][x1];
+  }
+
+  function gray(v,gamma=.72){
+    const g=Math.round(255*Math.pow(Math.max(0,Math.min(1,v)),gamma));
+    return `rgb(${g},${g},${g})`;
+  }
+
+  function resize(){
+    const dpr=Math.max(1,window.devicePixelRatio||1);
+    [src,dst].forEach(c=>{
+      const rect=c.getBoundingClientRect();
+      c.width=Math.round(rect.width*dpr);
+      c.height=Math.round(rect.height*dpr);
+      c.getContext('2d').setTransform(dpr,0,0,dpr,0,0);
+    });
+    W=src.getBoundingClientRect().width;
+    H=src.getBoundingClientRect().height;
+    cw=W/COLS; ch=H/ROWS;
+    draw();
+  }
+
+  function drawArray(ctx,arr){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    for(let y=0;y<ROWS;y++){
+      for(let x=0;x<COLS;x++){
+        ctx.fillStyle=gray(arr[y][x]);
+        ctx.fillRect(x*cw,y*ch,cw+.5,ch+.5);
+      }
+    }
+    ctx.strokeStyle='rgba(255,255,255,.07)';
+    ctx.lineWidth=1;
+    for(let x=0;x<=COLS;x++){ctx.beginPath();ctx.moveTo(x*cw,0);ctx.lineTo(x*cw,H);ctx.stroke()}
+    for(let y=0;y<=ROWS;y++){ctx.beginPath();ctx.moveTo(0,y*ch);ctx.lineTo(W,y*ch);ctx.stroke()}
+  }
+
+  function center(x,y){ return {x:(x+.5)*cw,y:(y+.5)*ch}; }
+
+  function drawArrow(ctx,x1,y1,x2,y2,color,width=4){
+    const ang=Math.atan2(y2-y1,x2-x1), head=10;
+    ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=width;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-head*Math.cos(ang-Math.PI/6),y2-head*Math.sin(ang-Math.PI/6));
+    ctx.lineTo(x2-head*Math.cos(ang+Math.PI/6),y2-head*Math.sin(ang+Math.PI/6));
+    ctx.closePath();ctx.fill();
+  }
+
+  function overlay(){
+    if(!current) return;
+    const c=center(current.x,current.y);
+    const scale=Math.min(cw,ch)*1.28;
+    const a={x:c.x-normal.x*scale,y:c.y-normal.y*scale};
+    const b={x:c.x+normal.x*scale,y:c.y+normal.y*scale};
+
+    sctx.save();
+    sctx.strokeStyle='#7c3aed';sctx.lineWidth=4;
+    sctx.beginPath();sctx.moveTo(a.x,a.y);sctx.lineTo(b.x,b.y);sctx.stroke();
+    drawArrow(sctx,c.x,c.y,b.x,b.y,'#7c3aed',4);
+
+    for(const p of [a,b]){
+      sctx.fillStyle='#fde047';
+      sctx.beginPath();sctx.arc(p.x,p.y,6.5,0,Math.PI*2);sctx.fill();
+      sctx.strokeStyle='#111827';sctx.lineWidth=2;sctx.stroke();
+    }
+    sctx.strokeStyle='#f59e0b';sctx.lineWidth=5;
+    sctx.strokeRect(current.x*cw+2,current.y*ch+2,cw-4,ch-4);
+    sctx.restore();
+
+    dctx.save();
+    dctx.strokeStyle=current.keep?'#16a34a':'#dc2626';
+    dctx.lineWidth=5;
+    dctx.strokeRect(current.x*cw+2,current.y*ch+2,cw-4,ch-4);
+    if(!current.keep){
+      dctx.strokeStyle='#dc2626';dctx.lineWidth=3;
+      dctx.beginPath();
+      dctx.moveTo(current.x*cw+5,current.y*ch+5);
+      dctx.lineTo((current.x+1)*cw-5,(current.y+1)*ch-5);
+      dctx.moveTo((current.x+1)*cw-5,current.y*ch+5);
+      dctx.lineTo(current.x*cw+5,(current.y+1)*ch-5);
+      dctx.stroke();
+    }
+    dctx.restore();
+  }
+
+  function draw(){
+    if(!rawMag.length) return;
+    drawArray(sctx,rawMag);
+    drawArray(dctx,nmsMag);
+    overlay();
+  }
+
+  function highlightPseudo(){
+    document.querySelectorAll('.code-line').forEach(e=>e.classList.remove('hl'));
+    let lines = current ? [3,4,5,6,7,current.keep?10:8] : [1,2,3];
+    lines.forEach(n=>{
+      const el=document.querySelector(`.code-line[data-line="${n}"]`);
+      if(el) el.classList.add('hl');
+    });
+  }
+
+  function updateText(){
+    if(!current){
+      $('progress').textContent=`0 / ${candidates.length} processed`;
+      $('vals').innerHTML='<i>M</i><sub>−</sub> = — &nbsp;&nbsp; <i>M</i>(<i>p</i>) = — &nbsp;&nbsp; <i>M</i><sub>+</sub> = —';
+      $('decision').textContent='Ready';
+      $('decision').className='pill';
+      return;
+    }
+    $('progress').textContent=`${idx} / ${candidates.length} processed · descending magnitude`;
+    $('vals').innerHTML=`<i>M</i><sub>−</sub> = ${current.vm.toFixed(3)} &nbsp;&nbsp; <i>M</i>(<i>p</i>) = ${current.vc.toFixed(3)} &nbsp;&nbsp; <i>M</i><sub>+</sub> = ${current.vp.toFixed(3)}`;
+    $('decision').textContent=current.keep?'KEEP: local maximum':'SUPPRESS: not a maximum';
+    $('decision').className='pill '+(current.keep?'keep':'drop');
+  }
+
+  function processOne(){
+    if(idx>=candidates.length){
+      stop();
+      current=null;
+      $('progress').textContent=`${candidates.length} / ${candidates.length} processed`;
+      $('vals').innerHTML='All comparisons used the unchanged raw magnitude map.';
+      $('decision').textContent='Done — thin edge remains';
+      $('decision').className='pill keep';
+      highlightPseudo();
+      draw();
+      return;
+    }
+
+    const p=candidates[idx++];
+
+    // CRITICAL: all three values come from immutable rawMag.
+    const vc=rawMag[p.y][p.x];
+    const vm=sampleRaw(p.x-normal.x,p.y-normal.y);
+    const vp=sampleRaw(p.x+normal.x,p.y+normal.y);
+
+    const keep=(vc>=vm && vc>=vp);
+
+    // Only output is modified.
+    state[p.y][p.x]=keep?1:-1;
+    nmsMag[p.y][p.x]=keep?vc:0;
+
+    current={...p,vc,vm,vp,keep};
+    updateText();
+    highlightPseudo();
+    draw();
+  }
+
+  function play(){
+    if(playing)return;
+    playing=true;$('play').textContent='Pause';
+    const tick=()=>{
+      if(!playing)return;
+      processOne();
+      if(playing)timer=setTimeout(tick,Number($('speed').value));
+    };
+    tick();
+  }
+  function stop(){
+    playing=false;$('play').textContent='Play';
+    if(timer){clearTimeout(timer);timer=null}
+  }
+  function reset(){stop();createField();draw()}
+
+  $('play').addEventListener('click',()=>playing?stop():play());
+  $('step').addEventListener('click',()=>{stop();processOne()});
+  $('reset').addEventListener('click',reset);
+  window.addEventListener('resize',resize);
+
+  createField();
+  requestAnimationFrame(resize);
+})();
+</script>
+</body>
+</html>
