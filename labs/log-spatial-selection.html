@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LoG · Spatial selection</title>
+<style>
+:root{color-scheme:light;--ink:#16263b;--muted:#607087;--line:#dce3ed;--blue:#245fd0;--orange:#c75c19;--teal:#087f81}*{box-sizing:border-box}body{margin:0;background:#f2f5f9;color:var(--ink);font:16px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1340px;margin:0 auto;padding:26px 28px}header{display:flex;align-items:baseline;gap:18px;margin:0 0 20px}h1{font-size:28px;letter-spacing:-.6px;margin:0}header span{color:var(--muted);font-size:14px}.controls{display:grid;grid-template-columns:1fr 1fr 1.05fr;gap:24px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px}.control label,.control legend{font-size:15px;font-weight:600}.control-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.math{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-style:italic}.math sub,.math sup{font-size:.75em}input[type=number]{width:80px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;color:var(--ink);font:inherit;font-variant-numeric:tabular-nums;background:white}input[type=range]{width:100%;accent-color:var(--blue);cursor:pointer;margin:8px 0;min-height:20px}#sigma{accent-color:var(--teal)}fieldset{margin:0;padding:0;border:0;min-width:0}.segmented{display:flex;gap:0;margin-top:13px;border:1px solid var(--line);border-radius:7px;overflow:hidden}.segmented label{flex:1;cursor:pointer;text-align:center;padding:8px 5px;background:#f7f9fc;font-size:14px}.segmented label:has(input:checked){background:var(--ink);color:white}.segmented input{accent-color:var(--blue);margin-right:5px}.transport{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0}button,select{font:inherit;border:1px solid #cbd5e2;background:#fff;border-radius:7px;color:var(--ink);padding:8px 14px;cursor:pointer}button:hover,select:hover{background:#e9eff8}#play{background:var(--blue);border-color:var(--blue);color:white;min-width:85px}.transport label{font-size:14px;color:var(--muted)}.transport .axis-option{margin-left:auto;display:flex;align-items:center;gap:6px}.axis-option input{accent-color:var(--blue)}.charts{display:grid;grid-template-columns:1.45fr 1fr;gap:16px}.panel{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;padding:14px 14px 2px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:0 6px}.panel h2{font-size:16px;margin:0;font-weight:600}.panel .value{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}svg{display:block;width:100%;height:222px;overflow:visible}#insight{border-left:3px solid var(--blue);padding:4px 14px;margin:18px 0 12px;font-size:16px}.foot{font-size:13px;color:var(--muted);margin:0 0 12px}details{color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:12px}summary{cursor:pointer;width:fit-content;color:var(--ink)}.equations{display:flex;flex-wrap:wrap;gap:20px 40px;margin:16px 0;color:var(--ink);font-size:20px}.explanation{max-width:940px;margin-bottom:8px}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #edaa36;outline-offset:3px}@media(max-width:800px){main{padding:18px 14px}.controls{grid-template-columns:1fr 1fr;gap:16px}.normalization{grid-column:1/-1}.segmented{margin-top:8px}.charts{grid-template-columns:1fr}header{flex-wrap:wrap;gap:4px 12px}h1{font-size:25px}.transport .axis-option{margin-left:0}.panel{padding:12px 8px 0}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body><main>
+<header><h1>LoG spatial selection</h1><span>1D rectangular blob</span></header>
+<section class="controls" aria-label="Filter and blob controls">
+<div class="control"><div class="control-head"><label for="blob">Blob half-width <span class="math">a</span></label><input id="blob-value" type="number" min="0.2" max="10" step="0.01" value="3" aria-label="Blob half-width value"></div><input id="blob" type="range" min="0.2" max="10" step="0.01" value="3"></div>
+<div class="control"><div class="control-head"><label for="sigma">Filter scale <span class="math">σ</span></label><input id="sigma-value" type="number" min="0.1" max="10" step="0.01" value="1" aria-label="Filter scale value"></div><input id="sigma" type="range" min="0.1" max="10" step="0.01" value="1"></div>
+<fieldset class="control normalization"><legend>Filter normalization</legend><div class="segmented"><label><input type="radio" name="norm" value="raw">Unnormalized</label><label><input type="radio" name="norm" value="normalized" checked>Scale-normalized</label></div></fieldset>
+</section>
+<div class="transport"><button id="play" aria-pressed="false">Play</button><label for="sweep">Animate</label><select id="sweep"><option value="blob">Blob size</option><option value="sigma">Filter scale</option></select><button id="match">Match a = σ</button><button id="reset">Reset</button><label class="axis-option"><input id="lock" type="checkbox">Lock vertical axes</label></div>
+<section class="charts" aria-label="Signal, filter and response plots">
+<article class="panel"><div class="panel-head"><h2>Blob <span class="math">f(x)</span></h2><span class="value" id="width-label"></span></div><svg id="signal" role="img" aria-label="Unit-height rectangular blob"></svg></article>
+<article class="panel"><div class="panel-head"><h2>Filter <span class="math">K<sub>σ</sub>(x)</span></h2><span class="value math" id="kernel-label"></span></div><svg id="kernel" role="img" aria-label="Laplacian of Gaussian filter"></svg></article>
+<article class="panel"><div class="panel-head"><h2>Response <span class="math">r = f ∗ K<sub>σ</sub></span></h2><span class="value" id="center-label"></span></div><svg id="response" role="img" aria-label="Convolution response"></svg></article>
+<article class="panel"><div class="panel-head"><h2>Center magnitude <span class="math">|r(0)|</span></h2><span class="value" id="held-label"></span></div><svg id="selection" role="img" aria-label="Center response magnitude as the selected scale varies"></svg></article>
+</section>
+<p id="insight"></p><p class="foot" id="axis-note">Vertical axes rescale; tick values show actual amplitudes.</p>
+<details><summary>Definitions</summary><div class="explanation">The blob has height 1 and width 2a. “Normalized” means scale normalization by σ²; the Gaussian has unit area in both modes.</div>
+<div class="equations">
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msub><mi>G</mi><mi>σ</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mrow><msqrt><mrow><mn>2</mn><mi>π</mi></mrow></msqrt><mi>σ</mi></mrow></mfrac><msup><mi>e</mi><mrow><mo>−</mo><mfrac><msup><mi>x</mi><mn>2</mn></msup><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac></mrow></msup></mrow></math>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><msubsup><mi>G</mi><mi>σ</mi><mo>″</mo></msubsup><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><msup><mi>x</mi><mn>2</mn></msup><mo>−</mo><msup><mi>σ</mi><mn>2</mn></msup></mrow><msup><mi>σ</mi><mn>4</mn></msup></mfrac><msub><mi>G</mi><mi>σ</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo></mrow></math>
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mrow><mi>r</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>c</mi><mo>[</mo><msubsup><mi>G</mi><mi>σ</mi><mo>′</mo></msubsup><mo>(</mo><mi>x</mi><mo>+</mo><mi>a</mi><mo>)</mo><mo>−</mo><msubsup><mi>G</mi><mi>σ</mi><mo>′</mo></msubsup><mo>(</mo><mi>x</mi><mo>−</mo><mi>a</mi><mo>)</mo><mo>]</mo></mrow></math>
+</div><p>c = 1 for unnormalized LoG; c = σ² for scale-normalized LoG. The plots use the conventional sign: a bright blob has a negative center response.</p></details>
+</main><script>
+'use strict';
+const $=id=>document.getElementById(id),colors={blue:'#245fd0',orange:'#c75c19',teal:'#087f81',gray:'#8795a7'};
+const state={a:3,s:1,norm:true,sweep:'blob',playing:false,locked:false};let lockedRanges=null,last=0,direction=-1;
+const C=Math.sqrt(2*Math.PI);
+function gp(x,s){return -x*Math.exp(-.5*(x/s)**2)/(C*s**3)}
+function response(x,a,s,norm){return (norm?s*s:1)*(gp(x+a,s)-gp(x-a,s))}
+function kernel(x,s,norm){return (norm?s*s:1)*((x/s)**2-1)*Math.exp(-.5*(x/s)**2)/(C*s**3)}
+function magnitude(a,s,norm){return -response(0,a,s,norm)}
+function fmt(v){if(Math.abs(v)<1e-12)return '0';if(Math.abs(v)<.001||Math.abs(v)>=1000)return v.toExponential(1);return Number(v.toPrecision(3)).toString()}
+function label(x,y,t,extra=''){return `<text x="${x}" y="${y}" ${extra}>${t}</text>`}
+function plot(id,xlo,xhi,ylo,yhi,xticks,yticks,xlabel){const el=$(id),w=Math.max(280,el.clientWidth||560),h=222,l=53,r=16,top=17,b=44;const X=v=>l+(v-xlo)/(xhi-xlo)*(w-l-r),Y=v=>h-b-(v-ylo)/(yhi-ylo)*(h-top-b);let svg=`<defs><clipPath id="clip-${id}"><rect x="${l}" y="${top}" width="${w-l-r}" height="${h-top-b}"/></clipPath></defs><g fill="#607087" font-family="system-ui,sans-serif" font-size="12">`;
+for(const v of yticks){const y=Y(v);svg+=`<line x1="${l}" y1="${y}" x2="${w-r}" y2="${y}" stroke="${v===0?'#a5b1c2':'#e8edf4'}"/>`+label(l-9,y+4,fmt(v),'text-anchor="end"')}
+for(const v of xticks){const x=X(v);svg+=`<line x1="${x}" y1="${top}" x2="${x}" y2="${h-b}" stroke="#edf1f6"/>`+label(x,h-b+20,fmt(v),'text-anchor="middle"')}
+svg+=label(w-r,h-4,xlabel,'text-anchor="end" font-size="13"')+'</g>';let data='';
+function path(points,color,dash='',width=2.6){data+=`<path d="${points.map(([x,y],i)=>(i?'L':'M')+X(x).toFixed(2)+','+Y(y).toFixed(2)).join(' ')}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linejoin="round" stroke-linecap="round" ${dash?`stroke-dasharray="${dash}"`:''}/>`}
+function curve(fn,color){const points=[];for(let i=0;i<=1800;i++){const x=xlo+(xhi-xlo)*i/1800;points.push([x,fn(x)])}path(points,color)}
+function vline(x,color){data+=`<line x1="${X(x)}" y1="${top}" x2="${X(x)}" y2="${h-b}" stroke="${color}" stroke-dasharray="4 4"/>`}
+function dot(x,y,color){data+=`<circle cx="${X(x)}" cy="${Y(y)}" r="4.2" fill="${color}" stroke="white" stroke-width="1.5"/>`}
+function shade(x1,x2){data+=`<rect x="${X(x1)}" y="${Y(1)}" width="${X(x2)-X(x1)}" height="${Y(0)-Y(1)}" fill="#245fd0" fill-opacity="0.09"/>`}
+function end(clipped){el.setAttribute('viewBox',`0 0 ${w} ${h}`);el.innerHTML=svg+`<g clip-path="url(#clip-${id})">${data}</g>`+(clipped?label(l+7,top+14,'Clipped: unlock axes','font-family="system-ui,sans-serif" font-size="12" fill="#b44413"'):'')}
+return {path,curve,vline,dot,shade,end};}
+function ranges(){const {a,s,norm,sweep}=state;const km=1/(C*(norm?s:s**3));const rm=.5*(norm?1:1/s**2);const peak=sweep==='blob'?s:(norm?a:a/Math.sqrt(3));const maxmag=sweep==='blob'?magnitude(peak,s,norm):magnitude(a,peak,norm);return {k:km,r:rm,m:Math.max(.00001,maxmag*1.15)}}
+function render(){const {a,s,norm,sweep}=state;const current=ranges(),scales=state.locked?lockedRanges:current;let p=plot('signal',-20,20,-.12,1.15,[-20,-10,0,10,20],[0,1],'x');p.shade(-a,a);p.path([[-20,0],[-a,0],[-a,1],[a,1],[a,0],[20,0]],colors.blue);p.end();
+let k=scales.k;p=plot('kernel',-20,20,-1.15*k,.6*k,[-20,-10,0,10,20],[-k,0,.5*k],'x');p.curve(x=>kernel(x,s,norm),colors.teal);p.end(current.k>k*1.15);
+let r=scales.r;p=plot('response',-20,20,-1.1*r,.65*r,[-20,-10,0,10,20],[-r,-r/2,0,r/2],'x');p.vline(-a,'#b5c7e4');p.vline(a,'#b5c7e4');p.curve(x=>response(x,a,s,norm),colors.orange);p.dot(0,response(0,a,s,norm),colors.orange);let lo=0,hi=0;for(let i=0;i<=1600;i++){const v=response(-20+i/40,a,s,norm);lo=Math.min(lo,v);hi=Math.max(hi,v)}p.end(lo< -r*1.1||hi>r*.65);
+let m=scales.m;const peak=sweep==='blob'?s:(norm?a:a/Math.sqrt(3));const selected=sweep==='blob'?a:s;const fn=sweep==='blob'?v=>magnitude(v,s,norm):v=>magnitude(a,v,norm);
+p=plot('selection',sweep==='blob'?0:.05,10,0,m,[0,2,4,6,8,10].filter(v=>sweep==='blob'||v>0),[0,m/2,m],sweep==='blob'?'Blob half-width a':'Filter scale σ');p.vline(peak,'#7d8ba0');p.curve(fn,colors.orange);p.dot(selected,magnitude(a,s,norm),colors.orange);p.end(current.m>m*1.001);
+$('width-label').textContent=`2a = ${(2*a).toFixed(2)}`;$('kernel-label').innerHTML=norm?'σ²G<sub>σ</sub>″':'G<sub>σ</sub>″';$('center-label').textContent=`r(0) = ${fmt(response(0,a,s,norm))}`;$('held-label').textContent=sweep==='blob'?`σ = ${s.toFixed(2)} fixed`:`a = ${a.toFixed(2)} fixed`;
+$('insight').innerHTML=sweep==='blob'?`Fixed filter: the center magnitude peaks at <b>a = σ = ${s.toFixed(2)}</b>.`:(norm?`Scale-normalized: the center magnitude peaks at <b>σ = a = ${a.toFixed(2)}</b>.`:`Unnormalized: the center magnitude peaks at <b>σ = a/√3 ≈ ${(a/Math.sqrt(3)).toFixed(2)}</b>.`);
+$('axis-note').textContent=state.locked?'Vertical axes locked. Out-of-range curves are clipped.':'Vertical axes rescale; tick values show actual amplitudes.';
+$('blob').value=a;$('sigma').value=s;if(document.activeElement!==$('blob-value'))$('blob-value').value=a.toFixed(2);if(document.activeElement!==$('sigma-value'))$('sigma-value').value=s.toFixed(2);$('play').textContent=state.playing?'Pause':'Play';$('play').setAttribute('aria-pressed',String(state.playing));}
+function pause(){state.playing=false}
+function setParameter(key,v){if(!Number.isFinite(v))return;pause();state[key]=Math.max(key==='a'?.2:.1,Math.min(10,v));render()}
+for(const [id,key] of [['blob','a'],['sigma','s']]){$(id).addEventListener('input',e=>setParameter(key,+e.target.value));$(id+'-value').addEventListener('change',e=>{setParameter(key,Number(e.target.value));e.target.value=state[key].toFixed(2)})}
+document.querySelectorAll('[name="norm"]').forEach(el=>el.addEventListener('change',()=>{state.norm=el.value==='normalized';render()}));
+$('sweep').addEventListener('change',e=>{pause();state.sweep=e.target.value;if(state.locked)lockedRanges=ranges();render()});
+$('lock').addEventListener('change',e=>{state.locked=e.target.checked;lockedRanges=state.locked?ranges():null;render()});
+$('play').addEventListener('click',()=>{state.playing=!state.playing;last=0;render()});
+$('match').addEventListener('click',()=>{pause();if(state.sweep==='blob'){state.s=Math.max(.2,state.s);state.a=state.s}else state.s=state.a;render()});
+$('reset').addEventListener('click',()=>{Object.assign(state,{a:3,s:1,norm:true,sweep:'blob',playing:false,locked:false});lockedRanges=null;direction=-1;$('sweep').value='blob';$('lock').checked=false;document.querySelector('[name="norm"][value="normalized"]').checked=true;render()});
+function frame(now){if(state.playing&&last){const dt=Math.min((now-last)/1000,.08),key=state.sweep==='blob'?'a':'s',min=key==='a'?.2:.1;let v=state[key]*Math.exp(direction*dt*.42);if(v<=min){v=min;direction=1}if(v>=10){v=10;direction=-1}state[key]=v;render()}last=now;requestAnimationFrame(frame)}
+window.addEventListener('resize',render);document.addEventListener('visibilitychange',()=>{last=0});
+// Exposed analytic functions also allow reproducible checks without a browser.
+window.LoG={response,kernel,magnitude,state,setParameter,render,ranges};
+render();requestAnimationFrame(frame);
+</script></body></html>
