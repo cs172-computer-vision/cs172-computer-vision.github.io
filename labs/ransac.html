@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Explore RANSAC line fitting, chi-square inlier thresholds, and probability-based trial counts." />
+  <title>RANSAC · Line fitting — CS 172</title>
+  <style>
+:root { color-scheme: light; --ink: #202b36; --muted: #5f6b77; --border: #dce1e6; --blue: #245bb2; --green: #247248; --orange: #b76213; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: #fff; color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.page { max-width: 1320px; margin: auto; padding: 28px 28px 20px; }
+a { color: var(--blue); text-underline-offset: 3px; }
+header { padding-bottom: 22px; }
+h1 { margin: 14px 0 8px; font-size: clamp(26px, 3.5vw, 36px); letter-spacing: -.035em; font-weight: 650; line-height: 1.25; }
+h1 span { color: var(--muted); font-weight: 400; }
+header p { margin: 0; max-width: 900px; color: var(--muted); }
+h2 { font-size: 16px; margin: 0 0 14px; font-weight: 650; }
+h3 { font-size: 14px; margin: 0 0 8px; }
+p { margin: 0 0 12px; }
+button, input, select { font: inherit; }
+button, select, input[type=number] { border: 1px solid #bac3ce; border-radius: 4px; background: #fff; color: var(--ink); min-height: 36px; }
+button { cursor: pointer; padding: 7px 13px; font-size: 14px; font-weight: 550; }
+button:hover:not(:disabled) { background: #edf2f8; border-color: #7b92b0; }
+button.primary { background: var(--blue); border-color: var(--blue); color: white; }
+button.primary:hover:not(:disabled) { background: #1a478e; }
+button:disabled { opacity: .45; cursor: default; }
+input:disabled, select:disabled { background: #f0f2f4; color: #66717d; }
+input[type=range], input[type=checkbox] { accent-color: var(--blue); }
+input[type=range] { display: block; width: 100%; margin: 8px 0 15px; }
+input[type=checkbox] { width: 15px; height: 15px; margin: 0; flex-shrink: 0; }
+input[type=number], select { width: 100%; padding: 5px 8px; font-size: 14px; }
+:focus-visible { outline: 3px solid #82a8e4; outline-offset: 3px; }
+.skip { position: absolute; top: -100px; background: white; padding: 10px; z-index: 2; }
+.skip:focus { top: 4px; }
+.experiment { display: grid; grid-template-columns: 278px minmax(0, 1fr); gap: 24px; align-items: start; }
+.controls { background: #f7f8fa; border: 1px solid var(--border); border-radius: 5px; padding: 18px; }
+.controls section + section { margin-top: 22px; border-top: 1px solid var(--border); padding-top: 20px; }
+.controls label:not(.check) { display: flex; justify-content: space-between; gap: 10px; margin: 12px 0 5px; font-size: 13px; }
+.controls output { color: var(--blue); font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.check { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; }
+.controls .check { align-items: flex-start; line-height: 1.5; margin-bottom: 10px; }
+.controls .check input { margin-top: 3px; }
+.wide { width: 100%; }
+.help { font-size: 12px; line-height: 1.6; color: var(--muted); }
+.setting-title { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.help-tip { display: inline-flex; align-items: flex-start; align-self: stretch; flex-shrink: 0; padding-top: 2px; }
+button.help-button { display: inline-flex; align-items: center; justify-content: center; width: 19px; height: 19px; min-height: 0; padding: 0; border: 1px solid #8b98a6; border-radius: 50%; background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; line-height: 1; }
+.help-tooltip { position: absolute; top: 100%; left: 0; right: 0; z-index: 5; padding: 10px 12px; border: 1px solid #bac3ce; border-radius: 4px; background: white; color: var(--ink); box-shadow: 0 3px 8px #202b3614; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: normal; max-height: 60vh; overflow: auto; }
+.workspace { min-width: 0; }
+.plot-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.plot-top h2 { margin: 0; }
+.state { font-size: 12px; color: var(--muted); border: 1px solid var(--border); padding: 2px 8px; border-radius: 3px; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 12px; }
+.stats > div { padding: 11px 14px; }
+.stats > div + div { border-left: 1px solid var(--border); }
+.stats span { display: block; font-size: 11px; line-height: 1.4; color: var(--muted); min-height: 30px; }
+.stats strong { font-size: 23px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stats small { font-size: 13px; color: var(--muted); font-weight: 400; }
+#bestStat { color: var(--green); }
+#currentStat { color: var(--blue); }
+#plot { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: 4px; background: #fcfdfe; }
+svg text { font-family: system-ui, sans-serif; fill: var(--muted); font-size: 11px; }
+svg .axis-label { font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 12px 0; font-size: 11px; color: var(--muted); }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: #8995a5; }
+.blue { background: var(--blue); }
+.green { background: var(--green); }
+.ring { display: inline-block; width: 11px; height: 11px; border: 2px solid var(--orange); border-radius: 50%; }
+.line { width: 20px; height: 0; border-top: 2px solid var(--green); background: none; }
+.line.blue { border-color: var(--blue); }
+.dashed { border-top-style: dashed; }
+.line.truth { border-color: #637080; border-top-style: dotted; }
+.line.least-squares { border-color: #8b4d97; border-top-style: dashed; }
+.view-options { display: flex; flex-wrap: wrap; gap: 10px 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.view-options .check { font-size: 12px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; }
+.toolbar label { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.toolbar select { width: auto; font-size: 12px; }
+.status { margin: 12px 0 16px; padding: 10px 12px; background: #f1f5fa; border-left: 3px solid #a3b9d5; font-size: 13px; min-height: 60px; }
+.trial-detail { font-size: 13px; }
+ol { margin: 0; padding-left: 20px; }
+li { padding-left: 3px; margin-bottom: 6px; }
+.trial-detail .help { margin-top: 10px; }
+.history { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 12px; font-size: 12px; }
+summary { cursor: pointer; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; text-align: left; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 6px; border-bottom: 1px solid var(--border); }
+th { font-weight: 600; color: var(--muted); }
+.try-it { margin-bottom: 22px; border: 1px solid var(--border); border-left: 3px solid #a3b9d5; border-radius: 4px; background: #f7f9fc; font-size: 13px; }
+.try-it summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; list-style: none; font-weight: 600; }
+.try-it summary::-webkit-details-marker { display: none; }
+.try-it summary::marker { content: ''; }
+.tip-label { display: flex; align-items: center; gap: 9px; }
+.tip-icon, .tip-chevron { width: 18px; height: 18px; flex-shrink: 0; fill: none; stroke: var(--blue); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tip-chevron { width: 15px; height: 15px; stroke: var(--muted); }
+.try-it[open] .tip-chevron { transform: rotate(180deg); }
+.try-it ol { padding: 0 20px 12px 43px; }
+.try-it li:last-child { margin-bottom: 0; }
+footer { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px; font-size: 11px; line-height: 1.8; color: var(--muted); }
+@media (min-width: 1500px) { .page { padding-top: 36px; } }
+@media (max-width: 1000px) { .experiment { grid-template-columns: 250px minmax(0, 1fr); gap: 18px; } .page { padding: 20px; } .stats > div { padding: 9px; } .stats strong { font-size: 20px; } .stats span { min-height: 45px; } }
+@media (max-width: 760px) { .experiment { display: flex; flex-direction: column; } .controls { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 14px; } .controls section + section { margin: 0; border: 0; padding: 0; } .controls h2 { font-size: 14px; } .workspace { width: 100%; } .stats span { min-height: 30px; } }
+@media (max-width: 540px) { .page { padding: 16px; } h1 span { display: block; font-size: 24px; margin-top: 3px; } .controls { grid-template-columns: 1fr; } .controls section + section { border-top: 1px solid var(--border); padding-top: 16px; } .stats { grid-template-columns: 1fr 1fr; } .stats > div:nth-child(3) { border-left: 0; } .stats > div:nth-child(n+3) { border-top: 1px solid var(--border); } .stats span { min-height: 0; } .toolbar label { margin-left: 0; } }
+@media print { .toolbar, .controls button, .help-tooltip, .history, .skip { display: none; } .page { max-width: none; padding: 0; } .experiment { grid-template-columns: 230px minmax(0, 1fr); } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#experiment">Skip to experiment</a>
+  <div class="page">
+    <header>
+      <h1>RANSAC <span>/ Line fitting</span></h1>
+      <p>Fit a line when some observations do not belong. Sample two points, count nearby points, and keep the strongest consensus.</p>
+    </header>
+
+    <main>
+      <details class="try-it">
+        <summary>
+          <span class="tip-label">
+            <svg class="tip-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M8.5 15.5a6 6 0 1 1 7 0c-.8.6-1.1 1.2-1.1 2.5H9.6c0-1.3-.3-1.9-1.1-2.5Z" /></svg>
+            Try, predict, explain
+          </span>
+          <svg class="tip-chevron" viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5" /></svg>
+        </summary>
+        <ol>
+          <li>Increase the outlier fraction from 50% to 80%. How does N change at the same p?</li>
+          <li>Switch to a manual threshold. What happens when τ is much smaller, or much larger, than σ?</li>
+          <li>Show least squares on all points. Why does RANSAC usually resist outliers better?</li>
+        </ol>
+      </details>
+
+      <div class="experiment" id="experiment">
+        <aside class="controls" aria-label="Experiment settings">
+          <section>
+            <h2 class="setting-title">1. Generate observations
+              <span class="help-tip">
+                <button class="help-button" type="button" aria-label="Help with observations" aria-describedby="dataHelp" aria-expanded="false">?</button>
+                <span id="dataHelp" class="help-tooltip" role="tooltip" hidden>Inliers have Gaussian noise in x and y. Outliers are uniform. Changing these controls creates new data.</span>
+              </span>
+            </h2>
+            <label for="pointCount">Number of points <output id="pointCountValue" for="pointCount">150</output></label>
+            <input id="pointCount" type="range" min="30" max="400" step="10" value="150" />
+            <label for="outlierRatio">Outlier fraction <output id="outlierRatioValue" for="outlierRatio">50%</output></label>
+            <input id="outlierRatio" type="range" min="0" max="100" step="5" value="50" />
+            <label for="noise">Noise σ <output id="noiseValue" for="noise">3 px</output></label>
+            <input id="noise" type="range" min="0.5" max="12" step="0.5" value="3" />
+            <button id="generate" class="wide">New random data</button>
+          </section>
+
+          <section>
+            <h2 class="setting-title">2. Set the inlier threshold
+              <span class="help-tip">
+                <button class="help-button" type="button" aria-label="Help with the inlier threshold" aria-describedby="thresholdHelp" aria-expanded="false">?</button>
+                <span id="thresholdHelp" class="help-tooltip" role="tooltip" hidden>Auto uses the known simulation σ. A point votes for a line when its perpendicular distance d ≤ τ. Changing a RANSAC setting resets the run and keeps the same observations.</span>
+              </span>
+            </h2>
+            <label class="check"><input id="autoThreshold" type="checkbox" checked /> Auto: chi-square distribution</label>
+            <label for="coverage">Inlier coverage q</label>
+            <select id="coverage">
+              <option value="0.90">90%</option>
+              <option value="0.95" selected>95%</option>
+              <option value="0.99">99%</option>
+              <option value="0.999">99.9%</option>
+            </select>
+            <label for="threshold">Distance threshold τ (px)</label>
+            <input id="threshold" type="number" min="0.1" max="100" step="0.1" value="5.88" disabled />
+          </section>
+
+          <section>
+            <h2 class="setting-title">3. Set the trial budget
+              <span class="help-tip">
+                <button class="help-button" type="button" aria-label="Help with the trial budget" aria-describedby="budgetHelp" aria-expanded="false">?</button>
+                <span id="budgetHelp" class="help-tooltip" role="tooltip" hidden>Two distinct points per trial; pairs can recur across trials.</span>
+              </span>
+            </h2>
+            <label class="check"><input id="autoTrials" type="checkbox" checked /> Auto: probability of a clean sample</label>
+            <label for="confidence">Target success probability p</label>
+            <select id="confidence">
+              <option value="0.90">90%</option>
+              <option value="0.95">95%</option>
+              <option value="0.99" selected>99%</option>
+              <option value="0.999">99.9%</option>
+            </select>
+            <label for="ratioSource">Inlier fraction w comes from</label>
+            <select id="ratioSource">
+              <option value="known">Simulation fraction (known)</option>
+              <option value="estimated">Best consensus (estimated)</option>
+            </select>
+            <label for="trialBudget">Number of trials N</label>
+            <input id="trialBudget" type="number" min="1" max="10000" step="1" value="17" disabled />
+          </section>
+        </aside>
+
+        <section class="workspace" aria-labelledby="plotHeading">
+          <div class="plot-top">
+            <h2 id="plotHeading">Observations &amp; hypotheses</h2>
+            <span id="runState" class="state">Ready</span>
+          </div>
+          <div class="stats" aria-label="Run statistics">
+            <div><span>Trials completed</span><strong id="trialStat">0 <small>/ 17</small></strong></div>
+            <div><span>Current consensus</span><strong id="currentStat">—</strong></div>
+            <div><span>Best consensus</span><strong id="bestStat">—</strong></div>
+            <div><span>P(at least one clean pair)</span><strong id="probabilityStat">0%</strong></div>
+          </div>
+
+          <svg id="plot" viewBox="0 0 800 460" role="img" aria-labelledby="plotTitle plotDesc">
+            <title id="plotTitle">RANSAC line fitting</title>
+            <desc id="plotDesc">Random observations in a 720 by 380 data-pixel region. Step through trials to see the sampled pair, its line, and its consensus.</desc>
+            <defs><clipPath id="plotClip"><rect x="50" y="20" width="720" height="380" /></clipPath></defs>
+            <g id="grid"></g>
+            <g clip-path="url(#plotClip)">
+              <g id="bandLayer"></g>
+              <g id="lineLayer"></g>
+              <g id="residualLayer"></g>
+              <g id="pointLayer"></g>
+              <g id="sampleLayer"></g>
+            </g>
+            <text x="410" y="449" text-anchor="middle" class="axis-label">x (data px)</text>
+            <text x="14" y="210" text-anchor="middle" transform="rotate(-90 14 210)" class="axis-label">y (data px)</text>
+          </svg>
+
+          <div class="legend" aria-label="Plot legend">
+            <span><i class="dot gray"></i>Other observations</span>
+            <span><i class="dot blue"></i>Current inliers</span>
+            <span><i class="ring"></i>Sampled pair</span>
+            <span><i class="line dashed blue"></i>Current hypothesis + ±τ band</span>
+            <span><i class="line green"></i>Best hypothesis / final refit</span>
+            <span id="truthLegend" hidden><i class="line truth"></i>Ground truth</span>
+            <span id="leastSquaresLegend" hidden><i class="line least-squares"></i>Least squares: all points</span>
+          </div>
+          <div class="view-options">
+            <label class="check"><input id="showTruth" type="checkbox" /> Ground truth</label>
+            <label class="check"><input id="showLeastSquares" type="checkbox" /> Least squares on all points</label>
+            <label class="check"><input id="showResiduals" type="checkbox" /> Perpendicular distances</label>
+          </div>
+          <div class="toolbar">
+            <button id="step" class="primary">Step one trial</button>
+            <button id="play">Run</button>
+            <button id="finish">Finish run</button>
+            <button id="reset">Reset</button>
+            <label for="speed">Pace <select id="speed"><option value="1000">Slow</option><option value="450" selected>Normal</option><option value="100">Fast</option></select></label>
+          </div>
+          <p id="status" class="status" role="status" aria-live="polite">Ready. Step one trial to draw two distinct observations.</p>
+          <div class="trial-detail">
+            <h3>What happens in one trial?</h3>
+            <ol>
+              <li><b>Sample.</b> Select two distinct observations uniformly and fit their line.</li>
+              <li><b>Score.</b> Measure every perpendicular distance; count points with d ≤ τ.</li>
+              <li><b>Keep.</b> Replace the best hypothesis if the consensus grows. Break ties using squared inlier residuals.</li>
+              <li><b>Refit at the end.</b> Fit a line to all points in the winning consensus using total least squares.</li>
+            </ol>
+            <p id="fitSummary" class="help">The generated inlier labels are never used to fit or score a line.</p>
+          </div>
+          <details class="history"><summary>Recent trials</summary>
+            <table><thead><tr><th>Trial</th><th>Sample IDs</th><th>Consensus</th><th>Decision</th></tr></thead><tbody id="historyBody"></tbody></table>
+          </details>
+        </section>
+      </div>
+
+    </main>
+    <footer>
+      CS 172 · Fitting &amp; optimization · Inspired by <a href="https://jhugestar.github.io/snu-vision-lecture/3dvision-ransac/ransac_demo.html">Hanbyul Joo’s RANSAC demo</a>.
+    </footer>
+  </div>
+<script>
+(() => {
+  'use strict';
+
+  const $ = id => document.getElementById(id);
+  const NS = 'http://www.w3.org/2000/svg';
+  const MAX_TRIALS = 10000;
+  const W = 720, H = 380;
+  const color = { blue: '#245bb2', green: '#247248', gray: '#8995a5', orange: '#b76213', purple: '#8b4d97' };
+  let points = [], truth = null, allFit = null, trueInliers = 0;
+  let trial = 0, current = null, best = null, finalFit = null, history = [];
+  let timer = null, running = false, done = false;
+  let tau = 0, required = 0, budget = 0, cleanChance = 0;
+
+  function svg(tag, attrs = {}, text) {
+    const el = document.createElementNS(NS, tag);
+    Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+    if (text !== undefined) el.textContent = text;
+    return el;
+  }
+
+  function number(id, fallback) {
+    const input = $(id);
+    let value = input.valueAsNumber;
+    if (!Number.isFinite(value)) value = fallback;
+    value = Math.max(Number(input.min), Math.min(Number(input.max), value));
+    if (input.step === '1') value = Math.round(value);
+    input.value = String(value);
+    return value;
+  }
+
+  // The convergent series avoids quantile error in the selectable coverage range.
+  // For larger arguments use Abramowitz & Stegun 7.1.26 (absolute error < 1.5e-7).
+  function erf(x) {
+    if (x === 0) return 0;
+    const sign = x < 0 ? -1 : 1;
+    x = Math.abs(x);
+    if (x <= 3) {
+      let term = x, sum = x;
+      for (let n = 1; n < 100; n++) {
+        term *= -x * x / n;
+        const addition = term / (2 * n + 1);
+        sum += addition;
+        if (Math.abs(addition) < 1e-16) break;
+      }
+      return sign * 2 / Math.sqrt(Math.PI) * sum;
+    }
+    const t = 1 / (1 + 0.3275911 * x);
+    return sign * (1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x));
+  }
+
+  function chiCDF(x) { return x <= 0 ? 0 : erf(Math.sqrt(x / 2)); }
+
+  const quantiles = new Map();
+  function chiQuantile(q) {
+    if (quantiles.has(q)) return quantiles.get(q);
+    let low = 0, high = 64;
+    for (let i = 0; i < 60; i++) {
+      const middle = (low + high) / 2;
+      if (chiCDF(middle) < q) low = middle; else high = middle;
+    }
+    const value = (low + high) / 2;
+    quantiles.set(q, value);
+    return value;
+  }
+
+  // Two distinct observations within each trial; independent trials.
+  function pairProbability(inliers, total) {
+    return inliers < 2 ? 0 : inliers * (inliers - 1) / (total * (total - 1));
+  }
+
+  function trialsNeeded(p, a) {
+    if (a <= 0) return Infinity;
+    if (a >= 1) return 1;
+    return Math.max(1, Math.ceil(Math.log1p(-p) / Math.log1p(-a)));
+  }
+
+  function probability(k, a) {
+    if (k === 0 || a <= 0) return 0;
+    return a >= 1 ? 1 : -Math.expm1(k * Math.log1p(-a));
+  }
+
+  function gaussian() {
+    return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random());
+  }
+
+  function lineThrough(p, q) {
+    const length = Math.hypot(q.x - p.x, q.y - p.y);
+    if (length < 1e-9) return null;
+    const a = (p.y - q.y) / length, b = (q.x - p.x) / length;
+    return { a, b, c: -a * p.x - b * p.y };
+  }
+
+  // The principal eigenvector of the centered covariance gives the line direction.
+  // This minimizes squared perpendicular distances and also handles vertical lines.
+  function totalLeastSquares(data) {
+    if (data.length < 2) return null;
+    const mx = data.reduce((s, p) => s + p.x, 0) / data.length;
+    const my = data.reduce((s, p) => s + p.y, 0) / data.length;
+    let xx = 0, xy = 0, yy = 0;
+    data.forEach(p => { xx += (p.x - mx) ** 2; xy += (p.x - mx) * (p.y - my); yy += (p.y - my) ** 2; });
+    if (xx + yy < 1e-12) return null;
+    const angle = Math.atan2(2 * xy, xx - yy) / 2;
+    const a = -Math.sin(angle), b = Math.cos(angle);
+    return { a, b, c: -a * mx - b * my };
+  }
+
+  function signedDistance(line, p) { return line.a * p.x + line.b * p.y + line.c; }
+
+  function score(line) {
+    const indices = [], distances = [];
+    let error = 0;
+    points.forEach((p, i) => {
+      const d = Math.abs(signedDistance(line, p));
+      distances.push(d);
+      if (d <= tau + 1e-9) { indices.push(i); error += d * d; }
+    });
+    return { line, indices, distances, error };
+  }
+
+  function pct(value, digits = 1) { return (100 * value).toFixed(digits) + '%'; }
+  function count(value) { return Number.isFinite(value) ? value.toLocaleString('en-US') : '∞'; }
+
+  function updateSettings(present = true) {
+    const q = Number($('coverage').value), sigma = Number($('noise').value);
+    $('coverage').disabled = !$('autoThreshold').checked;
+    $('threshold').disabled = $('autoThreshold').checked;
+    if ($('autoThreshold').checked) {
+      tau = sigma * Math.sqrt(chiQuantile(q));
+      $('threshold').value = tau.toFixed(3);
+    } else {
+      tau = number('threshold', 6);
+    }
+
+    const estimated = $('ratioSource').value === 'estimated';
+    const inliers = estimated ? (best ? best.indices.length : 0) : trueInliers;
+    cleanChance = pairProbability(inliers, points.length);
+    const p = Number($('confidence').value);
+    required = trialsNeeded(p, cleanChance);
+    const unknown = estimated && !best;
+    $('trialBudget').disabled = $('autoTrials').checked;
+    if ($('autoTrials').checked) {
+      budget = Math.min(MAX_TRIALS, required);
+      if (unknown) budget = MAX_TRIALS;
+      $('trialBudget').value = Number.isFinite(budget) ? budget : MAX_TRIALS;
+    } else {
+      budget = number('trialBudget', 100);
+    }
+
+    if ($('autoTrials').checked && cleanChance === 0 && !unknown) budget = 0;
+    if (!present) return;
+
+    let help;
+    if (unknown) help = 'Start with a 10,000-trial cap. After the first trial, recompute N from the best consensus. This is a heuristic estimate.';
+    else if (estimated) help = 'N updates when the best consensus improves. Consensus can contain outliers, so p is an estimated confidence, not a guarantee.';
+    else if (cleanChance === 0) help = 'Fewer than two generated inliers: no finite N can produce an outlier-free pair. Change the data or use a manual budget to explore.';
+    else help = 'Uses the known generated inlier fraction. Two distinct points per trial; trials are independent.';
+    if (required > MAX_TRIALS && !unknown && cleanChance > 0 && $('autoTrials').checked) help += ' Required N exceeds the 10,000-trial cap; the target p will not be reached.';
+    if (budget === 0) { $('trialBudget').value = ''; $('trialBudget').placeholder = 'No finite N'; }
+    else $('trialBudget').placeholder = '';
+    $('budgetHelp').textContent = help + ' Changing a RANSAC setting resets the run and keeps the same observations.';
+    $('trialBudget').title = cleanChance === 0 && !unknown && $('autoTrials').checked ? 'No finite number of trials can produce an outlier-free pair.' : '';
+
+  }
+
+  function generate() {
+    pause();
+    const total = Number($('pointCount').value), outlierRatio = Number($('outlierRatio').value) / 100;
+    const sigma = Number($('noise').value);
+    $('pointCountValue').textContent = total;
+    $('outlierRatioValue').textContent = pct(outlierRatio, 0);
+    $('noiseValue').textContent = `${sigma} px`;
+    trueInliers = Math.round(total * (1 - outlierRatio));
+    const angle = (Math.random() * 100 - 50) * Math.PI / 180;
+    const dx = Math.cos(angle), dy = Math.sin(angle);
+    const cx = W / 2, cy = H / 2;
+    const extent = Math.min((W / 2 - 45) / Math.abs(dx), (H / 2 - 45) / Math.max(0.001, Math.abs(dy)));
+    truth = { a: -dy, b: dx, c: dy * cx - dx * cy };
+    points = [];
+    for (let i = 0; i < total; i++) {
+      if (i < trueInliers) {
+        const t = (Math.random() * 2 - 1) * extent;
+        points.push({ x: cx + t * dx + sigma * gaussian(), y: cy + t * dy + sigma * gaussian() });
+      } else points.push({ x: Math.random() * W, y: Math.random() * H });
+    }
+    // Shuffle to keep generated membership out of the observation ordering.
+    for (let i = total - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [points[i], points[j]] = [points[j], points[i]];
+    }
+    allFit = totalLeastSquares(points);
+    reset();
+  }
+
+  function pause() {
+    running = false;
+    if (timer !== null) clearTimeout(timer);
+    timer = null;
+    $('play').textContent = 'Run';
+  }
+
+  function reset() {
+    pause();
+    trial = 0; current = null; best = null; finalFit = null; history = []; done = false;
+    updateSettings();
+    $('status').textContent = budget === 0
+      ? 'No finite trial budget: the data contain fewer than two generated inliers. Adjust the data or choose a manual trial budget.'
+      : 'Ready. Step one trial to draw two distinct observations. Blue points will be the current hypothesis’s inliers.';
+    $('fitSummary').textContent = 'The generated inlier labels are never used to fit or score a line.';
+    render();
+  }
+
+  function takeTrial(quiet = false) {
+    if (done || budget === 0) return;
+    const i = Math.floor(Math.random() * points.length);
+    let j = Math.floor(Math.random() * (points.length - 1));
+    if (j >= i) j++;
+    const line = lineThrough(points[i], points[j]);
+    trial++;
+    let improved = false;
+    if (line) {
+      current = { ...score(line), sample: [i, j] };
+      improved = !best || current.indices.length > best.indices.length ||
+        (current.indices.length === best.indices.length && current.error < best.error);
+      if (improved) best = current;
+    } else current = null;
+    history.unshift({ trial, pair: `${i + 1}, ${j + 1}`, size: current ? current.indices.length : '—', decision: line ? (improved ? 'New best' : 'Keep previous') : 'Degenerate pair; skipped' });
+    history = history.slice(0, 8);
+    updateSettings(!quiet);
+    if (!quiet) $('status').textContent = line
+      ? `Trial ${trial}: points #${i + 1} and #${j + 1} define a line. ${current.indices.length} of ${points.length} observations lie within τ = ${tau.toFixed(2)} px. ${improved ? 'The best hypothesis is updated.' : `The best consensus stays at ${best.indices.length}.`}`
+      : `Trial ${trial}: coincident points cannot define a line. This draw is counted, but no hypothesis is scored.`;
+    if (trial >= budget) complete();
+  }
+
+  function complete() {
+    done = true;
+    pause();
+    finalFit = best ? totalLeastSquares(best.indices.map(i => points[i])) : null;
+    const estimated = $('ratioSource').value === 'estimated';
+    const achieved = probability(trial, cleanChance);
+    $('status').textContent = `Finished ${count(trial)} trials. ${best ? `The winning consensus contains ${best.indices.length} observations; the green line is refitted to them.` : 'No nondegenerate hypothesis was found.'} ${estimated ? 'The displayed probability uses the estimated consensus fraction.' : `P(at least one clean pair) = ${pct(achieved, 2)} under the known simulation fraction.`}${achieved + 1e-12 < Number($('confidence').value) ? ' The requested p was not reached.' : ''}`;
+    if (finalFit) {
+      const rescored = score(finalFit);
+      const rms = Math.sqrt(best.indices.reduce((sum, i) => sum + signedDistance(finalFit, points[i]) ** 2, 0) / best.indices.length);
+      $('fitSummary').textContent = `Final line: ${finalFit.a.toFixed(4)}x + ${finalFit.b.toFixed(4)}y + (${finalFit.c.toFixed(2)}) = 0. Perpendicular RMS on the winning ${best.indices.length} points: ${rms.toFixed(2)} px. Rechecking the refitted line gives ${rescored.indices.length} points within τ; the best-consensus counter retains the original winning score.`;
+    }
+  }
+
+  function tick() {
+    if (!running) return;
+    takeTrial(); render();
+    if (running) timer = setTimeout(tick, Number($('speed').value));
+  }
+
+  function render() {
+    const estimated = $('ratioSource').value === 'estimated';
+    $('trialStat').replaceChildren(document.createTextNode(`${count(trial)} `), (() => { const el = document.createElement('small'); el.textContent = `/ ${budget === 0 ? '∞' : count(budget)}`; return el; })());
+    $('currentStat').textContent = current ? current.indices.length : '—';
+    $('bestStat').textContent = best ? best.indices.length : '—';
+    $('probabilityStat').textContent = estimated && !best ? 'Unknown' : pct(probability(trial, cleanChance), 2);
+    $('probabilityStat').title = estimated ? 'Heuristic probability using the best-consensus fraction; not a guarantee.' : 'Probability based on the known generated inlier count, not proof that a clean pair was actually drawn.';
+    $('probabilityStat').previousElementSibling.textContent = estimated ? 'Estimated P(clean pair by now)' : 'P(at least one clean pair)';
+    $('runState').textContent = done ? 'Complete · refitted' : running ? 'Running' : trial ? 'Paused' : budget === 0 ? 'No finite N' : 'Ready';
+    $('step').disabled = done || running || budget === 0;
+    $('finish').disabled = done || budget === 0;
+    $('play').disabled = done || budget === 0;
+    $('historyBody').replaceChildren(...history.map(item => {
+      const row = document.createElement('tr');
+      [item.trial, item.pair, item.size, item.decision].forEach(value => { const cell = document.createElement('td'); cell.textContent = value; row.appendChild(cell); });
+      return row;
+    }));
+    drawPlot();
+  }
+
+  function lineElement(line, attrs) {
+    const cx = -line.a * line.c, cy = -line.b * line.c;
+    return svg('line', { x1: 50 + cx - line.b * 1500, y1: 400 - (cy + line.a * 1500), x2: 50 + cx + line.b * 1500, y2: 400 - (cy - line.a * 1500), ...attrs });
+  }
+
+  function drawGrid() {
+    const grid = $('grid');
+    for (let x = 0; x <= W; x += 120) {
+      grid.appendChild(svg('line', { x1: x + 50, x2: x + 50, y1: 20, y2: 400, stroke: '#e8edf2' }));
+      grid.appendChild(svg('text', { x: x + 50, y: 420, 'text-anchor': 'middle' }, x));
+    }
+    for (let y = 0; y <= H; y += 95) {
+      grid.appendChild(svg('line', { x1: 50, x2: 770, y1: 400 - y, y2: 400 - y, stroke: '#e8edf2' }));
+      grid.appendChild(svg('text', { x: 40, y: 404 - y, 'text-anchor': 'end' }, y));
+    }
+  }
+
+  function drawPlot() {
+    $('truthLegend').hidden = !$('showTruth').checked;
+    $('leastSquaresLegend').hidden = !$('showLeastSquares').checked;
+    ['bandLayer', 'lineLayer', 'residualLayer', 'pointLayer', 'sampleLayer'].forEach(id => $(id).replaceChildren());
+    if (current) {
+      $('bandLayer').appendChild(lineElement(current.line, { stroke: color.blue, 'stroke-width': 2 * tau, opacity: 0.09 }));
+      $('lineLayer').appendChild(lineElement(current.line, { stroke: color.blue, 'stroke-width': 1.7, 'stroke-dasharray': '7 5' }));
+    }
+    if ($('showTruth').checked && truth) $('lineLayer').appendChild(lineElement(truth, { stroke: '#637080', 'stroke-width': 1.5, 'stroke-dasharray': '2 5' }));
+    if ($('showLeastSquares').checked && allFit) $('lineLayer').appendChild(lineElement(allFit, { stroke: color.purple, 'stroke-width': 2, 'stroke-dasharray': '10 3 2 3' }));
+    if (best) $('lineLayer').appendChild(lineElement(finalFit || best.line, { stroke: color.green, 'stroke-width': 2.5 }));
+    const inliers = new Set(current ? current.indices : []);
+    points.forEach((p, i) => {
+      if (current && $('showResiduals').checked) {
+        const r = signedDistance(current.line, p);
+        $('residualLayer').appendChild(svg('line', { x1: p.x + 50, y1: 400 - p.y, x2: p.x - r * current.line.a + 50, y2: 400 - (p.y - r * current.line.b), stroke: inliers.has(i) ? color.blue : '#8995a5', 'stroke-width': 0.8, opacity: 0.35 }));
+      }
+      const dot = svg('circle', { cx: p.x + 50, cy: 400 - p.y, r: inliers.has(i) ? 3.3 : 2.8, fill: inliers.has(i) ? color.blue : color.gray, opacity: 0.85 });
+      dot.appendChild(svg('title', {}, `Point #${i + 1}: (${p.x.toFixed(1)}, ${p.y.toFixed(1)})${current ? `; distance ${current.distances[i].toFixed(2)} px` : ''}`));
+      $('pointLayer').appendChild(dot);
+    });
+    if (current) current.sample.forEach((i, index) => {
+      const p = points[i];
+      $('sampleLayer').appendChild(svg('circle', { cx: p.x + 50, cy: 400 - p.y, r: 7, fill: 'none', stroke: color.orange, 'stroke-width': 2.5 }));
+      $('sampleLayer').appendChild(svg('text', { x: Math.max(55, Math.min(730, p.x + 60)), y: Math.max(35, 387 - p.y), fill: color.orange, 'font-weight': 600, stroke: 'white', 'stroke-width': 3, 'paint-order': 'stroke' }, `${index + 1}: #${i + 1}`));
+    });
+    $('plotDesc').textContent = `${points.length} observations. Trial ${trial}. ${current ? `The current sample contains points ${current.sample.map(i => i + 1).join(' and ')}; ${current.indices.length} points are within ${tau.toFixed(2)} pixels of its line.` : 'No pair sampled yet.'} ${best ? `The best consensus contains ${best.indices.length} points.` : ''} ${done ? 'The green final line is a total least squares refit of the winning consensus.' : ''} ${$('showTruth').checked ? 'Ground truth is a gray dotted line.' : ''} ${$('showLeastSquares').checked ? 'The all-points least squares fit is purple, with a dash-dot pattern.' : ''}`;
+  }
+
+  ['pointCount', 'outlierRatio', 'noise'].forEach(id => $(id).addEventListener('input', generate));
+  ['autoThreshold', 'coverage', 'threshold', 'autoTrials', 'confidence', 'ratioSource', 'trialBudget'].forEach(id => $(id).addEventListener('change', reset));
+  ['showTruth', 'showLeastSquares', 'showResiduals'].forEach(id => $(id).addEventListener('change', drawPlot));
+  $('generate').addEventListener('click', generate);
+  $('reset').addEventListener('click', reset);
+  $('step').addEventListener('click', () => { pause(); takeTrial(); render(); });
+  $('play').addEventListener('click', () => {
+    if (running) { pause(); render(); return; }
+    running = true; $('play').textContent = 'Pause'; tick();
+  });
+  $('finish').addEventListener('click', () => {
+    pause();
+    while (!done && budget > 0) takeTrial(true);
+    updateSettings();
+    render();
+  });
+  // Do not leave a lecture animation running in a background tab.
+  document.addEventListener('visibilitychange', () => { if (document.hidden && running) { pause(); render(); } });
+  // Keep help available to mouse, keyboard, and touch users without a dependency.
+  document.querySelectorAll('.help-tip').forEach(tip => {
+    const button = tip.querySelector('.help-button');
+    const tooltip = tip.querySelector('[role="tooltip"]');
+    let pinned = false;
+    const show = () => { tooltip.hidden = false; button.setAttribute('aria-expanded', 'true'); };
+    const hide = () => { tooltip.hidden = true; button.setAttribute('aria-expanded', 'false'); };
+    tip.addEventListener('mouseenter', show);
+    tip.addEventListener('mouseleave', () => { if (!pinned && document.activeElement !== button) hide(); });
+    button.addEventListener('focus', show);
+    button.addEventListener('blur', () => { pinned = false; hide(); });
+    button.addEventListener('click', () => { pinned = !pinned; if (pinned) show(); else hide(); });
+    button.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { pinned = false; hide(); }
+    });
+    document.addEventListener('pointerdown', event => {
+      if (!tip.contains(event.target)) { pinned = false; hide(); }
+    });
+  });
+  drawGrid();
+  generate();
+})();
+</script>
+</body>
+</html>
