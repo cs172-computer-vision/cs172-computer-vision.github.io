@@ -1,0 +1,8 @@
+<section aria-label="42. Nearest neighbors and linear classifiers" class="slide" id="33c-comparison"><h1>Nearest neighbors and linear classifiers</h1><div class="content">
+<table class="classifier-comparison"><thead><tr><th></th><th>Nearest neighbor / k-NN</th><th>Linear classifier</th></tr></thead><tbody>
+<tr><th>Training</th><td>Store examples; no weight fitting.</td><td>Optimize weights and biases.</td></tr>
+<tr><th>Per-query cost</th><td><m>O(ND)</m> for direct distance search.</td><td><m>O(CD)</m> to compute all scores.</td></tr>
+<tr><th>Prediction storage</th><td><m>O(ND)</m> training features.</td><td><m>O(CD)</m> model parameters.</td></tr>
+<tr><th>Strengths</th><td>Simple baseline; flexible local regions; inspect retrieved neighbors.</td><td>Compact; fast scoring; interpretable class weights.</td></tr>
+<tr><th>Limitations</th><td>Expensive search; depends strongly on representation and distance.</td><td>Restricted affine-score regions; may underfit the chosen features.</td></tr>
+</tbody></table><p class="small muted"><m>N</m> examples, <m>D</m> features, <m>C</m> classes. Costs exclude feature extraction; approximate search can accelerate k-NN.</p></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n · Classification and linear models</a></span><span>Linear classification</span><span>42 / 54</span></footer></section>

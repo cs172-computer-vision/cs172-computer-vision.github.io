@@ -1,0 +1,55 @@
+slide,id,title,section,CS231n_2026_PDF_pages,Recognition_reference_PDF_pages,kind
+1,01-title,Image Classification,CS172 Computer Vision I,"1,6",,content
+2,02a-agenda,Lecture overview,The classification task,6,,content
+3,03-task,"An image, one category",The classification task,7,,content
+4,04-semantic-gap,Pixels and meaning,The classification task,8,,content
+5,04b-challenge,Why is image classification difficult?,The classification task,"8,9,10,11,12",,content
+6,05-view-light,Variation within one category,The classification task,"9,10",,content
+7,06-clutter,Clutter and occlusion,The classification task,"11,12",,content
+8,07-deformation,Deformation and category diversity,The classification task,"13,14",,content
+9,08-context,Context can help or mislead,The classification task,"14,15,16",,content
+10,09-rules,Representations for image classification,The classification task,"17,18",,content
+11,10-learning,Learning from labeled examples,The classification task,19,,content
+12,10b-nearest-section,Nearest-neighbor classification,Nearest neighbors,,,section
+13,11-nearest,The nearest-neighbor rule,Nearest neighbors,"20,21,22",,content
+14,12-distance,A distance calculation,Nearest neighbors,23,,content
+15,13-code,Nearest neighbor in NumPy,Nearest neighbors,"24,25,26",,content
+16,14-cost,Where nearest neighbor spends time,Nearest neighbors,"27,28",,content
+17,15-voting,Voting among nearby examples,Nearest neighbors,"29,30",,content
+18,16-knn-demo,How k changes the decision regions,Nearest neighbors,"29,30,34",,content
+19,17-metrics,L1 and L2 define different neighborhoods,Nearest neighbors,"31,32",,content
+20,18-metric-demo,The distance metric can change the boundary,Nearest neighbors,"33,34",,content
+21,18b-validation-section,Model selection,Model selection,,,section
+22,18c-generalization,Underfitting and overfitting,Model selection,,"76,78",content
+23,18d-complexity,Model complexity and generalization,Model selection,,"77,78,80",content
+24,18e-data-size,Training data and model complexity,Model selection,,79,content
+25,19-hyperparameters,Which choices should we tune?,Model selection,35,,content
+26,20-selection,Two tempting evaluation mistakes,Model selection,"36,37,38,39",,content
+27,21-splits,"Training, validation, and test",Model selection,40,,content
+28,22-cross-validation,Cross-validation reuses limited data,Model selection,41,,content
+29,23-cifar,CIFAR-10 as a working example,Model selection,42,,content
+30,24-neighbor-images,Nearby pixels can retrieve the wrong class,Model selection,43,,content
+31,25-cv-curve,Selecting k from validation results,Model selection,44,,content
+32,26-pixel-demo,Pixel distance and perceptual similarity,Nearest-neighbor limitations,"45,46,47",,content
+33,27-knn-summary,What nearest neighbors teach us,Nearest-neighbor limitations,"48,49",,content
+34,27b-linear-section,Linear classification,Linear classification,,,section
+35,28-parametric,A parametric score function,Linear classification,50,,content
+36,29-dimensions,The linear classifier,Linear classification,"51,52,53,54,55,56",,content
+37,30-algebra,Linear classifier: algebraic view,Linear classification,"57,58",,content
+38,31-templates,Linear classifier: visual view,Linear classification,"59,60",,content
+39,32-geometry,Two-class decision geometry,Linear classification,61,,content
+40,32b-multiclass,Multiclass decision regions,Linear classification,61,,content
+41,33-hard-cases,Where a single linear boundary fails,Linear classification,62,,content
+42,33c-comparison,Nearest neighbors and linear classifiers,Linear classification,"27,28,49,50","35,38,48,75",content
+43,33b-loss-section,Learning with a loss function,Loss functions,,,section
+44,34-loss-need,How should we judge a set of scores?,Loss functions,"63,64",,content
+45,35-empirical-loss,From one example to a dataset objective,Loss functions,"65,66",,content
+46,36-softmax,Turning scores into probabilities,Softmax classification,"67,68,69,70,71,72",,content
+47,37-softmax-demo,Scores compete through normalization,Softmax classification,"68,69,70,71,72,73",,content
+48,38-cross-entropy,The cross-entropy loss,Softmax classification,"73,74,75,76",,content
+49,39-likelihood,Why negative log probability?,Softmax classification,"74,75,76",,content
+50,40-loss-check,Checking the behavior of softmax loss,Softmax classification,"77,78",,content
+51,41-stability,A numerically stable implementation,Softmax classification,"76,77,78",,content
+52,42-summary,From image categories to a learning objective,Summary,"48,79",,content
+53,43-exit,Exit check,Summary,"48,77,78",,content
+54,44-readings,Reading list,Reading,79,,content

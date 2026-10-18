@@ -1,0 +1,4 @@
+<section aria-label="51. A numerically stable implementation" class="slide" id="41-stability"><h1>A numerically stable implementation</h1><div class="content"><m display="true">\ell_i=\log\sum_j e^{s_j-m}+m-s_{y_i},\qquad m=\max_j s_j</m><pre><code><span class="code-comment"># S: (N, C); y: integer class indices, shape (N,)</span>
+z = S - S.max(axis=1, keepdims=True)
+log_Z = np.log(np.exp(z).sum(axis=1))
+loss = (log_Z - z[np.arange(len(y)), y]).mean()</code></pre><p class="step">Subtracting a common constant leaves softmax probabilities unchanged.</p><p class="small muted">Prefer the framework’s fused cross-entropy function in training code.</p></div><footer><span><a href="https://cs231n.github.io/linear-classify/#softmax-classifier" target="_blank" rel="noopener">CS231n · numerical stability</a></span><span>Softmax classification</span><span>51 / 54</span></footer></section>

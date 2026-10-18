@@ -1,0 +1,8 @@
+<section aria-label="15. Nearest neighbor in NumPy" class="slide" id="13-code"><h1>Nearest neighbor in NumPy</h1><div class="content"><pre><code><span class="code-comment"># X_train: (N, D), q: (D,), y_train: (N,)</span>
+<span class="code-comment"># Rows index examples; columns index coordinates.</span>
+X = X_train.astype(np.float32)
+q = q.astype(np.float32)
+
+distances = np.abs(X - q).sum(axis=1)
+i_star = np.argmin(distances)
+y_pred = y_train[i_star]</code></pre><p class="step">Row <m>i</m> stores <m>\mathbf x^{(i)}</m>; the code returns <m>\hat y(\mathbf q)</m>.</p><p class="small muted">Cast before subtraction to avoid uint8 wraparound. NumPy uses zero-based indices.</p></div><footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_2.pdf#page=24" target="_blank" rel="noopener">CS231n · Lecture 2</a></span><span>Nearest neighbors</span><span>15 / 54</span></footer></section>

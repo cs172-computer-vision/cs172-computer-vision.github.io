@@ -1,0 +1,7 @@
+<section aria-label="22. Underfitting and overfitting" class="slide" id="18c-generalization"><h1>Underfitting and overfitting</h1><div class="content">
+<p><b>Generalization:</b> predicting labels for new examples from the target distribution.</p>
+<div class="fit-panels">
+<div><h2>Underfitting · k = 61</h2><img src="assets/generalization-k61.svg" alt="A 61-neighbor classifier predicts a single class over the whole plot"><p class="fit-metrics">Training error: 45.9%<br>Validation error: 50.0%</p><p>Too rigid to capture the pattern.</p></div>
+<div class="step" data-stage="1"><h2>Useful fit · k = 5</h2><img src="assets/generalization-k5.svg" alt="A five-neighbor classifier follows the broad curved class pattern"><p class="fit-metrics">Training error: 13.1%<br>Validation error: 6.4%</p><p>Captures the pattern despite noisy labels.</p></div>
+<div class="step" data-stage="2"><h2>Overfitting · k = 1</h2><img src="assets/generalization-k1.svg" alt="A one-neighbor classifier has small regions around mislabeled training examples"><p class="fit-metrics">Training error: 0.0%<br>Validation error: 14.5%</p><p>Fits training noise; performs worse on new examples.</p></div>
+</div><p class="small muted fit-note">Dashed: underlying boundary. Synthetic example: 61 training points with 6 flipped labels; 3,721 clean validation points.</p></div><footer><span><a href="https://visionbook.mit.edu/problem_of_generalization.html" target="_blank" rel="noopener">Foundations of CV · Ch. 11</a></span><span>Model selection</span><span>22 / 54</span></footer></section>
