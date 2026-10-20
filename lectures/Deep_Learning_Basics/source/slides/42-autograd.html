@@ -1,0 +1,10 @@
+<section class="slide" id="42-autograd" aria-label="42. Automatic differentiation in the training loop"><h1>Automatic differentiation in the training loop</h1><div class="content"><pre><span class="code-comment"># PyTorch sketch: scores are logits, labels are 0 ... C-1</span>
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+for xb, yb in loader:
+    optimizer.zero_grad()
+    scores = model(xb)
+    loss = F.cross_entropy(scores, yb)
+    penalty = sum((p * p).sum() for p in model.parameters()
+                  if p.ndim > 1)  <span class="code-comment"># this MLP’s weight matrices</span>
+    (loss + 0.5 * lam * penalty).backward()
+    optimizer.step()</pre><p class="small">Clear old gradients → forward → backward → update. Validate without parameter updates.</p></div><footer><span><a href="https://cs231n.github.io/optimization-2/" target="_blank" rel="noopener">CS231n · course notes</a></span><span>Backpropagation</span><span>42 / TOTAL</span></footer></section>

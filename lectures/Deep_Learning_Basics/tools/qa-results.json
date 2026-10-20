@@ -1,0 +1,284 @@
+{
+  "slides": 46,
+  "page_errors": [],
+  "external_requests": [],
+  "layout": [
+    {
+      "id": "01-title",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "02-agenda",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "03-recap",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "04-scores",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "05-margin",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "06-hinge",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "07-svm-loss",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "08-svm-example",
+      "bad": [],
+      "images": true,
+      "stage": "3"
+    },
+    {
+      "id": "09-margin-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "10-svm-geometry",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "11-regularization",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "12-l2-preference",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "13-loss-choice",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "14-optimization",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "15-landscape",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "16-gradient",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "17-numerical-gradient",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "18-gradient-check",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "19-gd-update",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "20-learning-rate",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "21-full-gradient",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "22-sgd",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "23-sgd-example",
+      "bad": [],
+      "images": true,
+      "stage": "2"
+    },
+    {
+      "id": "24-sgd-code",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "25-batch-noise",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "26-monitor",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "27-other-optimizers",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "28-networks",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "29-linear-limit",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "30-feature-transform",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "31-mlp",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "32-no-activation",
+      "bad": [],
+      "images": true,
+      "stage": "2"
+    },
+    {
+      "id": "33-shapes",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "34-neuron",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "35-forward",
+      "bad": [],
+      "images": true,
+      "stage": "3"
+    },
+    {
+      "id": "36-relu",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "37-activations",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "38-xor",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "39-capacity",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "40-graph",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "41-chain-rule",
+      "bad": [],
+      "images": true,
+      "stage": "3"
+    },
+    {
+      "id": "42-autograd",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "43-training-system",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "44-summary",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    },
+    {
+      "id": "45-exit-check",
+      "bad": [],
+      "images": true,
+      "stage": "1"
+    },
+    {
+      "id": "46-readings",
+      "bad": [],
+      "images": true,
+      "stage": "0"
+    }
+  ],
+  "checks": "Offline file://, reveal/reverse, overview, notes, toolbar, range keyboard handling, four interactions/resets, grouped graph builds/reversal, black screen, toolbar auto-hide, fullscreen, responsive scaling."
+}

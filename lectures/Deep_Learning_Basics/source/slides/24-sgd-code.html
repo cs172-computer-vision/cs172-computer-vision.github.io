@@ -1,0 +1,7 @@
+<section class="slide" id="24-sgd-code" aria-label="24. The SGD training loop"><h1>The SGD training loop</h1><div class="content"><pre><span class="code-comment"># X: (N, D), y: (N,); theta contains weights and biases</span>
+for epoch in range(num_epochs):
+    order = rng.permutation(N)
+    for ids in minibatches(order, batch_size):
+        loss, grads = loss_and_grad(X[ids], y[ids], theta)
+        for name in theta:
+            theta[name] -= learning_rate * grads[name]</pre><p><b>Iteration:</b> one update. &nbsp; <b>Epoch:</b> one pass through the training set.</p><p class="small">With <m>N=50{,}000</m> and <m>B=100</m>, one epoch has 500 updates.</p></div><footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_3.pdf" target="_blank" rel="noopener">CS231n · Lecture 3 · pp. 47, 50</a></span><span>Optimization</span><span>24 / TOTAL</span></footer></section>
