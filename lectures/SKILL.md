@@ -1,6 +1,6 @@
 ---
 name: create-cv1-web-deck
-description: Create and revise self-contained web-based lecture decks for CS172 Computer Vision I. Use for requests to prepare computer vision lecture slides, adapt reference lectures into offline HTML presentations, improve existing web decks, or deliver a PDF and maintainable source package with teaching notes. Apply general curriculum, presentation, notation, citation, interaction, and verification standards across lecture topics.
+description: Create and revise offline web-based lecture decks for CS172 Computer Vision I in a local VS Code workspace, with directly editable HTML, local assets, PDF export, and teaching notes. Use for preparing lectures, adapting reference slides, and improving existing decks.
 ---
 
 # Create Computer Vision I web decks
@@ -12,13 +12,14 @@ Use this workflow to produce presentation-ready, academically rigorous lectures.
 - Default to **CS172 Computer Vision I**, Jiayuan Gu, ShanghaiTech University; third-year CS students familiar with calculus, linear algebra, probability, and Python.
 - Plan approximately **90 minutes** per topic, adjusting duration or marking optional material when scope requires it. Do not target a fixed slide count.
 - Identify the topic, prerequisites, reference materials, required coverage, and expected outputs from the request. Ask only for missing information that materially changes the result; infer routine choices.
-- For revisions, inspect the current artifact and its editable sources before changing it. Resolve requested page numbers against the current manifest.
+- For revisions, inspect the current deck and its tooling before editing. Resolve requested page numbers against the current HTML slide order and inline metadata before renumbering; use stable slide IDs to target changes.
 
 ## 2. Design the curriculum and narrative
 
 - Define **3-6 measurable learning outcomes** in the teaching plan. Align explanations, activities, homework, and assessment with them.
 - Inspect supplied reference lectures and retain their conceptual flow unless a change improves correctness, continuity, or pacing. Merge repeated source frames into staged builds when helpful.
 - Develop intuition, mathematical formulation, worked examples, implementation, and limitations in a coherent sequence appropriate to the topic.
+- Check whether adjacent slides repeat the same argument. Merge them or use grouped reveals when this shortens the lecture without skipping a conceptual step. Keep secondary derivations and caveats in speaker notes.
 - Put an agenda near the beginning, normally on slide 2. Add a bridge when consecutive ideas lack a connection; use brief section dividers for substantial transitions.
 - Include short prediction, calculation, interpretation, or diagnosis activities. Allocate realistic time for discussion and demonstrations.
 - Close with a summary, an exit check when useful, and a reading list. Keep homework in the teaching plan unless requested on slides. Avoid unsolicited next-lecture teasers.
@@ -50,24 +51,29 @@ Use this workflow to produce presentation-ready, academically rigorous lectures.
 - Recreate precise diagrams and plots with editable vector or plotting code when this improves clarity. Use generated imagery only for suitable illustrative purposes.
 - Cite in place with short, meaningful hyperlinks. Maintain a provenance ledger with URLs, credits, licenses, adaptations, and reference-page mappings.
 - Add interaction only when changing a parameter or testing a prediction aids understanding. Use a static figure when it communicates the idea adequately.
+- An open question can be enough. When inviting students to reason, keep the answer in speaker notes unless an on-slide reveal is useful; do not add a button merely to demonstrate the answer immediately.
 - Hold other factors fixed in comparisons. Provide meaningful defaults, reset behavior, clear legends, distinct markers, and annotation leaders that avoid obscuring data.
 - Reveal one explanatory step at a time. Support reverse navigation and reduced motion; keep the completed state understandable without animation.
 
 ## 6. Build an offline, maintainable presentation
 
-### Deliver a portable project folder
+### Work in the local VS Code project
 
-- Default to a **multi-file project suitable for VS Code**. Keep HTML, CSS, JavaScript, images, fonts, and libraries as separate local files where useful. Generate a single HTML with everything embedded only when explicitly requested.
+- Edit the existing lecture folder in the local workspace. The folder itself is the editable deliverable; **do not create or refresh a ZIP unless explicitly requested**. Keep changes scoped to the requested deck and supporting course links when relevant.
+- Use a **multi-file project**: editable `index.html`, scripts and styles in `source/`, figures in `assets/`, local libraries/fonts/licenses in `vendor/`, and authoring tools in `tools/`. Reuse existing names and organization where practical. Generate a single HTML with everything embedded only when explicitly requested.
 - Provide a ready-to-open `index.html` with all required assets in the same portable folder tree. Use relative paths; avoid absolute machine paths and root-relative URLs that break after moving or extracting the folder.
 - Make the delivered presentation work offline by opening `index.html` directly in a browser (`file://`), without installing dependencies, starting a server, or signing in. Allow a local development server for convenience in VS Code, but do not make it a presentation requirement.
 - Store every runtime dependency locally, including library JavaScript and CSS, fonts, images, media, and licenses. Remove CDN imports, remote font stylesheets, and other network-dependent presentation resources. Allow external citation and reading links, clearly separate from resources needed to present.
 
-### Keep editing and presentation separate
+### Keep one editable slide source
 
-- Keep one editable fragment per slide and stable slide IDs. Use a manifest for order, sections, notes, and source mappings. Assemble fragments and metadata into the entry HTML or a local script during the build; do not require runtime fetching of slide fragments or JSON to open the deck.
-- Organize source slides, styles, scripts, assets, and vendored dependencies into clear directories. If using a build step, distinguish canonical source files from generated presentation files and include a complete, already-built output folder.
+- Make **`index.html` the single editable source for slide content**, and open that same file to present. Author slides as readable HTML sections with stable IDs. Do not maintain per-slide fragments or a second generated copy of the slide content.
+- Keep notes and reference metadata inline, for example in a `script` element with `type="application/json"` and `id="slide-meta"`. Use the HTML section order as the presentation order; derive titles/order where practical, or validate any repeated metadata against it. Do not require runtime fetching of fragments or JSON.
+- Keep styles, navigation, math rendering, interactions, and drawing logic in separate local files as useful. Keep authoring mathematics editable, for example as LaTeX in `<m>` elements rendered by bundled KaTeX on page open.
+- A refresh/build script may update counters, accessible labels, SVG snapshots, speaker notes, and source mappings. It must preserve authored slide content rather than assemble or overwrite it from another content tree. Identify derived files in the README and regenerate them from their canonical source.
+- For an existing deck that uses generated fragments, avoid introducing another content copy. Migrate when requested or when restructuring is part of the task; preserve content, notes, citations, assets, and stable IDs before retiring the old sources.
 - Choose a lightweight stack. Use browser-compatible local scripts or build dependencies into locally loadable bundles. Avoid runtime module-loading or resource-fetching patterns that require an HTTP server; verify the actual `file://` presentation path rather than assuming development-server behavior carries over.
-- Pin development dependencies and include a lockfile when using a package manager. Document installation and rebuild commands for editing, while keeping the delivered presentation usable without running those commands. Never download dependencies during presentation.
+- Pin development dependencies and include a lockfile when using a package manager. Document presentation requirements separately from authoring requirements. In the README, give a one-time setup and later refresh/export commands; prefer a reusable authoring environment outside the checkout so future decks can share it. Reuse installed tools when suitable. Never download dependencies during presentation.
 - Generate counters and refresh notes and reference mappings automatically after insertions or deletions. Preserve targeted editability rather than rewriting the whole deck for one change.
 - Share deterministic drawing logic between live illustrations and static snapshots where possible. Keep generated figures and the code needed to reproduce them in the editable package.
 
@@ -79,9 +85,9 @@ Use this workflow to produce presentation-ready, academically rigorous lectures.
 
 ## 7. Verify and deliver
 
-1. Check narrative continuity, notation, assumptions, derivations, code, and correspondence between examples and figures.
-2. Render and inspect every PDF page; examine changed and dense slides at larger scale. Fix clipping, overlap, tiny labels, misplaced annotations, and footer collisions.
-3. Check navigation, grouped reveals and reversal, controls, resets, responsive scaling, and offline resource loading. Test mathematical behavior when changing interactive calculations.
-4. Verify slide count, counters, titles, notes, source mappings, and teaching-plan references after revisions.
-5. Report material verification limits honestly. Do not describe PDF inspection or DOM simulation as live-browser animation testing.
-6. Include a README, timed teaching plan with aligned activities and assessment, speaker notes, source ledger, and rebuild/export instructions in the editable package. Save deliverables using the active environment’s persistence workflow, preserve existing file identities when updating, and provide concise downloadable links.
+1. Edit the canonical HTML and relevant local files. Check narrative continuity, notation, assumptions, arithmetic, and correspondence between examples and figures. Reuse the deck's existing refresh and export tools rather than creating a parallel workflow.
+2. Refresh affected derived artifacts after insertions, deletions, or reordering. Check agreement among slide IDs/order, counters, titles, notes, source mappings, and teaching-plan page references. Keep current README and QA guidance accurate; label historical revision records clearly.
+3. Verify the actual offline `file://` presentation in a browser, including local math/fonts/images. For changed interactions, check parameter behavior, defaults/reset, input keyboard behavior, and forward/reverse builds. Check normal motion as well as reduced motion when animation changes. For structural changes, also check toolbar, notes, overview, fullscreen, and responsive scaling. Prefer meaningful numerical invariants over tests that only mirror wording or markup.
+4. Refresh the PDF when rendered slides change. Export completed reveals and default demo states; check page count, exact 16:9 dimensions, and retained text/links. Render and inspect every PDF page, using contact sheets for an initial pass and larger views for changed or dense slides. Fix clipping, overlap, tiny labels, misplaced annotations, and footer collisions. Documentation-only edits do not require a PDF export or browser rerun.
+5. Report material verification limits honestly in the QA record. Distinguish live-browser checks, numerical checks, DOM simulation, and visual PDF review. After checks pass, repeat them only for further changes or unresolved issues.
+6. Keep the local lecture folder complete with README, timed teaching plan and aligned assessment, speaker notes, source ledger/map, and refresh/export instructions. Preserve existing file identities. Finish with concise clickable local links to the deck and updated PDF, plus the main changes and verification results. ZIP export, upload, hosting, and deployment are separate actions performed only when requested.

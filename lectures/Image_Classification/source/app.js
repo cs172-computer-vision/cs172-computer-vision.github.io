@@ -1,5 +1,5 @@
 (function(){'use strict';
-const D=Diagrams, slides=[...document.querySelectorAll('.slide')],meta=JSON.parse(document.getElementById('slide-meta').textContent);
+const slides=[...document.querySelectorAll('.slide')],meta=JSON.parse(document.getElementById('slide-meta').textContent);
 let index=0,stage=0;
 function stages(slide){let next=1;return [...slide.querySelectorAll('.step')].map(e=>{let s=e.dataset.stage?+e.dataset.stage:next++;return {e,s}})}
 function maxStage(slide){return Math.max(0,...stages(slide).map(x=>x.s))}
@@ -32,22 +32,5 @@ document.querySelectorAll('[data-close]').forEach(e=>e.onclick=()=>e.closest('.o
 document.querySelector('#next').onclick=next;document.querySelector('#previous').onclick=previous;document.querySelector('#all').onclick=()=>show(index,maxStage(slides[index]));document.querySelector('#overview-button').onclick=()=>overlay('overview');document.querySelector('#notes-button').onclick=()=>overlay('notes');document.querySelector('#help-button').onclick=()=>overlay('help');document.querySelector('#pdf-button').onclick=()=>window.print();document.querySelector('#fullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{})};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){hideToolbar();document.body.classList.remove('blanked');document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));return}if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;if(e.target.closest('button')&&[' ','Enter'].includes(e.key))return;if(document.querySelector('.overlay.open'))return;let handled=true;switch(e.key){case 'ArrowRight':case 'PageDown':case ' ':next();break;case 'ArrowLeft':case 'PageUp':previous();break;case 'Home':show(0);break;case 'End':show(index,maxStage(slides[index]));break;case 't':case 'T':toolbarPinned=!toolbarPinned;if(toolbarPinned){cancelToolbarTimer();toolbarVisible(true)}else hideToolbar();break;case 'o':case 'O':overlay('overview');break;case 'n':case 'N':overlay('notes');break;case 'h':case 'H':case '?':overlay('help');break;case 'b':case 'B':hideToolbar();document.body.classList.toggle('blanked');break;case 'f':case 'F':document.querySelector('#fullscreen').click();break;default:handled=false}if(handled)e.preventDefault()});
 addEventListener('resize',resize);resize();let h=location.hash.slice(1).split('/'),at=meta.findIndex(s=>s.id===h[0]);show(at>=0?at:0,+h[1]||0);
-function updateKnN(el,k=1,metric='l2',q={x:-.15,y:.15}){el.innerHTML=D.knn(k,metric,q);}
-document.querySelector('[data-demo="nn-plot"]').innerHTML=D.nearestPlot();
-for(const el of document.querySelectorAll('[data-demo="vote"]'))el.innerHTML=D.knn(7);
-{
- const el=document.querySelector('[data-demo="knn"]'),slide=el.closest('.slide'),q={x:-.5,y:1.05};let k=1;
- const update=()=>{el.innerHTML=D.knn(k,'l2',q,true,true);const c=D.vote(D.neighbors(q,k,'l2')),label=slide.querySelector('[data-query-label]');label.textContent='Prediction for q: '+['red','blue','green'][c];label.style.color=D.C[c]};
- const control=slide.querySelector('[data-control="k"]');control.addEventListener('input',()=>{k=+control.value;slide.querySelector('[data-value="k"]').textContent=k;update()});
- el.addEventListener('click',e=>{const r=el.querySelector('svg').getBoundingClientRect(),px=(e.clientX-r.left)/r.width*720,py=(e.clientY-r.top)/r.height*460;if(px<60||px>680||py<50||py>410)return;q.x=(px-60)/620*4.8-2.4;q.y=(410-py)/360*3.6-1.8;update()});
- slide.querySelector('[data-action="knn-reset"]').onclick=()=>{q.x=-.5;q.y=1.05;k=1;control.value=1;slide.querySelector('[data-value="k"]').textContent=1;update()};update();
-}
-{
- const el=document.querySelector('[data-demo="metric-compare"]'),slide=el.closest('.slide'),q={x:0,y:0};
- const update=()=>{el.innerHTML=D.metricComparison(q)};
- el.addEventListener('click',e=>{const r=el.querySelector('svg').getBoundingClientRect(),px=(e.clientX-r.left)/r.width*1248,py=(e.clientY-r.top)/r.height*450,ox=px<624?132:756;if(px<ox||px>ox+300||py<85||py>385)return;q.x=-.4+(px-ox)/300*1.8;q.y=1.4-(py-85)/300*1.8;update()});
- slide.querySelector('[data-action="metric-reset"]').onclick=()=>{q.x=0;q.y=0;update()};update();
-}
-const lin=document.querySelector('[data-demo="linear"]'),ls=lin.closest('.slide');function linear(){let vals=['a','b','c'].map(c=>{let v=+ls.querySelector(`[data-control="${c}"]`).value;ls.querySelector(`[data-value="${c}"]`).textContent=v.toFixed(1);return v});lin.innerHTML=D.linear(...vals)}ls.querySelectorAll('input').forEach(e=>e.oninput=linear);linear();
-const soft=document.querySelector('[data-demo="softmax"]'),ss=soft.closest('.slide');function updateSoft(){let v=[0,1,2].map(i=>{let n=+ss.querySelector(`[data-control="s${i}"]`).value;ss.querySelector(`[data-value="s${i}"]`).textContent=n.toFixed(1);return n});soft.innerHTML=D.softplot(v)}ss.querySelectorAll('input').forEach(e=>e.oninput=updateSoft);ss.querySelector('button').onclick=()=>{[3.2,5.1,-1.7].forEach((v,i)=>ss.querySelector(`[data-control="s${i}"]`).value=v);updateSoft()};updateSoft();
+
 })();

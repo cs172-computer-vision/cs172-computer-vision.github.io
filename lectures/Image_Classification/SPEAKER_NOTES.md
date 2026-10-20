@@ -6,7 +6,7 @@ Opening: introduce CS172 Computer Vision I, then instructor and institution. The
 
 ## 02. Lecture overview
 
-Preview the lecture sequence. It starts with what makes classification difficult, then introduces a similarity baseline, a valid evaluation protocol, a parametric score function, and a learning objective. The model-selection section also introduces generalization, underfitting, and overfitting. The final slides provide an exit check and optional classical-method readings.
+Preview the sequence: visual task, similarity baseline, model selection, linear scores, then probabilistic classification. Explain class probabilities before using observed labels to construct a learning objective. Validation remains distinct from fitting parameters.
 
 ## 03. An image, one category
 
@@ -168,33 +168,33 @@ Ask students to draw the best straight line for XOR and explain the unavoidable 
 
 Compare both methods on the same fixed D-dimensional representation. Direct exact 1-NN uses O(ND) distance work; exact k-NN also needs neighbor selection (linear-time selection is possible). With fixed-size labels and C biases, the displayed storage suppresses lower-order terms. Training for NN means retaining examples; copying data still costs time and an index adds a construction cost. Linear training requires an optimizer and its cost depends on the loss and algorithm. A fixed C,D gives parameter storage independent of N. A linear classifier is not guaranteed to outperform k-NN. Both can be effective on good features; raw-pixel shortcomings are not a verdict on learned-embedding retrieval. The attached lecture compares nonparametric and parametric classifiers; this table uses the affine-score model actually introduced here.
 
-## 43. Learning with a loss function
+## 43. From scores to class probabilities
 
-We have specified how the model produces scores, but have not specified how to choose its parameters. A loss assigns a penalty to scores given the observed label. This transition prepares the score table, empirical objective, and softmax cross-entropy. Spend about 15 seconds here.
+Bridge from the existing linear classifier to a categorical probability model. Do not mention a loss formula or empirical-risk minimization yet. Preserve the familiar score function; add a probabilistic interpretation to its output. Original ID is retained for existing links.
 
-## 44. How should we judge a set of scores?
+## 44. Scores are not probabilities
 
-The first row keeps the reference softmax scores; the other rows are original examples. Identify wrong and correct argmax predictions. Ask whether slightly increasing the correct class score always changes accuracy. This motivates a smooth surrogate objective suitable for optimization.
+Use the same cat/car/frog logits as the next slides. A score of 5.1 is not a percentage. Introduce a categorical model over mutually exclusive known classes, with theta=(W,b). Normalized model estimates do not automatically match observed frequencies; keep calibration as a spoken caveat or supplementary reading. The formula defines model probabilities, not the true data-generating conditional. Softmax is the modeling choice introduced next.
 
-## 45. From one example to a dataset objective
+## 45. Softmax probabilities
 
-Make clear that this is empirical risk over the training set and is not population risk. We introduce the data loss now, leaving regularization and optimization for the following lecture. Selection of hyperparameters still uses validation data.
+Call the class scores logits. Reveal exponentiated positive weights together, then normalized probabilities. Softmax is a modeling choice; positivity and normalization alone do not uniquely derive it. Exponentiation is increasing, so argmax is unchanged. Values are rounded. For finite logits and C>1 probabilities are strictly between zero and one in exact arithmetic. Optional spoken extension: p_a/p_b=exp(s_a-s_b); this no longer needs a separate slide.
 
-## 46. Turning scores into probabilities
+## 46. Explore softmax probabilities
 
-Merge the source’s repeated softmax builds. The exponential column and normalized column each reveal as one group. Values are rounded. Scores are called logits. Softmax defines a categorical model, but the outputs need not be empirically calibrated confidence estimates.
+Let students raise one logit and a competitor, predicting the probability changes. Then pose the displayed shared-constant question and pause for an argument. Answer for instructor only: exp(s_c+k)/sum_j exp(s_j+k)=exp(s_c)/sum_j exp(s_j), so probabilities and argmax are unchanged. There is no shared-shift button or revealed answer on this slide, including its completed/PDF state. Scaling logits is different. Reset restores (3.2,5.1,-1.7). The later stable-code slide returns to the shift property.
 
-## 47. Scores compete through normalization
+## 47. Which prediction better supports the label?
 
-Before explaining cross-entropy in detail, let students observe the probability assigned to the true class. Raising the cat score lowers the displayed loss; raising a competing score increases it. The preview of loss prepares the next slide. Defaults match the numerical reference example. The implementation subtracts the largest score for stability.
+A is the rounded default probability vector; B is hypothetical, not a measured update. Both argmax predictions are car, so accuracy is unchanged. Let students identify B as better support for the observed cat: 0.3 rather than about 0.13. This motivates maximizing observed-label likelihood. One observation does not establish which model generalizes better.
 
-## 48. The cross-entropy loss
+## 48. Maximize the likelihood of training labels
 
-Use the fixed scores (3.2,5.1,-1.7) from the softmax calculation, with true label cat. Compute p_cat directly from exponentials: approximately 0.1299825. Its negative natural logarithm is approximately 2.040355. Display the rounded pair (0.13,2.04) on the curve and use dashed guides to connect both axes. The slide therefore explains where 0.13 comes from and which plotted point represents this example. The terminology about units has been removed. The example is fixed even if the previous interactive slide’s sliders were changed.
+First maximize the product of observed-label probabilities, conditional on the inputs and parameters. Log is strictly increasing and turns the product into a sum; negation and division by positive N yield a mean negative log likelihood with the same optimum. This final expression is the dataset loss L(W,b), the average of per-example losses; it replaces the redundant separate dataset-average slide. Validation still selects settings; held-out test data evaluate the final procedure. Regularization and optimization remain for later lectures.
 
-## 49. Why negative log probability?
+## 49. Cross-entropy loss
 
-Present maximum likelihood as a justification for the objective, rather than a guarantee the model is correct. The log turns a product into a sum and preserves the optimizer because it is monotonic. Multiplication by positive 1/N changes the scale, not the minimizer. Related frames violate a naive independence interpretation and also motivate careful splitting.
+Here y is the observed class label and p_y its model probability. The negative log likelihood of that label is cross-entropy for a one-hot target: t_c=1[c=y] gives -sum_c t_c log p_c=-log p_y. Keep this expanded identity in notes rather than adding another on-slide definition. Natural logarithm. Fixed logits give p_cat=0.1299825390 and loss=2.0403551528, matching the curve marker. Lower true-label probability gives a larger penalty.
 
 ## 50. Checking the behavior of softmax loss
 
@@ -206,7 +206,7 @@ This addition supports practical implementation without changing the reference f
 
 ## 52. From image categories to a learning objective
 
-Recap the representation, evaluation protocol, score function, and loss. Ask why high training accuracy alone does not establish generalization. Connect the comparison slide to model choice and the complexity slides to validation.
+Recap five distinct jobs. Softmax creates a categorical distribution; cross-entropy scores it against observed labels. Neither normalization nor lower training loss guarantees calibrated held-out probabilities or generalization.
 
 ## 53. Exit check
 

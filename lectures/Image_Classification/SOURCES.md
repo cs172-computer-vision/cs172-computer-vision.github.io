@@ -1,6 +1,6 @@
 # Sources and figure provenance
 
-Accessed 17–18 October 2026. References appear in place as short hyperlinks in the slides and remain clickable in the supplied PDF. Links below record original locations as identified by the reference PDF; some older external image hosts may no longer be available.
+Accessed 17–19 October 2026. References appear in place as short hyperlinks in the slides and remain clickable in the supplied PDF. Links below record original locations as identified by the reference PDF; some older external image hosts may no longer be available.
 
 ## Lecture structure
 
@@ -51,7 +51,7 @@ The k-NN dataset is a seeded synthetic set of 43 points. The voting and neighbor
 
 ## Offline mathematics
 
-[KaTeX 0.16.22](https://katex.org/) renders equations at build time. Its original JavaScript, CSS, WOFF2 fonts, and MIT license are included in vendor/. The presentation embeds the font bytes and pre-rendered equation markup, so it makes no request to a CDN when opened. KaTeX is not required to execute in the browser.
+[KaTeX 0.16.22](https://katex.org/) renders equations locally when index.html opens. JavaScript, CSS, WOFF2 fonts and the MIT license are bundled in vendor/. All runtime paths are relative local files; no CDN is used. The authored LaTeX remains directly editable in index.html.
 
 ## Presentation layout references for the revision
 
@@ -84,7 +84,7 @@ The attached lecture and external reading papers are not bundled as full PDFs. A
 
 ## Static pixel-distance figure · latest revision
 
-- `assets/samenorm.png` is reused unchanged from [CS231n](https://cs231n.github.io/assets/samenorm.png), with the explanation in [Image Classification](https://cs231n.github.io/classification/). The original, shifted, occluded, and darkened images retain the source labels. The source states that the three modified images have equal L2 pixel distance from the original; no numerical distance is asserted. Credit appears on slide 32. The file is embedded in the offline HTML.
+- `assets/samenorm.png` is reused unchanged from [CS231n](https://cs231n.github.io/assets/samenorm.png), with the explanation in [Image Classification](https://cs231n.github.io/classification/). The original, shifted, occluded, and darkened images retain the source labels. The source states that the three modified images have equal L2 pixel distance from the original; no numerical distance is asserted. Credit appears on slide 32. The unchanged file is bundled locally in assets/.
 - The separate bag-of-visual-words slide and its symbolic figure were removed. Earlier provenance paragraphs about that diagram describe the preceding version. The classical papers remain linked and explained in the reading list, now slide 54.
 
 ## Cross-validation figure · latest revision
@@ -96,3 +96,36 @@ Slide 31 uses [CS231n cvplot.png](https://cs231n.github.io/assets/cvplot.png), b
 Pages 13–20 use q for a query vector; x^(i), y^(i) for stored example i and its label; j for a coordinate index; N for the number of stored examples; D for vector dimension; and I_k(q) for the indices of the k nearest examples. Distance subscripts L1/L2 name metrics rather than coordinate indices. The source images elsewhere retain their own original notation. The plot axes in the revised vector figures identify features explicitly. The same navy diamond marks queries across the nearest-neighbor plots and metric comparison. The refined leader on slide 18 identifies the same fixed isolated blue example, so its numerical result is unchanged.
 
 All percentages on slide 22 are explicitly labeled as training or validation error rates. Plot labels and spacing changed; the data, predicted regions, and numerical percentages did not.
+
+
+## Probability-first revision · earlier 57-slide version, 19 October 2026
+
+The current deck has 57 slides. Slides 1–42 retain their order. Slide IDs remain stable; the canonical content and metadata now live in index.html. SOURCE_MAP.csv records the current ordering. The earlier revision-specific descriptions above retain figure history.
+
+| Current slides | Evidence | Adaptation in this deck |
+|---|---|---|
+| 43–46 | [Dive into Deep Learning §4.1, Softmax Regression](https://d2l.ai/chapter_linear-classification/softmax-regression.html), especially §§4.1.1–4.1.2 | Scores need not satisfy probability constraints; introduce a categorical model and softmax before its training loss. This ordering is a teaching adaptation, not a quotation. |
+| 46–48, 54 | [CS231n, Softmax classifier](https://cs231n.github.io/linear-classify/#softmax-classifier), including its probabilistic interpretation and numerical-stability discussion | Normalize exponentiated logits; derive probability ratios from logit differences; show shared-shift invariance with +1000. The bars are original deterministic SVGs, not measured outcomes. |
+| 45, 49–52 | [Foundations of Computer Vision §9.7.3](https://visionbook.mit.edu/intro_to_learning.html#example-3-classification-and-softmax-regression), Torralba, Isola and Freeman | Define predicted class probabilities; maximize the probability of observed training labels; derive negative log likelihood/cross-entropy. The product uses conditional independence given inputs and parameters. |
+| 45 and speaker notes | [Guo, Pleiss, Sun & Weinberger, On Calibration of Modern Neural Networks, ICML 2017](https://proceedings.mlr.press/v70/guo17a.html) | A brief distinction between a normalized model distribution and calibrated probabilities. The paper motivates the caveat; no calibration experiment or method is claimed here. Supplementary reading. |
+
+All new equations, tables and comparison examples are authored HTML/math; no new third-party images were copied. The logits (3.2,5.1,−1.7) give approximately (0.1299825,0.8690495,0.0009680). The cat probability gives loss 2.040355; the same values determine the loss-curve marker. The hypothetical B=(0.3,0.6,0.1) improves the observed cat likelihood while preserving the car argmax. It is not a measured training trajectory.
+
+The initial softmax demo no longer displays a target label or cross-entropy. A later slide reveals the observed cat label, after which likelihood, cross-entropy and dataset averaging are introduced. The local JavaScript uses a max-shifted normalization and computes loss as log(sum exp(s−max(s)))−(s_y−max(s)).
+
+
+## Simplified probability section · current 54-slide version
+
+The previous 57-slide mapping above is historical. Current slides 43–51 retain the same evidence and numerical examples in a shorter sequence:
+
+| Current slide | Content | Source |
+|---|---|---|
+| 44 | Scores and probability constraints, merged | D2L §4.1; MIT Vision Book §9.7.3 |
+| 45 | Softmax formula and worked normalization | CS231n softmax note |
+| 46 | Logit sliders and an open shared-constant question | CS231n softmax note |
+| 47 | Observed-label comparison | MIT Vision Book §9.7.3 |
+| 48 | Likelihood through mean negative log likelihood | MIT Vision Book §9.7.3 |
+| 49 | Cross-entropy and the same loss-curve marker | D2L §4.1 |
+| 50–51 | Loss behavior and stable code | CS231n softmax note |
+
+The old probability-ratio page 47 is removed; its derivation is optional speaker-note material. The old probability-model page 45 is merged into the score slide. The old dataset-average page 52 is merged into the likelihood derivation. The demo has no shared-shift button or revealed answer; its question is visible in both HTML and PDF. One-hot cross-entropy and calibration detail remain in notes. No figures or computed probabilities changed. The summary, exit check and readings are now slides 52, 53 and 54. SOURCE_MAP.csv records the current mapping.

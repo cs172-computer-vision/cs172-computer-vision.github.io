@@ -1,100 +1,124 @@
 # Image Classification · CS172 Computer Vision I
 
-54 slides, 16:9, approximately 90 minutes for the core route, or 100 minutes including optional material.
+54 slides, 16:9. Approximately 90 minutes using the core route, or 100 minutes including optional material. Jiayuan Gu, ShanghaiTech University.
+
+Open **index.html** directly in a desktop browser. Keep the folder together: figures, scripts, styles, fonts and KaTeX are local. No installation, server or account is needed to present. External citation and reading links need internet only when opened.
+
+The sequence is visual classification → nearest neighbors → model selection → linear scores → softmax probabilities → observed-label likelihood → cross-entropy. Softmax is introduced as a categorical probability model before a learning objective is defined. The same three-class example connects the score table, probability demo and loss curve.
 
 ## Present
 
-Open **index.html** in a modern desktop browser. It is a single self-contained file: fonts, figures, equations, diagrams, speaker notes, and interaction code are embedded. You can disconnect from the internet before opening it. No local server, installation, or account is required. External citation links need internet only when you choose to open them.
+- Right / Space / Page Down: next build or slide. Left / Page Up: reverse.
+- End: complete the current slide. Home: first slide.
+- O: overview. N: notes. F: fullscreen. B: black screen.
+- T: show/hide controls; Escape: close a panel or hide controls.
+- Move to the bottom edge to reveal the toolbar; it hides after 2.2 seconds away from its controls. Its 840 × 52 px dimensions stay fixed and scale on narrow displays.
+- Inputs retain normal keyboard behavior. Stable URLs include slide and build, for example index.html#36-softmax/2.
 
-- **Right / Space / Page Down:** next reveal or slide.
-- **Left / Page Up:** previous reveal or slide.
-- **End:** show every reveal on the current slide.
-- **O:** slide overview. **N:** presenter notes. **F:** full screen. **B:** black screen.
-- **T:** show or hide the toolbar. **Esc:** close a panel, black screen, or toolbar.
-- Move the pointer to the bottom 28-pixel edge to reveal the control bar. It stays hidden over the rest of the slide. Away from its buttons, it fades after 2.2 seconds.
-- The toolbar uses fixed 840 × 52-pixel dimensions and reserved slots for the slide/reveal counters. On narrow displays, the whole bar scales uniformly. Press T to keep it open; press T again or Esc to hide it.
-- Keyboard focus keeps the toolbar available while you use it. A focusable Controls button also provides keyboard access.
-- Slider controls keep their usual keyboard behavior while focused.
+## Included outputs
 
-Slide state is recorded in the URL fragment, for example `index.html#32-geometry/0`.
+- **Image_Classification.pdf**: 54 completed slides, exact 16:9, default demo states, selectable text/math and citation links. Answers to classroom checks are visible.
+- **../Image_Classification.zip**: the portable project, including editable content and teaching materials.
+- **TEACHING_PLAN.md**, **SPEAKER_NOTES.md**: outcomes, timing, activities, assessment and notes for every slide.
+- **SOURCES.md**, **SOURCE_MAP.csv**: figure provenance and source-page/section mappings.
+- **QA_REPORT.md**, **tools/qa-results.json**: completed checks and their limits.
 
-## Interactive illustrations
+## Interactions
 
-| Slide | Interaction |
+| Slide | Change | Held fixed |
+|---|---|---|
+| 18 | Neighbor count k and query location; reset | Seeded 43-point dataset, L2 metric |
+| 20 | Shared query in the L1/L2 panels; reset | The same two labeled examples |
+| 39 | Two-class normal and intercept; reset | Six feature-space examples |
+| 46 | Three logits; reset | Class set; other logits when one slider moves |
+
+Slide 46 shows probabilities without a target label or loss, and asks what happens if the same constant is added to every logit. The answer is in speaker notes; there is no shared-shift button or on-slide reveal. Slide 38 retains four reversible builds: reshape weights, compute the score, reveal learned templates, interpret. Reduced-motion preferences disable its movement; the PDF shows the completed state.
+
+## Installation for authoring
+
+The prebuilt HTML and PDF need no authoring tools. To rebuild or export changes, install:
+
+| Task | Requirements |
 |---|---|
-| 18 | Change k and read the query label. The marked example gives blue at k=1 and red at k=3. |
-| 20 | Compare L1 and L2 side by side; click to move a shared query and reset to the counterexample. |
-| 39 | Change the two-class boundary normal and intercept. |
-| 47 | Change logits and inspect softmax probabilities and true-class loss. |
+| Refresh counters, notes and SVG figures | Python 3.9+ and Node.js (`node` on PATH, or set `NODE`). KaTeX is bundled; no npm install is needed. |
+| Export PDF or run browser checks | Python packages pinned in `tools/requirements.txt`: Playwright, PyMuPDF, and Pillow; plus Google Chrome or Playwright Chromium. |
+| Check distances, votes and softmax arithmetic | Node.js; no npm packages needed. |
+| ZIP packaging | Python standard library only. |
 
-## PDF
+Install Python from [python.org](https://www.python.org/downloads/) and Node.js from [nodejs.org](https://nodejs.org/en/download) if they are not already available. Python must include `venv` and `pip`.
 
-**Image_Classification.pdf** is included. It contains the completed reveal state and the default state of each interactive illustration, including answers to classroom checks.
+### Set up once
 
-To export a changed deck from your browser: choose **Print / PDF**, save as PDF, enable background graphics, and disable browser headers and footers. Chrome/Edge generally honor the specified 16:9 CSS page size. Browser print behavior can vary. The supplied PDF uses an explicit 1440 × 810 CSS-pixel page box (1080 × 607.5 pt).
-
-An alternative reproducible export uses Python and WeasyPrint:
+Run these commands from this deck's directory (`lectures/Image_Classification`). The environment below is stored outside the checkout so it can be reused for future lecture decks and builds. These commands use a macOS/Linux shell.
 
 ```sh
-python -m pip install weasyprint
-python tools/export_pdf.py
+python3 -m venv "$HOME/.venvs/cs172-slides"
+. "$HOME/.venvs/cs172-slides/bin/activate"
+python -m pip install --upgrade pip
+python -m pip install -r tools/requirements.txt
+
+# Needed unless using the installed Google Chrome on macOS,
+# or another Chromium executable supplied through CHROME:
+python -m playwright install chromium
 ```
 
-## Edit one slide
+The Python requirements file pins the authoring package versions. Keep the environment between sessions; reinstall packages only when setting it up on another machine or when the requirements change. For another lecture deck, activate the same environment and install that deck's requirements if they differ.
 
-1. Edit its fragment in **source/slides/**. The filenames are stable slide IDs.
-2. Run `python tools/build.py` from this directory. Python 3 and Node.js are needed only for rebuilding.
-3. Open the rebuilt **index.html**. Export the PDF again if needed.
+### Reuse for later builds
 
-The fragments are the canonical content. Do not edit the generated index.html unless you only need a one-off change. `source/manifest.json` controls order, titles used in the overview, sections, notes, and the reference-page mapping. The builder automatically updates footer numbers and totals when inserting, deleting, or reordering slides.
+From the deck directory, activate the existing environment and run the desired commands:
 
-- Use `<m>...</m>` for inline LaTeX and `<m display="true">...</m>` for display equations. The bundled KaTeX renderer runs during the build, so the presentation does not need a runtime math library.
-- Add `class="step"` for a reveal. Elements sharing `data-stage="1"` reveal together. Use explicit stage numbers for every build on that slide if grouping.
-- New images go in **assets/** and use `src="assets/filename"`. The builder embeds them automatically.
-- **source/style.css** defines the 1440 × 810 layout and print rules.
-- **source/diagrams.js** contains deterministic vector renderers shared by interactive examples and static snapshots.
-- **source/app.js** handles navigation, reveal state, notes, toolbar timing, and interaction controls.
-- **source/controls.html** defines the toolbar and presentation panels.
-- Section divider fragments use `class="slide section-divider"`; their IDs remain stable even when their slide numbers change.
-- If changing a renderer, refresh its matching SVG snapshot in **assets/** before rebuilding, so print and live views agree. Run `node tools/snapshots.cjs`.
+```sh
+. "$HOME/.venvs/cs172-slides/bin/activate"
+python tools/build.py
+python tools/export_pdf.py
+python tools/package.py
+```
 
-## Teaching and sources
+Set `NODE` if Node.js is not on PATH, for example `NODE=/path/to/node python tools/build.py`. On macOS, PDF export automatically uses Google Chrome at its standard installation path when present. To select another Chromium browser, use `CHROME="/path/to/browser" python tools/export_pdf.py`. Without either, export uses the Chromium installed by Playwright.
 
-- **TEACHING_PLAN.md:** timing, objective alignment, activities, homework, and grading guidance.
-- **SPEAKER_NOTES.md:** notes for every slide, also accessible with N.
-- **SOURCE_MAP.csv:** correspondence to the one-based PDF pages of CS231n 2026 Lecture 2 and the attached Recognition lecture.
-- **SOURCES.md:** figure credits, source links, adaptations, and numerical corrections.
-- **QA_REPORT.md:** completed checks and verification limits.
-- **vendor/**: bundled KaTeX distribution, fonts, and license.
+## Edit and refresh
 
-Main body text is 30 CSS px (22.5 pt at the specified page size). Secondary explanatory text is normally 24 px (18 pt). Footers and some diagram labels are smaller. Projection fit scales the entire slide to the display.
+**index.html is the single editable source for slide content.** Edit its slide sections directly. The inline slide-meta JSON holds titles, order, notes and references; keep its order aligned with the HTML sections. There is no second per-slide fragment tree. The build updates derived artifacts without assembling or replacing the authored content.
 
-## Revised presentation spacing
+| Location | Purpose |
+|---|---|
+| index.html | Slide content, control markup and inline metadata |
+| source/style.css | Screen layout, reversible build styling and print rules |
+| source/app.js | Navigation, notes, overview, scaling and toolbar |
+| source/interactions.js | Demo events and reset behavior |
+| source/diagrams.js | Deterministic SVG renderers and numerical helpers |
+| source/math.js | Local KaTeX rendering on page open |
+| assets/ | Local photographs, source figures and SVG snapshots |
+| vendor/ | KaTeX JavaScript, CSS, fonts and license |
+| tools/ | Refresh, export, numerical/browser checks and packaging |
 
-Content shares a 96-pixel left and right safe margin on the 1440-pixel canvas (6.7% each). Titles start 56 pixels from the top. Main content begins at 160 pixels, with a 48-pixel gap between columns. The body text remains 30 px and explanatory text normally remains at least 24 px. Table padding and selected figure heights are adjusted independently to preserve separation from the footer. These dimensions are deliberate choices for this deck, rather than a universal rule.
+Use `<m>LaTeX</m>` or `<m display="true">LaTeX</m>`. Local KaTeX renders these on open. Use class="step" data-stage="1" for reversible builds; equal stage numbers reveal together. Add images using relative assets/ paths. Preserve stable slide IDs when editing.
 
-Four section dividers mark nearest-neighbor classification, model selection, linear classification, and learning with a loss function. The dividers are short verbal transitions. See the teaching plan for a 90-minute core route and a 100-minute route including optional material.
+From this deck directory, refresh the outputs after changing content:
 
-## Narrative and example revision
+```sh
+python tools/build.py
+python tools/export_pdf.py
+python tools/package.py
+```
 
-Page 2 is now an agenda. Page 5 bridges the pixel representation to classification difficulty. The deck ends with a reading list that explicitly identifies bag of visual words and spatial pyramids; the previous final-check slide remains removed. The nearest-neighbor introduction uses a 2D point plot, with no k or named metric before those ideas are introduced. The metric demonstration uses two fixed points and exact vector boundaries, showing a query that chooses A under L1 and B under L2. The algebraic and visual slides retain the same four input pixels, cat-weight row, bias, and score. See EDIT_NOTES.md for the old/new page correspondence.
+The build regenerates SVG snapshots, footer counters, accessible slide labels, SPEAKER_NOTES.md and SOURCE_MAP.csv. It requires Python and Node.js; presentation does not. Run packaging after exporting the updated PDF and updating documentation.
 
-## Latest presentation builds
+Optional: tools/extra_figures.py regenerates the existing synthetic generalization figures and assets/generalization-data.json. It additionally needs NumPy (`python -m pip install numpy==2.0.2`, Python 3.9+). Those assets are already included and do not need regenerating for ordinary text edits. The saved data record the training vectors, six flipped labels, clean validation grid and measured errors. Complexity/data-size trend diagrams are explicitly schematic.
 
-Slide 38 has four builds: reshape the same four weight cells, compute the score, reveal CIFAR-10 templates, and interpret their appearance. Use Right/Space to advance, Left to reverse, or End to reveal all. The weight-row-to-grid transition lasts 0.6 seconds. Reduced-motion preferences disable it. The PDF shows the completed layout.
+## Verify or export
 
-Slide 48 derives the example probability from scores (3.2, 5.1, −1.7). Its loss curve highlights the matching (0.13, 2.04) point with guides to both axes. The units description was removed.
+```sh
+node tools/check.cjs
+python tools/export_pdf.py --check
+python tools/export_pdf.py --check --screenshots /tmp/image-classification-slides
+```
 
-## Generalization and classical-method additions
+Checks cover distance/vote examples, probability normalization and ratios, shared-shift invariance, likelihood/loss arithmetic, all-slide offline loading and layout, presentation controls, grouped reveals and demo resets. The exporter launches a local Chromium browser and uses no network resources. It normalizes the PDF to 1080 × 607.5 pt. Read QA_REPORT.md for the current results and limits.
 
-Slides 22–24 explain generalization, underfitting/overfitting, flexibility, and the role of training-set size. The first slide reveals three fixed-data k-NN fits and reports reproducible errors. The next two curves are explicitly schematic. Slide 40 extends pairwise geometry to three-class argmax regions. Slide 42 compares classifier training, query cost, storage, strengths, and limitations. Slide 54 is the reading list, with bag of visual words and spatial pyramids identified as supplementary topics.
+For manual PDF export, choose Print / PDF, enable backgrounds, and disable browser headers and footers. Browser print behavior can vary; the scripted exporter specifies the page box. Both routes print completed reveals.
 
-The new figures are editable SVGs. `python tools/extra_figures.py` regenerates them (requires NumPy); `assets/generalization-data.json` records the points, labels, label flips, validation-grid specification, and measured errors. The build script also refreshes speaker notes and the two-reference source map automatically. No NumPy or Python installation is needed to present the HTML or read the PDF.
+Body text is 30 CSS px and secondary explanations are normally at least 24 px. The canvas is 1440 × 810 px with 96 px horizontal safe margins, titles at 56 px and content at 160 px. Footers and some diagram labels are smaller. The slide scales uniformly to fit the display.
 
-## Latest simplification
-
-Slide 32 now uses the original CS231n same-L2-distance image, bundled unchanged, with a static explanation. The shift/brightness controls and their initialization were removed. The separate visual-word slide was removed; the final reading list explains both visual words and spatial pyramid matching.
-
-## Nearest-neighbor notation revision
-
-Pages 13–20 consistently use query q and stored examples x^(i), with parenthesized superscript i for an example and subscript j for a coordinate. L1/L2 distance labels are explicit; the code uses q and i_star. Query markers are navy diamonds. Page 18’s curved arrow points to the same isolated blue example. Page 22 explicitly labels both training and validation error rates. The deck remains 54 slides.
+CHANGELOG.md and EDIT_NOTES.md preserve historical revision records; the current content, order and notes are in index.html.

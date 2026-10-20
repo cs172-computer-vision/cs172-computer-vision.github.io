@@ -1,4 +1,4 @@
-<section class="slide" id="24-sgd-code" aria-label="24. The SGD training loop"><h1>The SGD training loop</h1><div class="content"><pre><span class="code-comment"># X: (N, D), y: (N,); theta contains weights and biases</span>
+<section class="slide" id="24-sgd-code" aria-label="15. The SGD training loop"><h1>The SGD training loop</h1><div class="content"><pre><span class="code-comment"># X: (N, D), y: (N,); theta contains weights and biases</span>
 for epoch in range(num_epochs):
     order = rng.permutation(N)
     for ids in minibatches(order, batch_size):

@@ -1,0 +1,4 @@
+# Authoring / QA only; never needed to present the prebuilt HTML.
+playwright==1.58.0
+PyMuPDF==1.26.5
+Pillow==11.3.0

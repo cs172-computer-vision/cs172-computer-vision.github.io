@@ -1,0 +1,56 @@
+slide,id,title,section,source_URL,one_based_Harvard_PDF_pages,source_sections
+1,01-title,Support Vector Machines,CS172 Computer Vision I,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,6,
+2,02-agenda,From geometry to a learning objective,Roadmap,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,2,
+3,03-binary,Start with two classes,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,7,
+4,04-many-lines,Correct classification leaves many choices,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"3,5",
+5,05-hyperplane,The weight vector is normal to the boundary,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,7,
+6,06-distance,Normalize the score to get a distance,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"8,9",
+7,07-scale,The score scale is arbitrary,Margin geometry,https://cs229.stanford.edu/main_notes.pdf,,6.3
+8,08-canonical,Fix the closest functional margin to one,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"10,11",
+9,09-margin-example,Compute the width of the running example,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,11,
+10,10-support,Nearest constraints determine the separator,Margin geometry,https://cs229.stanford.edu/main_notes.pdf,,6.6
+11,11-margin-demo,Rotate the boundary and measure its margin,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"7,8,9,10,11",
+12,12-hard-primal,Maximum margin becomes a convex problem,Margin geometry,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"12,13",
+13,13-dual,The dual problem,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+14,14-lagrangian,Put the constraints into a Lagrangian,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+15,15-stationarity,Eliminate the primal variables,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+16,16-substitution,Substitute the weighted sum back in,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+17,17-dual-form,Maximize a concave quadratic in α,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+18,18-kkt,Complementary slackness identifies support,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+19,19-predict,Recover the classifier from support vectors,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+20,20-dual-example,Solve the dual for two support points,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.5–6.6
+21,21-smo,Optimize two coefficients at a time,The dual problem,https://cs229.stanford.edu/main_notes.pdf,,6.8
+22,22-soft,Allow controlled margin violations,Soft margins,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"14,15",
+23,23-outlier,One unusual point can reshape the boundary,Soft margins,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,15,
+24,24-slack,Slack measures a shortfall from the margin,Soft margins,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"16,17,18,19",
+25,25-slack-cases,A violation is not always a classification error,Soft margins,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"17,18,21",
+26,26-soft-primal,Trade margin width against total slack,Soft margins,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"19,20",
+27,27-c-demo,Change C while keeping the data fixed,Soft margins,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,20,
+28,28-soft-dual,Slack adds an upper bound in the dual,Soft margins,https://cs229.stanford.edu/main_notes.pdf,,6.7
+29,29-soft-kkt,Read support-vector roles from α,Soft margins,https://cs229.stanford.edu/main_notes.pdf,,6.7
+30,30-kernels,Nonlinear boundaries through kernels,Kernels,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"25,26,27,28",
+31,31-kernel-picture,Separation can appear after a feature mapping,Kernels,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"28,29",
+32,32-radius,A nonlinear feature separates the rings,Kernels,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"26,27,28",
+33,33-inner-products,Evaluate inner products without the features,Kernels,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,"30,31,32",
+34,34-polynomial,Expand a kernel once to see why it works,Kernels,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,33,
+35,35-kernel-svm,The dual now gives a nonlinear classifier,Kernels,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,32,
+36,36-rbf-demo,RBF bandwidth changes the shape of influence,Kernels,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,34,
+37,37-validity,A valid kernel behaves like an inner product,Kernels,https://cs229.stanford.edu/main_notes.pdf,,5.1–5.4
+38,38-computation,Choose the optimization view for the problem,Kernels,https://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf,,
+39,39-multiclass,From two classes to many,Multiclass learning,https://cs231n.github.io/linear-classify/,,
+40,40-reductions,Combine binary classifiers—or train jointly,Multiclass learning,https://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf,,
+41,41-class-scores,A matrix produces one score per class,Multiclass learning,https://cs231n.github.io/linear-classify/,,
+42,42-joint-hinge,The true class must beat every competitor,Multiclass learning,https://cs231n.github.io/linear-classify/,,
+43,43-loss-example,Calculate the loss before changing the model,Multiclass learning,https://cs231n.github.io/linear-classify/,,
+44,44-score-demo,Correct predictions can still violate a margin,Multiclass learning,https://cs231n.github.io/linear-classify/,,
+45,45-slack-to-hinge,Eliminating slack exposes the binary hinge,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+46,46-c-lambda,Match the sum and mean conventions,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+47,47-objective,A joint loss gives a direct learning problem,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+48,48-score-gradient,A violated margin tells scores how to move,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+49,49-weight-gradient,Convert score gradients into weight gradients,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+50,50-update-example,Work one binary subgradient update,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+51,51-sgd,A minibatch subgradient method scales training,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+52,52-bridge,Keep the objective; change the score function,Loss and optimization,https://cs231n.github.io/optimization-1/,,
+53,53-summary,Connect geometry and the learning view,Summary,https://cs231n.github.io/linear-classify/,,
+54,54-exit,Check the connections,Summary,https://cs231n.github.io/linear-classify/,,
+55,55-readings,Reading and source lectures,Reading,https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf,,

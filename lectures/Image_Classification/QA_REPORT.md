@@ -1,19 +1,37 @@
-# Verification of the 54-slide revision
+# Image Classification verification
 
-Completed on 18 October 2026.
+Completed 19 October 2026. The revised deck has 54 slides. This report supersedes the earlier DOM-simulation-only revision reports preserved in CHANGELOG.md and EDIT_NOTES.md.
 
-- 54 source fragments, manifest entries, HTML slides, and PDF pages. Counters and speaker notes match the new order. Reading list is last; the previously removed final-check slide remains absent.
-- All requested sentence removals and wording changes were checked. Scene grouping is conditional on the intended new-scene evaluation setting. The geometric demo is explicitly binary and is followed by an exact three-class extension.
-- The same 61 synthetic training vectors and six flipped labels appear in the three new k-NN panels. All six displayed error percentages were independently recomputed from the saved data and separate 3,721-point validation grid.
-- The complexity and training-size curves are explicitly schematic. The three-class regions agree with scores s1=x1, s2=x2, s3=0; solid boundaries require tied maximal scores. The visual-word overview has been removed; the final reading entry explains the classical topics.
-- DOM simulation checked the new reveal groups and reverse navigation. Existing four-build template animation state, metric/query interaction, k-NN updates, softmax groups, navigation, and fixed hidden toolbar checks passed.
-- Numerical checks for retained examples passed. All presentation images, scripts, fonts, and styles are embedded locally; external links are citations/readings only.
-- The PDF was rendered for a visual review of all pages. It uses 16:9 pages; text stays within page bounds, and all counters match. New and changed slides received larger-scale review. PDF export shows completed reveals and default interactive states.
+## Content and arithmetic
 
-A live desktop browser was unavailable. Reveal states and interactions were checked with DOM simulation; the PDF was rendered for layout inspection. End-to-end browser animation playback remains unverified.
+- The shorter sequence is scores/probability constraints → softmax → exploration → observed-label comparison → likelihood and dataset mean → cross-entropy. The softmax exploration contains no target-label loss.
+- The worked logits (3.2,5.1,−1.7) give probabilities approximately (0.1299825390,0.8690495352,0.0009679258). The observed cat gives loss 2.0403551528. The loss-curve marker uses this same calculation. B=(0.3,0.6,0.1) improves the observed cat likelihood while retaining the car argmax.
+- Node numerical checks passed for normalization, positivity, argmax preservation, logit/probability ratios, shared-shift invariance, the distinction between shifting and scaling, and negative log likelihood. Equal-logit and extreme finite wrong-class examples remain covered.
+- Retained distance, vote/tie, exact metric counterexample, k=1 blue/k=3 red and degenerate linear-boundary checks passed. Existing synthetic generalization data and reported error percentages were preserved; the NumPy generator was not rerun for this revision.
+- The probability model is distinguished from guaranteed calibration. Conditional independence is stated for the likelihood product. Zero multiclass softmax loss remains an infimum for finite logits. Evidence and adaptations are linked in SOURCES.md.
 
-Latest revision checks: page 32 has one embedded CS231n image and no slider controls or pixel-demo initialization; the removed visual-word page is absent from the manifest and source fragments. The PDF has 54 pages and the reading list is last.
+## Live browser checks
 
-Latest slide-31 revision: the unchanged CS231n PNG is embedded; source interpretation replaces the previous illustrative-data disclaimer. The rebuilt slide was rendered for visual inspection; PDF count remains 54.
+Ran tools/export_pdf.py --check --screenshots using Playwright and local Google Chrome, opening the actual index.html with file:// and the browser context offline.
 
-Latest notation revision: slides 13–20 use a single query/example/coordinate convention. The numeric nearest-neighbor examples, votes and exact metric boundaries are unchanged. DOM checks cover query movement and reset, the k=1 blue/k=3 red result, grouped reveals and toolbar behavior. Slide 22 explicitly labels all six percentages as training/validation error rates. Revised pages were rendered for layout review. Browser animation playback remains unverified.
+- All 54 slides: counters, completed builds, image loading and content bounds passed. No JavaScript errors or HTTP/HTTPS requests occurred. Local KaTeX finished rendering.
+- Forward/reverse grouped builds passed for the four-stage template, two-stage softmax table and two-stage likelihood derivation. The weight-row transition reached its intended grid coordinates and reversed to its initial coordinates with motion enabled. Reduced-motion states also passed.
+- k-NN neighbor changes, query placement/reset, metric query/reset, linear parameters/reset, and softmax sliders/reset passed. The shared-shift control is absent; the open shared-constant question remains on the slide without a revealed answer. A range input retained normal arrow-key behavior without advancing the slide.
+- Overview, notes, toolbar reveal/autohide, keyboard navigation, fullscreen and black screen passed. Scaling passed at 1440×810, 1280×720, 1024×768 and 768×1024.
+
+Machine-readable all-slide results are in tools/qa-results.json. Screenshots used for review are temporary development outputs, not presentation dependencies.
+
+## PDF and packaging
+
+- Exported Image_Classification.pdf contains 54 pages, each exactly 1080×607.5 pt (16:9), with completed builds and default demonstration states. It retains selectable text/math and 60 citation/reading links.
+- Every PDF page was rendered and visually reviewed in contact sheets. New/changed probability and loss slides received enlarged inspection, including the final notation edit. No clipping, overlap or footer collisions were found.
+- The portable ZIP contains the current editable index, local assets/styles/scripts/fonts, PDF, documentation and tools. Runtime references remain relative. Notes and source-map entries match all 54 slide IDs; legacy duplicate fragments and manifest are absent.
+
+## Limits
+
+Checks used one Chromium browser on macOS. Other browsers, physical projection conditions and screen-reader operation were not independently evaluated. The optional NumPy figure generator and the README installation procedure were not rerun. External reading links are references, not required presentation resources; this revision does not assert that every historical third-party image host is still available.
+
+
+## Simplification checks
+
+The old pages 45, 47 and 52 were merged or removed. Counters, notes and the source map were rebuilt for 54 slides. The softmax demo has no shared-shift event handler, button or on-slide answer. The shared-shift mathematical property remains covered by numerical checks and instructor notes. The cross-entropy slide retains the same numerical curve marker; one-hot detail is in notes. All 54 PDF pages were rendered and reviewed, with enlarged inspection of the merged score/probability slide, demo and cross-entropy slide. Browser checks again reported no layout errors, missing images, JavaScript errors or remote requests.

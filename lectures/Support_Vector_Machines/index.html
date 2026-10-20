@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="CS172 Computer Vision I: Support Vector Machines. Margin geometry, duality, kernels, and multiclass learning."><title>Support Vector Machines · CS172</title><link rel="stylesheet" href="vendor/katex.min.css"><link rel="stylesheet" href="source/style.css"></head><body><main id="viewport"><section class="slide" id="01-title" aria-label="1. Support Vector Machines"><h1>Support Vector Machines</h1><div class="content"><div class="cols title-grid"><div><div class="title-meta"><p class="course-name">CS172 · Computer Vision I</p><p>Jiayuan Gu</p><p>ShanghaiTech University</p></div></div><div><figure class=""><img src="assets/harvard-margin.png" alt="Original Harvard illustration of a maximum-margin hyperplane and support vectors"></figure></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 6</a></span><span>CS172 Computer Vision I</span><span>01 / 55</span></footer></section>
+<section class="slide" id="02-agenda" aria-label="2. From geometry to a learning objective"><h1>From geometry to a learning objective</h1><div class="content"><ol class="agenda"><li><b>Choose a boundary geometrically</b><span>Distance, scale, maximum margin, and support vectors.</span></li><li><b>Optimize with the dual</b><span>Multipliers, constraints, and a small worked solution.</span></li><li><b>Handle violations and nonlinear patterns</b><span>Slack variables, regularization, and the kernel trick.</span></li><li><b>Extend to multiclass learning</b><span>Scores, hinge loss, and gradient-based optimization.</span></li></ol></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 2</a></span><span>Roadmap</span><span>02 / 55</span></footer></section>
+<section class="slide" id="03-binary" aria-label="3. Start with two classes"><h1>Start with two classes</h1><div class="content"><div class="cols "><div><figure class=""><img src="assets/margin.svg" alt="Six fixed examples with a separating line and margin planes"></figure></div><div><p>Training data: <m>(x_i,t_i)</m>, with</p><m display="true">x_i\in\mathbb R^D,\qquad t_i\in\{-1,+1\}</m><m display="true">f(x)=w^\top x+b</m><p>Predict the sign of <m>f(x)</m>.</p><p class="small muted">A zero score is a tie. Scores are not probabilities.</p></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 7</a></span><span>Margin geometry</span><span>03 / 55</span></footer></section>
+<section class="slide" id="04-many-lines" aria-label="4. Correct classification leaves many choices"><h1>Correct classification leaves many choices</h1><div class="content"><figure class="wide-plot"><img src="assets/candidates.svg" alt="Three separators with different minimum signed distances"></figure><div class="step" data-stage="1"><p class="callout">Choose the separator with the largest distance to its nearest training example.</p></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 3,5</a></span><span>Margin geometry</span><span>04 / 55</span></footer></section>
+<section class="slide" id="05-hyperplane" aria-label="5. The weight vector is normal to the boundary"><h1>The weight vector is normal to the boundary</h1><div class="content"><div class="cols "><div><figure class=""><img src="assets/distance.svg" alt="Perpendicular projection onto a linear boundary"></figure></div><div><m display="true">\mathcal H=\{x:w^\top x+b=0\}</m><p><m>w</m> controls orientation.<br><m>b</m> shifts the boundary.</p><div class="step" data-stage="1"><p>On the boundary, <m>w^\top(x+\delta)+b=w^\top\delta</m>.</p><p class="callout">Moving perpendicular to <m>w</m> stays in the plane.</p></div></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 7</a></span><span>Margin geometry</span><span>05 / 55</span></footer></section>
+<section class="slide" id="06-distance" aria-label="6. Normalize the score to get a distance"><h1>Normalize the score to get a distance</h1><div class="content"><m display="true">\text{signed distance to }\mathcal H=\frac{w^\top x+b}{\lVert w\rVert_2}</m><p>For labeled example <m>i</m>, the geometric margin is</p><m display="true">\gamma_i=\frac{t_i(w^\top x_i+b)}{\lVert w\rVert_2}</m><div class="step" data-stage="1"><p class="callout">Positive means correct; larger means farther from the boundary on the correct side.</p><p class="small">The dataset margin is <m>\gamma=\min_i\gamma_i</m>.</p></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 8,9</a></span><span>Margin geometry</span><span>06 / 55</span></footer></section>
+<section class="slide" id="07-scale" aria-label="7. The score scale is arbitrary"><h1>The score scale is arbitrary</h1><div class="content"><m display="true">(w,b)\quad\text{and}\quad(aw,ab),\quad a>0</m><p>They define the same boundary and predictions.</p><div class="cols compact"><div><h2>Functional margin</h2><m display="true">t_i(w^\top x_i+b)</m><p>Multiplies by <m>a</m>.</p></div><div><h2>Geometric margin</h2><m display="true">\frac{t_i(w^\top x_i+b)}{\lVert w\rVert_2}</m><p>Stays unchanged.</p></div></div><div class="step" data-stage="1"><p class="callout">An unnormalized score alone cannot identify the widest margin.</p></div></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.3</a></span><span>Margin geometry</span><span>07 / 55</span></footer></section>
+<section class="slide" id="08-canonical" aria-label="8. Fix the closest functional margin to one"><h1>Fix the closest functional margin to one</h1><div class="content"><p>For separable data, rescale a separator so that</p><m display="true">\min_i t_i(w^\top x_i+b)=1</m><m display="true">w^\top x+b=+1\qquad\text{and}\qquad w^\top x+b=-1</m><div class="step" data-stage="1"><p>Each margin plane is <m>1/\lVert w\rVert_2</m> from the boundary.</p><p class="callout">Full margin width: <m>2/\lVert w\rVert_2</m>.</p></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 10,11</a></span><span>Margin geometry</span><span>08 / 55</span></footer></section>
+<section class="slide" id="09-margin-example" aria-label="9. Compute the width of the running example"><h1>Compute the width of the running example</h1><div class="content"><div class="cols "><div><figure class=""><img src="assets/margin.svg" alt="Boundary x1=0 and support points at x1 plus/minus one"></figure></div><div><p><m>w=(1,0)^\top</m>, <m>b=0</m>.</p><p>Margin planes: <m>x_1=\pm1</m>.</p><div class="step" data-stage="1"><m display="true">\lVert w\rVert_2=1,\quad\gamma=1,\quad\text{width}=2</m><p>Using <m>2w</m> leaves the geometric boundary unchanged; its functional margin becomes 2.</p></div></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 11</a></span><span>Margin geometry</span><span>09 / 55</span></footer></section>
+<section class="slide" id="10-support" aria-label="10. Nearest constraints determine the separator"><h1>Nearest constraints determine the separator</h1><div class="content"><div class="cols "><div><figure class=""><img src="assets/margin.svg" alt="Two nearest points circled"></figure></div><div><p>The closest examples touch the margin planes.</p><p>At the optimum, some training constraints are active.</p><div class="step" data-stage="1"><p class="callout">The dual assigns nonzero coefficients only to support vectors.</p><p class="small muted">A touching point can have zero coefficient in a degenerate solution.</p></div></div></div></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.6</a></span><span>Margin geometry</span><span>10 / 55</span></footer></section>
+<section class="slide" id="11-margin-demo" aria-label="11. Rotate the boundary and measure its margin"><h1>Rotate the boundary and measure its margin</h1><div class="content"><div class="cols "><div><div class="visual" data-demo="margin"></div></div><div><div class="demo-controls"><label>Normal angle: <b data-value="angle">0°</b><input data-control="angle" aria-label="Normal angle" type="range" min="-60" max="60" step="5" value="0"></label><label>Intercept: <b data-value="bias">0.0</b><input data-control="bias" aria-label="Intercept" type="range" min="-1.5" max="1.5" step="0.1" value="0"></label><p>The normal vector has unit length.</p><p data-result="margin" class="query-readout" aria-live="polite"></p><button data-reset="margin">Reset</button><p class="small">Which angle and intercept maximize the minimum signed distance?</p></div></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 7,8,9,10,11</a></span><span>Margin geometry</span><span>11 / 55</span></footer></section>
+<section class="slide" id="12-hard-primal" aria-label="12. Maximum margin becomes a convex problem"><h1>Maximum margin becomes a convex problem</h1><div class="content"><m display="true">\min_{w,b}\ \frac12\lVert w\rVert_2^2</m><m display="true">\text{subject to }\quad t_i(w^\top x_i+b)\ge1\quad\text{for all }i</m><div class="step" data-stage="1"><p>Minimizing the squared norm maximizes the canonical geometric margin.</p><p class="callout">A convex quadratic objective with affine constraints: every local optimum is global.</p></div><p class="small muted">Hard margin requires linearly separable data.</p></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 12,13</a></span><span>Margin geometry</span><span>12 / 55</span></footer></section>
+<section class="slide section-divider" id="13-dual" aria-label="13. The dual problem"><h1>The dual problem</h1><div class="content"><p class="section-question">Replace a weight vector with one coefficient per training example.</p></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>13 / 55</span></footer></section>
+<section class="slide" id="14-lagrangian" aria-label="14. Put the constraints into a Lagrangian"><h1>Put the constraints into a Lagrangian</h1><div class="content"><p>Write each constraint as <m>1-t_i(w^\top x_i+b)\le0</m>.</p><m display="true">\mathcal L(w,b,\alpha)=\frac12\lVert w\rVert^2+\sum_i\alpha_i[1-t_i(w^\top x_i+b)]</m><m display="true">\alpha_i\ge0</m><div class="step" data-stage="1"><p class="callout">Each multiplier prices the corresponding training constraint.</p></div></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>14 / 55</span></footer></section>
+<section class="slide" id="15-stationarity" aria-label="15. Eliminate the primal variables"><h1>Eliminate the primal variables</h1><div class="content"><m display="true">\nabla_w\mathcal L=w-\sum_i\alpha_it_ix_i=0</m><div class="step" data-stage="1"><m display="true">\boxed{w=\sum_i\alpha_it_ix_i}</m></div><div class="step" data-stage="2"><m display="true">\frac{\partial\mathcal L}{\partial b}=-\sum_i\alpha_it_i=0\quad\Longrightarrow\quad\sum_i\alpha_it_i=0</m></div><p class="small muted">The equality constraint comes from the unregularized bias.</p></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>15 / 55</span></footer></section>
+<section class="slide" id="16-substitution" aria-label="16. Substitute the weighted sum back in"><h1>Substitute the weighted sum back in</h1><div class="content"><p>Eliminate <m>b</m> using <m>\sum_i\alpha_it_i=0</m>:</p><m display="true">\mathcal L=\frac12\lVert w\rVert^2+\sum_i\alpha_i-w^\top\sum_i\alpha_it_ix_i</m><div class="step" data-stage="1"><m display="true">=\sum_i\alpha_i-\frac12\left\lVert\sum_i\alpha_it_ix_i\right\rVert^2</m></div><div class="step" data-stage="2"><m display="true">=\sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_jt_it_j\,x_i^\top x_j</m></div></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>16 / 55</span></footer></section>
+<section class="slide" id="17-dual-form" aria-label="17. Maximize a concave quadratic in α"><h1>Maximize a concave quadratic in α</h1><div class="content"><m display="true">\max_\alpha D(\alpha)=\sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_jt_it_j\,x_i^\top x_j</m><m display="true">\alpha_i\ge0,\qquad\sum_i\alpha_it_i=0</m><div class="step" data-stage="1"><p class="callout">The data enter through inner products, not individual coordinates.</p></div><p class="small">For separable data, strong duality gives the same optimum as the hard-margin primal.</p></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>17 / 55</span></footer></section>
+<section class="slide" id="18-kkt" aria-label="18. Complementary slackness identifies support"><h1>Complementary slackness identifies support</h1><div class="content"><m display="true">\alpha_i[t_i(w^\top x_i+b)-1]=0</m><div class="cols compact"><div><h2>Outside the margin</h2><m display="true">t_if(x_i)>1\ \Longrightarrow\ \alpha_i=0</m><p>No contribution to the weight sum.</p></div><div><h2>Nonzero coefficient</h2><m display="true">\alpha_i>0\ \Longrightarrow\ t_if(x_i)=1</m><p>The constraint is active.</p></div></div></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>18 / 55</span></footer></section>
+<section class="slide" id="19-predict" aria-label="19. Recover the classifier from support vectors"><h1>Recover the classifier from support vectors</h1><div class="content"><m display="true">f(x)=\sum_{i\in\mathrm{SV}}\alpha_it_i\,x_i^\top x+b</m><p>For a hard-margin support vector <m>x_r</m>:</p><m display="true">b=t_r-\sum_i\alpha_it_i\,x_i^\top x_r</m><div class="step" data-stage="1"><p class="callout">Train coefficients; predict using a weighted sum of similarities.</p></div><p class="small muted">For a linear SVM, form and store <m>w</m> once.</p></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>19 / 55</span></footer></section>
+<section class="slide" id="20-dual-example" aria-label="20. Solve the dual for two support points"><h1>Solve the dual for two support points</h1><div class="content"><div class="cols "><div><figure class=""><img src="assets/dual.svg" alt="D(a)=2a-2a squared peaks at0.5"></figure></div><div><p><m>x_-=(-1,0)</m>, <m>t_-=-1</m>.<br><m>x_+=(1,0)</m>, <m>t_+=+1</m>.</p><p>The equality gives <m>\alpha_-=\alpha_+=a</m>.</p><m display="true">D(a)=2a-2a^2</m><div class="step" data-stage="1"><m display="true">a^*=\frac12,\quad w=(1,0)^\top,\quad b=0</m><p class="answer">Primal = dual = <m>0.5</m>.</p></div></div></div></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.5–6.6</a></span><span>The dual problem</span><span>20 / 55</span></footer></section>
+<section class="slide" id="21-smo" aria-label="21. Optimize two coefficients at a time"><h1>Optimize two coefficients at a time</h1><div class="content"><m display="true">\sum_i\alpha_it_i=0</m><p>Changing one coefficient usually breaks the equality.</p><div class="step" data-stage="1"><p>Move a pair along a feasible direction:</p><m display="true">\alpha_i\leftarrow\alpha_i+t_i\delta,\qquad\alpha_j\leftarrow\alpha_j-t_j\delta</m></div><div class="step" data-stage="2"><m display="true">\delta^*=\operatorname{clip}_{[l,u]}\!\left(\frac{d^\top\nabla D(\alpha)}{d^\top Qd}\right)</m><p class="small"><m>d</m> is the pair direction; <m>Q_{ij}=t_it_jx_i^\top x_j</m>. For positive curvature, clip to the feasible interval <m>[l,u]</m>.</p></div><p class="small muted">Our tiny demos use exhaustive pair-coordinate ascent, not a production SMO implementation.</p></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.8</a></span><span>The dual problem</span><span>21 / 55</span></footer></section>
+<section class="slide section-divider" id="22-soft" aria-label="22. Allow controlled margin violations"><h1>Allow controlled margin violations</h1><div class="content"><p class="section-question">Hard constraints can be brittle—or impossible—when examples overlap.</p></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 14,15</a></span><span>Soft margins</span><span>22 / 55</span></footer></section>
+<section class="slide" id="23-outlier" aria-label="23. One unusual point can reshape the boundary"><h1>One unusual point can reshape the boundary</h1><div class="content"><figure class="source-wide"><img src="assets/harvard-outlier.png" alt="Original Harvard schematic of tolerating an outlier"></figure><p>Insisting on zero training error may force a very narrow margin.</p><div class="step" data-stage="1"><p class="callout">Permit some violations, and charge for them explicitly.</p></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 15</a></span><span>Soft margins</span><span>23 / 55</span></footer></section>
+<section class="slide" id="24-slack" aria-label="24. Slack measures a shortfall from the margin"><h1>Slack measures a shortfall from the margin</h1><div class="content"><m display="true">t_i(w^\top x_i+b)\ge1-\xi_i,\qquad\xi_i\ge0</m><figure class="slack-figure"><img src="assets/slack.svg" alt="Signed scores and their minimum slack"></figure><p class="small">The smallest feasible slack is <m>\xi_i=\max(0,1-t_if(x_i))</m>.</p></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 16,17,18,19</a></span><span>Soft margins</span><span>24 / 55</span></footer></section>
+<section class="slide" id="25-slack-cases" aria-label="25. A violation is not always a classification error"><h1>A violation is not always a classification error</h1><div class="content"><table class="comparison"><thead><tr><th>Signed score <m>m_i=t_if(x_i)</m></th><th>Minimum slack</th><th>Interpretation</th></tr></thead><tbody><tr><td><m>m_i\ge1</m></td><td><m>\xi_i=0</m></td><td>On or beyond correct margin</td></tr><tr><td><m>0&lt;m_i&lt;1</m></td><td><m>0&lt;\xi_i&lt;1</m></td><td>Correct, inside the margin</td></tr><tr><td><m>m_i=0</m></td><td><m>\xi_i=1</m></td><td>On the decision boundary</td></tr><tr><td><m>m_i&lt;0</m></td><td><m>\xi_i&gt;1</m></td><td>Wrong side</td></tr></tbody></table></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 17,18,21</a></span><span>Soft margins</span><span>25 / 55</span></footer></section>
+<section class="slide" id="26-soft-primal" aria-label="26. Trade margin width against total slack"><h1>Trade margin width against total slack</h1><div class="content"><m display="true">\min_{w,b,\xi}\ \frac12\lVert w\rVert^2+C\sum_i\xi_i</m><m display="true">t_i(w^\top x_i+b)\ge1-\xi_i,\qquad\xi_i\ge0</m><div class="cols compact"><div><h2>Smaller <m>C</m></h2><p>Violations cost less relative to the weight penalty.</p></div><div><h2>Larger <m>C</m></h2><p>Violations cost more relative to the weight penalty.</p></div></div><p class="small muted">Here <m>C&gt;0</m> is a hyperparameter, not the number of classes.</p></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 19,20</a></span><span>Soft margins</span><span>26 / 55</span></footer></section>
+<section class="slide" id="27-c-demo" aria-label="27. Change C while keeping the data fixed"><h1>Change C while keeping the data fixed</h1><div class="content"><div class="cols "><div><div class="visual" data-demo="soft"></div></div><div><div class="demo-controls"><label>Slack penalty <m>C</m><select data-control="C" aria-label="Slack penalty C"><option value="0.05">0.05</option><option value="0.2">0.2</option><option value="1" selected>1</option><option value="10">10</option><option value="100">100</option></select></label><p>Same seven points, including an overlapping positive example.</p><p>Green circles: <m>\alpha_i&gt;0</m>.</p><p data-result="soft" class="query-readout" aria-live="polite"></p><button data-reset="soft">Reset</button><p class="small muted">Computed linear SVM, synthetic data; no validation set.</p></div></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 20</a></span><span>Soft margins</span><span>27 / 55</span></footer></section>
+<section class="slide" id="28-soft-dual" aria-label="28. Slack adds an upper bound in the dual"><h1>Slack adds an upper bound in the dual</h1><div class="content"><p>Add multipliers <m>\mu_i\ge0</m> for <m>-\xi_i\le0</m>.</p><m display="true">\frac{\partial\mathcal L}{\partial\xi_i}=C-\alpha_i-\mu_i=0</m><div class="step" data-stage="1"><m display="true">\boxed{0\le\alpha_i\le C}</m></div><div class="step" data-stage="2"><m display="true">\max_\alpha\ \sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_jt_it_j x_i^\top x_j</m><m display="true">\text{subject to }0\le\alpha_i\le C,\quad\sum_i\alpha_it_i=0</m></div></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.7</a></span><span>Soft margins</span><span>28 / 55</span></footer></section>
+<section class="slide" id="29-soft-kkt" aria-label="29. Read support-vector roles from α"><h1>Read support-vector roles from α</h1><div class="content"><table class="comparison"><thead><tr><th>Coefficient at optimum</th><th>Signed score</th><th>Role</th></tr></thead><tbody><tr><td><m>\alpha_i=0</m></td><td><m>t_if(x_i)\ge1</m></td><td>No contribution to prediction</td></tr><tr><td><m>0&lt;\alpha_i&lt;C</m></td><td><m>t_if(x_i)=1</m></td><td>Free margin support vector</td></tr><tr><td><m>\alpha_i=C</m></td><td><m>t_if(x_i)\le1</m></td><td>On or inside margin</td></tr></tbody></table><p class="callout">Recover <m>b=t_i-\sum_j\alpha_jt_j k(x_j,x_i)</m> from a free margin support vector.</p><p class="small muted">With no free support vector, use the KKT bounds on b.</p></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §6.7</a></span><span>Soft margins</span><span>29 / 55</span></footer></section>
+<section class="slide section-divider" id="30-kernels" aria-label="30. Nonlinear boundaries through kernels"><h1>Nonlinear boundaries through kernels</h1><div class="content"><p class="section-question">The dual needs similarities between examples.<br>Can we compute them in a richer feature space?</p></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 25,26,27,28</a></span><span>Kernels</span><span>30 / 55</span></footer></section>
+<section class="slide" id="31-kernel-picture" aria-label="31. Separation can appear after a feature mapping"><h1>Separation can appear after a feature mapping</h1><div class="content"><div class="cols "><div><figure class=""><img src="assets/harvard-feature-map.png" alt="Original Harvard input-to-feature-space schematic"></figure></div><div><p>Choose a feature map <m>\phi(x)</m>.</p><m display="true">f(x)=w^\top\phi(x)+b</m><p>A hyperplane in feature space can be curved in input coordinates.</p></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 28,29</a></span><span>Kernels</span><span>31 / 55</span></footer></section>
+<section class="slide" id="32-radius" aria-label="32. A nonlinear feature separates the rings"><h1>A nonlinear feature separates the rings</h1><div class="content"><figure class="feature-figure"><img src="assets/features.svg" alt="Ring points become two squared-radius values"></figure><m display="true">\phi(x)=x_1^2+x_2^2,\qquad f(x)=1-\phi(x)</m></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 26,27,28</a></span><span>Kernels</span><span>32 / 55</span></footer></section>
+<section class="slide" id="33-inner-products" aria-label="33. Evaluate inner products without the features"><h1>Evaluate inner products without the features</h1><div class="content"><m display="true">k(x,z)=\phi(x)^\top\phi(z)</m><p>The dual objective and prediction only need these values.</p><div class="step" data-stage="1"><m display="true">x_i^\top x_j\quad\longrightarrow\quad k(x_i,x_j)</m></div><div class="step" data-stage="2"><p class="callout">Compute a feature-space inner product without constructing each feature vector.</p></div><p class="small muted">The feature map is implicit; an optimization problem still has to be solved.</p></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 30,31,32</a></span><span>Kernels</span><span>33 / 55</span></footer></section>
+<section class="slide" id="34-polynomial" aria-label="34. Expand a kernel once to see why it works"><h1>Expand a kernel once to see why it works</h1><div class="content"><m display="true">k(x,z)=(1+x^\top z)^2</m><p>For <m>x=(x_1,x_2)</m>, one feature map is</p><m display="true">\phi(x)=\bigl(1,\sqrt2x_1,\sqrt2x_2,x_1^2,\sqrt2x_1x_2,x_2^2\bigr)^\top</m><div class="step" data-stage="1"><m display="true">\phi(x)^\top\phi(z)=(1+x_1z_1+x_2z_2)^2</m></div><div class="step" data-stage="2"><p class="callout"><m>x=(1,2)</m>, <m>z=(3,-1)</m>: <m>k(x,z)=(1+1)^2=4</m>.</p></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 33</a></span><span>Kernels</span><span>34 / 55</span></footer></section>
+<section class="slide" id="35-kernel-svm" aria-label="35. The dual now gives a nonlinear classifier"><h1>The dual now gives a nonlinear classifier</h1><div class="content"><m display="true">\max_\alpha\ \sum_i\alpha_i-\frac12\sum_{i,j}\alpha_i\alpha_jt_it_j k(x_i,x_j)</m><m display="true">0\le\alpha_i\le C,\qquad\sum_i\alpha_it_i=0</m><div class="step" data-stage="1"><m display="true">f(x)=\sum_{i\in\mathrm{SV}}\alpha_it_i k(x_i,x)+b</m><p class="callout">The optimizer still learns coefficients on training examples.</p></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 32</a></span><span>Kernels</span><span>35 / 55</span></footer></section>
+<section class="slide" id="36-rbf-demo" aria-label="36. RBF bandwidth changes the shape of influence"><h1>RBF bandwidth changes the shape of influence</h1><div class="content"><div class="cols "><div><div class="visual" data-demo="kernel"></div></div><div><div class="demo-controls"><m display="true">k(x,z)=e^{-\gamma\lVert x-z\rVert_2^2}</m><label>RBF parameter <m>\gamma</m><select data-control="gamma" aria-label="RBF gamma"><option value="0.1">0.1</option><option value="1" selected>1</option><option value="5">5</option><option value="20">20</option></select></label><p><m>C=10</m>; same 16 ring points.</p><p data-result="kernel" class="query-readout" aria-live="polite"></p><button data-reset="kernel">Reset</button><p class="small">Small <m>\gamma</m>: broad influence.<br>Large <m>\gamma</m>: local influence.</p></div></div></div></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A · pp. 34</a></span><span>Kernels</span><span>36 / 55</span></footer></section>
+<section class="slide" id="37-validity" aria-label="37. A valid kernel behaves like an inner product"><h1>A valid kernel behaves like an inner product</h1><div class="content"><p>For every finite input set, the Gram matrix <m>G_{ij}=k(x_i,x_j)</m> must be symmetric and positive semidefinite.</p><m display="true">v^\top Gv\ge0\qquad\text{for every real vector }v</m><table class="comparison"><tr><th>Linear</th><td><m>k(x,z)=x^\top z</m></td></tr><tr><th>Polynomial</th><td><m>k(x,z)=(x^\top z+c)^d</m>, <m>c\ge0</m>, positive integer <m>d</m></td></tr><tr><th>RBF</th><td><m>k(x,z)=e^{-\gamma\lVert x-z\rVert^2}</m>, <m>\gamma&gt;0</m></td></tr></table><p class="small muted">Fit scaling on training data; select kernel settings and C on validation data.</p></div><footer><span><a href="https://cs229.stanford.edu/main_notes.pdf" target="_blank" rel="noopener">Stanford CS229 · §5.1–5.4</a></span><span>Kernels</span><span>37 / 55</span></footer></section>
+<section class="slide" id="38-computation" aria-label="38. Choose the optimization view for the problem"><h1>Choose the optimization view for the problem</h1><div class="content"><table class="comparison"><thead><tr><th></th><th>Explicit linear features</th><th>Implicit nonlinear kernel</th></tr></thead><tbody><tr><th>Parameters</th><td>Store <m>w,b</m></td><td>Support vectors, coefficients, bias</td></tr><tr><th>Typical route</th><td>Primal or linear dual solvers</td><td>Kernel dual / SMO-like methods</td></tr><tr><th>Prediction</th><td>One dot product</td><td>One kernel per support vector</td></tr></tbody></table><p>A full dense Gram matrix has <m>N^2</m> entries; solvers can cache subsets.</p><p class="callout">Kernels enrich fixed features. An MLP learns its representation jointly with the classifier.</p></div><footer><span><a href="https://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf" target="_blank" rel="noopener">Chang & Lin · LIBSVM</a></span><span>Kernels</span><span>38 / 55</span></footer></section>
+<section class="slide section-divider" id="39-multiclass" aria-label="39. From two classes to many"><h1>From two classes to many</h1><div class="content"><p class="section-question">Keep the margin idea.<br>Decide how to compare more than two class scores.</p></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n notes</a></span><span>Multiclass learning</span><span>39 / 55</span></footer></section>
+<section class="slide" id="40-reductions" aria-label="40. Combine binary classifiers—or train jointly"><h1>Combine binary classifiers—or train jointly</h1><div class="content"><div class="cols compact"><div><h2>One versus rest</h2><p>Train <m>K</m> binary classifiers.</p><p>Choose the largest class-versus-rest score.</p></div><div><h2>One versus one</h2><p>Train <m>K(K-1)/2</m> binary classifiers.</p><p>Use pairwise votes with a tie rule.</p></div></div><p class="callout">These reductions differ from optimizing a joint multiclass loss.</p><p class="small muted">Three classes give 3 one-vs-rest models or 3 pairwise models.</p></div><footer><span><a href="https://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf" target="_blank" rel="noopener">Chang & Lin · LIBSVM</a></span><span>Multiclass learning</span><span>40 / 55</span></footer></section>
+<section class="slide" id="41-class-scores" aria-label="41. A matrix produces one score per class"><h1>A matrix produces one score per class</h1><div class="content"><m display="true">s=Wx+b,\qquad W\in\mathbb R^{K\times D},\quad b\in\mathbb R^K</m><m display="true">\widehat y=\operatorname*{arg\,max}_{j\in\{1,\ldots,K\}}s_j</m><p>True label <m>y_i</m> is now a class index, not a signed label.</p><figure class="score-figure"><img src="assets/scores.svg" alt="Cat, car and frog scores with allowed rival threshold"></figure></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n notes</a></span><span>Multiclass learning</span><span>41 / 55</span></footer></section>
+<section class="slide" id="42-joint-hinge" aria-label="42. The true class must beat every competitor"><h1>The true class must beat every competitor</h1><div class="content"><m display="true">s_{y_i}\ge s_j+1\quad\text{for every }j\ne y_i</m><div class="step" data-stage="1"><m display="true">L_i=\sum_{j\ne y_i}\max(0,s_j-s_{y_i}+1)</m></div><div class="step" data-stage="2"><p class="callout">Add one hinge penalty for each violated class-score margin.</p></div><p class="small muted">Exclude the true class. This is CS231n’s sum-of-hinges formulation.</p></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n notes</a></span><span>Multiclass learning</span><span>42 / 55</span></footer></section>
+<section class="slide" id="43-loss-example" aria-label="43. Calculate the loss before changing the model"><h1>Calculate the loss before changing the model</h1><div class="content"><table class="scores"><thead><tr><th>Class</th><th>Cat image</th><th>Car image</th><th>Frog image</th></tr></thead><tbody><tr><th>cat</th><td class="correct">3.2</td><td>1.3</td><td>2.2</td></tr><tr><th>car</th><td>5.1</td><td class="correct">4.9</td><td>2.5</td></tr><tr><th>frog</th><td>−1.7</td><td>2.0</td><td class="correct">−3.1</td></tr></tbody></table><div class="step" data-stage="1"><m display="true">L_{\rm cat}=\max(0,5.1-3.2+1)+\max(0,-1.7-3.2+1)=2.9</m></div><div class="step" data-stage="2"><p>Car: <m>0</m>. &nbsp; Frog: <m>6.3+6.6=12.9</m>.</p><p class="answer">Mean data loss: <m>(2.9+0+12.9)/3=5.2667</m>.</p></div></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n notes</a></span><span>Multiclass learning</span><span>43 / 55</span></footer></section>
+<section class="slide" id="44-score-demo" aria-label="44. Correct predictions can still violate a margin"><h1>Correct predictions can still violate a margin</h1><div class="content"><div class="cols "><div><div class="visual" data-demo="scores"></div></div><div><div class="demo-controls"><label>True cat score: <b data-value="true">3.2</b><input data-control="true" aria-label="True cat score" type="range" min="-3" max="8" step="0.1" value="3.2"></label><label>Car score: <b data-value="rival">5.1</b><input data-control="rival" aria-label="Car score" type="range" min="-3" max="8" step="0.1" value="5.1"></label><p>Frog score fixed at −1.7.</p><p data-result="scores" class="query-readout" aria-live="polite"></p><button data-reset="scores">Reset</button><p class="small">Cat 3.2 and car 3.0: prediction is correct. Is the loss zero?</p></div></div></div></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n notes</a></span><span>Multiclass learning</span><span>44 / 55</span></footer></section>
+<section class="slide" id="45-slack-to-hinge" aria-label="45. Eliminating slack exposes the binary hinge"><h1>Eliminating slack exposes the binary hinge</h1><div class="content"><m display="true">\xi_i^*=\max(0,1-t_i(w^\top x_i+b))</m><div class="step" data-stage="1"><m display="true">\min_{w,b}\ \frac12\lVert w\rVert^2+C\sum_i\max(0,1-t_if(x_i))</m></div><div class="step" data-stage="2"><p class="callout">The constrained soft-margin problem and regularized hinge-loss problem have the same minimizers.</p></div></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>45 / 55</span></footer></section>
+<section class="slide" id="46-c-lambda" aria-label="46. Match the sum and mean conventions"><h1>Match the sum and mean conventions</h1><div class="content"><m display="true">\frac12\lVert w\rVert^2+C\sum_i\ell_i</m><p>Divide by the positive constant <m>CN</m>:</p><m display="true">\frac1N\sum_i\ell_i+\frac{\lambda}{2}\lVert w\rVert^2,\qquad\lambda=\frac1{CN}</m><div class="step" data-stage="1"><p class="callout">For this fixed dataset and these conventions, larger C means smaller λ.</p></div><p class="small muted">Check normalization: other objectives may average differently or omit the half.</p></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>46 / 55</span></footer></section>
+<section class="slide" id="47-objective" aria-label="47. A joint loss gives a direct learning problem"><h1>A joint loss gives a direct learning problem</h1><div class="content"><m display="true">L(W,b)=\frac1N\sum_i\sum_{j\ne y_i}\max(0,s_{ij}-s_{i,y_i}+1)+\frac\lambda2\lVert W\rVert_F^2</m><p><m>s_i=Wx_i+b</m>; the bias is not regularized.</p><div class="step" data-stage="1"><p>The joint objective is convex for linear scores.</p><p class="callout">Optimize the weights directly without deriving another kernel dual.</p></div></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>47 / 55</span></footer></section>
+<section class="slide" id="48-score-gradient" aria-label="48. A violated margin tells scores how to move"><h1>A violated margin tells scores how to move</h1><div class="content"><p>Let <m>V_i=\{j\ne y_i:s_{ij}-s_{i,y_i}+1&gt;0\}</m>.</p><m display="true">\frac{\partial L_i}{\partial s_{ij}}=1\ (j\in V_i),\qquad\frac{\partial L_i}{\partial s_{i,y_i}}=-|V_i|</m><p>Other competing scores have derivative zero.</p><div class="step" data-stage="1"><p>Default cat example: only car violates.</p><m display="true">\nabla_sL_i=(-1,1,0)^\top</m></div><div class="step" data-stage="2"><p class="callout">A descent step raises the true score and lowers the violating score.</p></div><p class="small muted">At a hinge kink, choose a valid subgradient; zero is a common convention.</p></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>48 / 55</span></footer></section>
+<section class="slide" id="49-weight-gradient" aria-label="49. Convert score gradients into weight gradients"><h1>Convert score gradients into weight gradients</h1><div class="content"><p>For one example, set <m>d_i=\nabla_{s_i}L_i</m>.</p><m display="true">\nabla_WL_i=d_ix_i^\top,\qquad\nabla_bL_i=d_i</m><div class="step" data-stage="1"><m display="true">g_W=\frac1B\sum_{i\in\mathcal B}d_ix_i^\top+\lambda W,\qquad g_b=\frac1B\sum_{i\in\mathcal B}d_i</m></div><div class="step" data-stage="2"><m display="true">W\leftarrow W-\eta g_W,\qquad b\leftarrow b-\eta g_b</m></div><p class="small muted">Learning rate <m>\eta&gt;0</m>; <m>B</m> is the actual minibatch size.</p></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>49 / 55</span></footer></section>
+<section class="slide" id="50-update-example" aria-label="50. Work one binary subgradient update"><h1>Work one binary subgradient update</h1><div class="content"><p><m>x=(1,2)^\top</m>, <m>t=+1</m>, <m>w=(0.2,-0.1)^\top</m>, <m>b=0</m>.</p><p>Use <m>\lambda=0.1</m>, <m>\eta=0.1</m>. Here <m>tf(x)=0&lt;1</m>.</p><div class="step" data-stage="1"><m display="true">g_w=\lambda w-tx=(-0.98,-2.01)^\top,\qquad g_b=-1</m></div><div class="step" data-stage="2"><m display="true">w^+=(0.298,0.101)^\top,\qquad b^+=0.1</m></div><div class="step" data-stage="3"><p class="answer">New signed score: <m>0.298+2(0.101)+0.1=0.6</m>.<br>Hinge data loss: <m>1\to0.4</m>.</p></div><p class="small muted">A sampled update need not reduce the full dataset loss.</p></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>50 / 55</span></footer></section>
+<section class="slide" id="51-sgd" aria-label="51. A minibatch subgradient method scales training"><h1>A minibatch subgradient method scales training</h1><div class="content"><pre># Batch rows; use the current weights to form all gradients.
+for Xb, yb in shuffled_minibatches(X, y):
+    scores = Xb @ W.T + b
+    d = multiclass_hinge_score_grad(scores, yb)
+    W -= eta * (d.T @ Xb / len(Xb) + lam * W)
+    b -= eta * d.mean(axis=0)</pre><p>Repeat: sample → score → measure violations → update.</p><p class="small muted">Code labels 0…K−1. The helper returns score gradients for each example’s summed hinge loss.</p></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>51 / 55</span></footer></section>
+<section class="slide" id="52-bridge" aria-label="52. Keep the objective; change the score function"><h1>Keep the objective; change the score function</h1><div class="content"><div class="pipeline"><div>Input<br><m>x</m></div><span>→</span><div>Score function<br><m>s=f_\theta(x)</m></div><span>→</span><div>Loss + regularizer<br><m>L(\theta)</m></div></div><div class="cols compact"><div><h2>Linear scores</h2><p><m>f_\theta(x)=Wx+b</m></p></div><div><h2>Learned features</h2><p><m>f_\theta(x)=W_2\phi(W_1x+b_1)+b_2</m></p></div></div><p class="callout">Compute a loss, differentiate, and update parameters.</p></div><footer><span><a href="https://cs231n.github.io/optimization-1/" target="_blank" rel="noopener">CS231n notes</a></span><span>Loss and optimization</span><span>52 / 55</span></footer></section>
+<section class="slide" id="53-summary" aria-label="53. Connect geometry and the learning view"><h1>Connect geometry and the learning view</h1><div class="content"><ol class="summary-list"><li><b>Margin:</b> normalize scores to compare distances.</li><li><b>Dual:</b> optimize coefficients on examples; KKT reveals support.</li><li><b>Soft margin:</b> trade violations against weight size.</li><li><b>Kernel:</b> compute feature-space inner products implicitly.</li><li><b>Multiclass:</b> compare scores, sum hinge losses, optimize weights.</li></ol></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n notes</a></span><span>Summary</span><span>53 / 55</span></footer></section>
+<section class="slide" id="54-exit" aria-label="54. Check the connections"><h1>Check the connections</h1><div class="content"><ol class="exit-list"><li>Canonical <m>\lVert w\rVert=2</m>: what is the full margin width?</li><li>Signed score <m>tf(x)=0.6</m>: what is the minimum slack? Is the prediction correct?</li><li>True score2, rivals1.5 and−1: what is the summed multiclass hinge loss?</li><li>Why does the dual enable the kernel trick?</li></ol><div class="step" data-stage="1"><p class="answer">1. <m>1</m>. &nbsp; 2. <m>0.4</m>, correct. &nbsp; 3. <m>0.5</m>.<br>4. It needs only pairwise inner products.</p></div></div><footer><span><a href="https://cs231n.github.io/linear-classify/" target="_blank" rel="noopener">CS231n notes</a></span><span>Summary</span><span>54 / 55</span></footer></section>
+<section class="slide" id="55-readings" aria-label="55. Reading and source lectures"><h1>Reading and source lectures</h1><div class="content"><ul class="readings reading-list"><li><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf">Harvard CS109A · Lecture 20</a><p>Geometry, hard/soft margins, feature-space intuition.</p></li><li><a href="https://cs229.stanford.edu/main_notes.pdf">Stanford CS229 · §§6.3–6.8 and Chapter 5</a><p>Margins, duality, SMO, and valid kernels.</p></li><li><a href="https://cs231n.github.io/linear-classify/">CS231n · Linear Classification</a> · <a href="https://cs231n.github.io/optimization-1/">Optimization I</a><p>Worked multiclass losses and the learning perspective.</p></li><li><a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/smo-book.pdf">Platt · SMO</a> · <a href="https://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf">Chang &amp; Lin · LIBSVM</a><p>Supplementary: practical optimization and multiclass reductions.</p></li></ul></div><footer><span><a href="https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf" target="_blank" rel="noopener">Harvard CS109A</a></span><span>Reading</span><span>55 / 55</span></footer></section></main><div id="toolbar-zone" aria-hidden="true"></div><button id="toolbar-reveal" aria-controls="toolbar">Controls (T)</button><nav id="toolbar" aria-label="Presentation controls" aria-hidden="true" inert><button id="previous" title="Previous build or slide">←</button><span class="counter" id="count"></span><button id="next" title="Next build or slide">→</button><span id="stage-count"></span><button id="all">Show all</button><button id="overview-button">Slides</button><button id="notes-button">Notes</button><button id="fullscreen">Full screen</button><button id="pdf-button">Print / PDF</button><button id="help-button">?</button></nav><div id="progress"></div><div id="blank"></div>
+<aside class="overlay" id="overview" role="dialog" aria-label="Slide overview"><button class="close" data-close>Close</button><h2>Support Vector Machines</h2><div id="overview-list" class="overview-list"></div></aside>
+<aside class="overlay" id="notes" role="dialog" aria-label="Speaker notes"><button class="close" data-close>Close</button><h2 id="notes-title"></h2><div id="notes-text"></div></aside>
+<aside class="overlay" id="help" role="dialog" aria-label="Keyboard shortcuts"><button class="close" data-close>Close</button><h2>Presentation controls</h2><table><tr><th>Right / Space / Page Down</th><td>Next reveal or slide</td></tr><tr><th>Left / Page Up</th><td>Previous reveal or slide</td></tr><tr><th>End</th><td>Reveal the entire current slide</td></tr><tr><th>Home</th><td>First slide</td></tr><tr><th>T</th><td>Show or hide the fixed control bar</td></tr><tr><th>O / N / F / B</th><td>Overview / notes / full screen / black screen</td></tr><tr><th>Esc</th><td>Close a panel, black screen, or toolbar</td></tr></table><p>The toolbar stays hidden during presentation. Move to the bottom edge to reveal it temporarily, or press T to show or hide it. It hides after 2.2 seconds away from its buttons. Its size stays fixed across slides.</p><p>For PDF: use Print / PDF, choose Save as PDF, enable background graphics, and disable browser headers and footers. All reveals print in their final state. For a guaranteed 16:9 version, use the supplied PDF.</p><p>Figures, fonts, equations, and interactions are bundled locally. Citation links require internet only when opened.</p></aside><script id="slide-meta" type="application/json">[
+  {
+    "id": "01-title",
+    "title": "Support Vector Machines",
+    "section": "CS172 Computer Vision I",
+    "notes": "Opening question: many boundaries classify the training set correctly; what principle selects one? Start with geometry, derive the dual, allow violations and nonlinear features, then return to the learning objective. Prerequisites: dot products, norms and derivatives; introduce Lagrange multipliers here.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      6
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "02-agenda",
+    "title": "From geometry to a learning objective",
+    "section": "Roadmap",
+    "notes": "Outcomes: calculate geometric margins; derive and interpret primal/dual constraints; connect slack, hinge and C; evaluate kernels through feature maps; calculate joint multiclass loss and a subgradient update. Full route 100 minutes;90-minute core route in teaching plan.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      2
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "03-binary",
+    "title": "Start with two classes",
+    "section": "Margin geometry",
+    "notes": "Running dataset: negative red squares(-2,-1),(-2,1),(-1,0); positive blue circles(1,0),(2,-1),(2,1). Optimum w=(1,0),b=0. Signed binary labels t; reserve y for class index. Green rings mark support vectors.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      7
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "04-many-lines",
+    "title": "Correct classification leaves many choices",
+    "section": "Margin geometry",
+    "notes": "All three lines correctly classify the same data. Their normal vectors have unit norm, so reported minimum signed scores are distances. Ask which is least sensitive to a small perturbation before the reveal.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      3,
+      5
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "05-hyperplane",
+    "title": "The weight vector is normal to the boundary",
+    "section": "Margin geometry",
+    "notes": "A tangent displacement satisfies w dot delta=0. Distinguish points x from normal w. The same geometry holds for a hyperplane in D dimensions. Assume w is nonzero.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      7
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "06-distance",
+    "title": "Normalize the score to get a distance",
+    "section": "Margin geometry",
+    "notes": "Derive using x=x_projection+d w/||w||. Multiplication by t makes positive correspond to correct classification. A negative minimum margin is not a separating solution.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      8,
+      9
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "07-scale",
+    "title": "The score scale is arbitrary",
+    "section": "Margin geometry",
+    "notes": "Scale w=(1,0),b=0 by 2: scores double but distances do not. We need a canonical scale. Positive scaling preserves the class assignment; negative scaling flips it.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.3",
+    "kind": "content"
+  },
+  {
+    "id": "08-canonical",
+    "title": "Fix the closest functional margin to one",
+    "section": "Margin geometry",
+    "notes": "Distinguish one-sided margin 1/||w|| and full width 2/||w||. Rescaling is possible because a separating solution has strictly positive minimum signed score.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      10,
+      11
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "09-margin-example",
+    "title": "Compute the width of the running example",
+    "section": "Margin geometry",
+    "notes": "Ask for full width before revealing. Distances use the synthetic input units. Do not say that scaling w doubles or halves the geometric margin without maintaining the canonical convention.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      11
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "10-support",
+    "title": "Nearest constraints determine the separator",
+    "section": "Margin geometry",
+    "notes": "Here(-1,0),(1,0) suffice. Outside points may move while remaining outside without changing this solution. Precise support definition is alpha>0. Equality at a plane alone need not imply a positive coefficient in every optimum.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.6",
+    "kind": "content"
+  },
+  {
+    "id": "11-margin-demo",
+    "title": "Rotate the boundary and measure its margin",
+    "section": "Margin geometry",
+    "notes": "Try 30 degrees,b=0: minimum distance sqrt(3)/2. Try 0 degrees,b=.5: margin.5. Reset gives optimum 1. Dashed planes are score±1; they do not necessarily touch data for a nonoptimal candidate.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "12-hard-primal",
+    "title": "Maximum margin becomes a convex problem",
+    "section": "Margin geometry",
+    "notes": "Bias is unregularized. Squaring a positive norm preserves its minimizer; the half simplifies derivatives. Convexity does not imply uniqueness of every variable.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      12,
+      13
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "13-dual",
+    "title": "The dual problem",
+    "section": "The dual problem",
+    "notes": "Duality exposes support vectors and inner products, enabling kernels. Derive the dual rather than merely presenting another formula.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "divider"
+  },
+  {
+    "id": "14-lagrangian",
+    "title": "Put the constraints into a Lagrangian",
+    "section": "The dual problem",
+    "notes": "Maximizing over nonnegative alpha makes a positive violation arbitrarily expensive. The dual function minimizes L over primal variables for fixed alpha. Alpha is neither a probability nor a hyperparameter.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "content"
+  },
+  {
+    "id": "15-stationarity",
+    "title": "Eliminate the primal variables",
+    "section": "The dual problem",
+    "notes": "Weights lie in the span of data with signed coefficients alpha_i t_i. If sum alpha_i t_i is nonzero, minimizing over b sends the dual function to minus infinity. Keep the b derivative sign correct.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "content"
+  },
+  {
+    "id": "16-substitution",
+    "title": "Substitute the weighted sum back in",
+    "section": "The dual problem",
+    "notes": "Optional algebra-detail slide in 90-minute route. At stationarity the third term is||w||²; expanding the remaining squared norm reveals inner products.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "content"
+  },
+  {
+    "id": "17-dual-form",
+    "title": "Maximize a concave quadratic in α",
+    "section": "The dual problem",
+    "notes": "Q_ij=t_i t_j x_i dot x_j is PSD, so D is concave. Separability permits strictly feasible scaling; Slater supports strong duality. There are N dual variables rather than D weight coordinates.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "content"
+  },
+  {
+    "id": "18-kkt",
+    "title": "Complementary slackness identifies support",
+    "section": "The dual problem",
+    "notes": "KKT statements apply at an optimum with feasibility and stationarity. Sparsity is over training examples. Equality alone does not force a nonzero multiplier in degenerate cases.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "content"
+  },
+  {
+    "id": "19-predict",
+    "title": "Recover the classifier from support vectors",
+    "section": "The dual problem",
+    "notes": "Only use a margin support vector for b, not an arbitrary example. Averaging over such vectors reduces numerical error. Nonlinear kernels may never materialize an explicit feature-space weight vector.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "content"
+  },
+  {
+    "id": "20-dual-example",
+    "title": "Solve the dual for two support points",
+    "section": "The dual problem",
+    "notes": "45-second calculation:2-4 a=0. Weight sum is a(-1)(-1,0)+a(1)(1,0)=(1,0). Other four running points have alpha 0 and satisfy constraints, so this also solves the six-point problem.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.5–6.6",
+    "kind": "content"
+  },
+  {
+    "id": "21-smo",
+    "title": "Optimize two coefficients at a time",
+    "section": "The dual problem",
+    "notes": "Choose pair, reduce with equality, maximize the 1 D quadratic over its feasible interval, update, check KKT. Platt SMO includes efficient heuristics and caching; the demo is a simpler exact pair search. Soft margin adds upper bounds. For d with entries t_i,-t_j, D(alpha+delta d)=D(alpha)+delta d^T grad D minus half delta² d^T Qd. With positive curvature, differentiate then clip to the interval preserving bounds. If curvature is zero, optimize the resulting linear function at a feasible endpoint. The live solver handles both cases.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.8",
+    "kind": "content"
+  },
+  {
+    "id": "22-soft",
+    "title": "Allow controlled margin violations",
+    "section": "Soft margins",
+    "notes": "After the hard dual, soften the constraints. The objective remains convex.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      14,
+      15
+    ],
+    "reference_sections": "",
+    "kind": "divider"
+  },
+  {
+    "id": "23-outlier",
+    "title": "One unusual point can reshape the boundary",
+    "section": "Soft margins",
+    "notes": "Original Harvard schematic is separate from the running dataset. Its markers/colors remain unchanged. If data are nonseparable, hard margin is infeasible. The C demo adds a positive point inside the negative convex hull.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      15
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "24-slack",
+    "title": "Slack measures a shortfall from the margin",
+    "section": "Soft margins",
+    "notes": "Slack uses functional-score units. Since C>0, optimizing over xi for fixed w,b selects its smallest feasible value. Positive slack need not mean an incorrect label.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      16,
+      17,
+      18,
+      19
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "25-slack-cases",
+    "title": "A violation is not always a classification error",
+    "section": "Soft margins",
+    "notes": "For m 1.4,.6,-.3 get slack 0,.4,1.3. Crucial source correction: zero slack also holds for all strictly outside correctly classified points; it does not identify support vectors. Table assumes minimum feasible slack.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      17,
+      18,
+      21
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "26-soft-primal",
+    "title": "Trade margin width against total slack",
+    "section": "Soft margins",
+    "notes": "Do not claim a universal validation trend or that C directly counts errors. The term is summed slack. Large C cannot create a zero-error linear boundary for nonseparable data.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      19,
+      20
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "27-c-demo",
+    "title": "Change C while keeping the data fixed",
+    "section": "Soft margins",
+    "notes": "Only C changes. The added positive(-1.6,.25) is in the negative triangle, so hard margin is infeasible. Inspect errors, support count, and primal-dual gap. This is training behavior, not measured generalization.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      20
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "28-soft-dual",
+    "title": "Slack adds an upper bound in the dual",
+    "section": "Soft margins",
+    "notes": "Weight/bias stationarity is unchanged. This upper bound is specific to linear slack penalty C sum xi; squared slack gives a different dual. The equality comes from the unregularized bias.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.7",
+    "kind": "content"
+  },
+  {
+    "id": "29-soft-kkt",
+    "title": "Read support-vector roles from α",
+    "section": "Soft margins",
+    "notes": "Necessary implications, not converses at degenerate equalities. Alpha=C may still be correctly classified. The demo averages free-support bias estimates or uses KKT bounds if none are free. Extended table optional in 90-minute route.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "6.7",
+    "kind": "content"
+  },
+  {
+    "id": "30-kernels",
+    "title": "Nonlinear boundaries through kernels",
+    "section": "Kernels",
+    "notes": "A kernel SVM is still linear in its feature space, potentially nonlinear in input space.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      25,
+      26,
+      27,
+      28
+    ],
+    "reference_sections": "",
+    "kind": "divider"
+  },
+  {
+    "id": "31-kernel-picture",
+    "title": "Separation can appear after a feature mapping",
+    "section": "Kernels",
+    "notes": "The original Harvard 2 D-to 3 D schematic retains its colors and geometry. It is not a computed fit to the next slide. Follow it with an exact reproducible map.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      28,
+      29
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "32-radius",
+    "title": "A nonlinear feature separates the rings",
+    "section": "Kernels",
+    "notes": "Fixed 16 points:8 inner radius.55 label+1 blue,8 outer radius 1.5 label-1 red. Squared radii.3025,2.25 separate at 1. The map is hand chosen and need not be invertible.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      26,
+      27,
+      28
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "33-inner-products",
+    "title": "Evaluate inner products without the features",
+    "section": "Kernels",
+    "notes": "This substitution follows from the inner products in the dual. It does not license arbitrary similarities, and it differs from learning a parameterized representation in an MLP.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      30,
+      31,
+      32
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "34-polynomial",
+    "title": "Expand a kernel once to see why it works",
+    "section": "Kernels",
+    "notes": "Our six coordinates reorder Harvard 33 but use the same terms; sqrt 2 ensures cross coefficients. Ask students to compute x dot z=1. Identity holds for all vectors.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      33
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "35-kernel-svm",
+    "title": "The dual now gives a nonlinear classifier",
+    "section": "Kernels",
+    "notes": "A PSD kernel preserves concavity. The feature-space norm is alphaT Q alpha; it is generally not an original-coordinate weight vector. Avoid depicting a curved input boundary with one constant input-space normal.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      32
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "36-rbf-demo",
+    "title": "RBF bandwidth changes the shape of influence",
+    "section": "Kernels",
+    "notes": "Fit a new dual at each gamma, keeping data and C fixed. Shading is predicted regions; green rings indicate alpha>0. Large gamma can form islands around training points. Contours approximate the score zero set on a 40×40 grid. Report gap to disclose optimization tolerance.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [
+      34
+    ],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "37-validity",
+    "title": "A valid kernel behaves like an inner product",
+    "section": "Kernels",
+    "notes": "Condition concerns every finite input set, not just one observed matrix. Sigmoid/tanh similarity is not universally PSD, so omitted. Scaling affects kernels and therefore the trained model.",
+    "reference_url": "https://cs229.stanford.edu/main_notes.pdf",
+    "reference_pages": [],
+    "reference_sections": "5.1–5.4",
+    "kind": "content"
+  },
+  {
+    "id": "38-computation",
+    "title": "Choose the optimization view for the problem",
+    "section": "Kernels",
+    "notes": "Do not imply all solvers materialize full NxN. Kernel computation and number of SV can be costly at large N. No universal speed/accuracy claim about MLPs.",
+    "reference_url": "https://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "39-multiclass",
+    "title": "From two classes to many",
+    "section": "Multiclass learning",
+    "notes": "Explicit change from t∈{-1,+1} to class index y∈{1,...,K}. C still denotes penalty. Kernel k is lowercase.",
+    "reference_url": "https://cs231n.github.io/linear-classify/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "divider"
+  },
+  {
+    "id": "40-reductions",
+    "title": "Combine binary classifiers—or train jointly",
+    "section": "Multiclass learning",
+    "notes": "LIBSVM implements one-against-one. Independent scores are not probabilities. The next sum-of-hinges loss is Weston–Watkins-style as in CS 231 n, different from reductions or max-rival Crammer–Singer.",
+    "reference_url": "https://www.csie.ntu.edu.tw/~cjlin/papers/libsvm.pdf",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "41-class-scores",
+    "title": "A matrix produces one score per class",
+    "section": "Multiclass learning",
+    "notes": "Reconnect to prior classification lecture. Scores cat 3.2,car 5.1,frog-1.7; correct/competitor colors are local score semantics, not binary labels. Python class index 0 corresponds to first math class.",
+    "reference_url": "https://cs231n.github.io/linear-classify/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "42-joint-hinge",
+    "title": "The true class must beat every competitor",
+    "section": "Multiclass learning",
+    "notes": "Score margin is not by itself an input-space Euclidean distance. Do not divide the sum by class count under this convention. Another multiclass formulation could instead penalize only the highest rival.",
+    "reference_url": "https://cs231n.github.io/linear-classify/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "43-loss-example",
+    "title": "Calculate the loss before changing the model",
+    "section": "Multiclass learning",
+    "notes": "All nine original CS 231 n values retained, reordered consistently cat/car/frog. Have pairs calculate car/frog. Sum competitors within each example; average over examples.",
+    "reference_url": "https://cs231n.github.io/linear-classify/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "44-score-demo",
+    "title": "Correct predictions can still violate a margin",
+    "section": "Multiclass learning",
+    "notes": "No: car contributes.8. It reacheszero once car<=2.2 with cat 3.2. Translating all scores preserves the loss. This worked demo is moved from Deep Learning Basics.",
+    "reference_url": "https://cs231n.github.io/linear-classify/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "45-slack-to-hinge",
+    "title": "Eliminating slack exposes the binary hinge",
+    "section": "Loss and optimization",
+    "notes": "Exact elimination: xi has lowerbounds 0 and 1-tf and C>0, so select their maximum. This links the geometric problem to the CS 231 n learning perspective.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "46-c-lambda",
+    "title": "Match the sum and mean conventions",
+    "section": "Loss and optimization",
+    "notes": "Same fixed binary problem. Not a universal mapping across APIs. Averaging by N is why lambda is 1/(CN), not 1/C. Bias remains unregularized.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "47-objective",
+    "title": "A joint loss gives a direct learning problem",
+    "section": "Loss and optimization",
+    "notes": "This multiclass objective is an extra modeling choice. Penalize all rows of W. With MLP scores, parameter optimization is generally nonconvex even though hinge loss is convex in scores.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "48-score-gradient",
+    "title": "A violated margin tells scores how to move",
+    "section": "Loss and optimization",
+    "notes": "This is a score-space derivative; shared weights couple multiple examples. If two rivals violate the true derivative is-2. At zero hinge input, taking the inactive branch is a valid subgradient.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "49-weight-gradient",
+    "title": "Convert score gradients into weight gradients",
+    "section": "Loss and optimization",
+    "notes": "Outer-product shape K×1 times 1×D givesK×D. Add lambdaW once after averaging data gradients. This linear chain rule prepares for MLP backprop. At kinks call it a subgradient; SGD often includes this case.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "50-update-example",
+    "title": "Work one binary subgradient update",
+    "section": "Loss and optimization",
+    "notes": "The reported hinge decrease excludes regularization. Full one-example regularized objective 1.0025 ->.40495025. Subtracting the negative bias gradient increases b. This is one step, not a convergence proof.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "51-sgd",
+    "title": "A minibatch subgradient method scales training",
+    "section": "Loss and optimization",
+    "notes": "Pseudocode: W K×D, Xb B×D, d B×K. Form d before either update. Bias gradient already computed through d and is independent of the updated W. Do not divide by K. Detailed SGD mechanics remain in Deep Learning Basics.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "52-bridge",
+    "title": "Keep the objective; change the score function",
+    "section": "Loss and optimization",
+    "notes": "Requested handoff to Deep Learning Basics. Fixed kernel map versus trainable hidden features. Hinge or softmax loss can train explicit score functions; detailed SGD and backprop follow separately.",
+    "reference_url": "https://cs231n.github.io/optimization-1/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "53-summary",
+    "title": "Connect geometry and the learning view",
+    "section": "Summary",
+    "notes": "Revisit five outcomes. Ask which equality links slack to hinge and which links support coefficients to inner products.",
+    "reference_url": "https://cs231n.github.io/linear-classify/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "54-exit",
+    "title": "Check the connections",
+    "section": "Summary",
+    "notes": "90 seconds individually,30 seconds compare. Distinguish full/one-sided margin, slack/error, true/competing classes, and inner products versus a special nonlinear optimizer.",
+    "reference_url": "https://cs231n.github.io/linear-classify/",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  },
+  {
+    "id": "55-readings",
+    "title": "Reading and source lectures",
+    "section": "Reading",
+    "notes": "The source ledger records reuse and corrections: zero slack is not synonymous with support; C statements match the objective; named similarities are not automatically valid kernels. Solver engineering and full proofs supplementary.",
+    "reference_url": "https://harvard-iacs.github.io/2018-CS109A/lectures/lecture-20/presentation/lecture20_svm.pdf",
+    "reference_pages": [],
+    "reference_sections": "",
+    "kind": "content"
+  }
+]</script><script src="vendor/katex.min.js"></script><script src="source/math.js"></script><script src="source/svm.js"></script><script src="source/learning-diagrams.js"></script><script src="source/diagrams.js"></script><script src="source/interactions.js"></script><script src="source/app.js"></script></body></html>

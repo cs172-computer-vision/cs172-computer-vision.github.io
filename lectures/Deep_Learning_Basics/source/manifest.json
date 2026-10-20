@@ -16,10 +16,10 @@
   },
   {
     "id": "02-agenda",
-    "title": "From class scores to learned features",
+    "title": "From a learning objective to learned features",
     "file": "source/slides/02-agenda.html",
     "section": "Roadmap",
-    "notes": "Learning outcomes: calculate multiclass hinge loss; perform and interpret a minibatch SGD update; track MLP shapes and count parameters; explain why activation functions are necessary; trace a short computational graph with the chain rule. Timing: opening 4 min, SVM and regularization 20, optimization 28, MLP 25, backprop and wrap-up 13.",
+    "notes": "Prerequisite: separate SVM lecture, including the multiclass loss and optimization bridge. Outcomes: interpret gradients and learning rate; perform minibatch SGD; track MLP dimensions and a forward pass; explain nonlinearity; trace a small graph. Ninety minutes with demonstrations and activities.",
     "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_3.pdf",
     "reference_pages": [
       26,
@@ -32,8 +32,8 @@
     "id": "03-recap",
     "title": "Three pieces of a learning system",
     "file": "source/slides/03-recap.html",
-    "section": "Loss and SVM",
-    "notes": "Recall the previous Image Classification lecture: x is an image vector, s contains one score per class, and prediction is argmax. Theta denotes every trainable parameter, including biases. Distinguish choosing a model, evaluating its errors, and changing its parameters.",
+    "section": "Learning objective",
+    "notes": "Do not reteach SVM geometry, kernels, or hinge derivations. Recall only the learning pattern developed at the end of that lecture. Theta contains every weight and bias. We will use softmax cross-entropy in the executable framework sketch.",
     "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_3.pdf",
     "reference_pages": [
       11,
@@ -45,91 +45,10 @@
     "kind": "content"
   },
   {
-    "id": "04-scores",
-    "title": "A correct label needs a higher score",
-    "file": "source/slides/04-scores.html",
-    "section": "Loss and SVM",
-    "notes": "Keep the class order cat, car, frog throughout the SVM section. The source example has a car score 5.1 for a cat input. Scores are arbitrary real numbers, not probabilities. Accuracy is piecewise constant in the scores, so it gives little guidance for an incremental parameter update.",
-    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_3.pdf",
-    "reference_pages": [
-      12
-    ],
-    "reference_lecture": 3,
-    "kind": "content"
-  },
-  {
-    "id": "05-margin",
-    "title": "Ask for a margin between scores",
-    "file": "source/slides/05-margin.html",
-    "section": "Loss and SVM",
-    "notes": "Define sample index i, true class y_i, and competing class j. Delta is a score margin; it is not yet a Euclidean distance in input space. We use Delta=1 throughout. Ask which competing class violates the requirement before revealing the threshold.",
-    "reference_url": "https://cs231n.github.io/linear-classify/",
-    "reference_pages": [],
-    "reference_lecture": null,
-    "kind": "content"
-  },
-  {
-    "id": "06-hinge",
-    "title": "Hinge loss charges margin violations",
-    "file": "source/slides/06-hinge.html",
-    "section": "Loss and SVM",
-    "notes": "The horizontal variable m is the score gap, not a model parameter. At m=1 the hinge is not differentiable; a subgradient can be used, and a common implementation chooses zero at the kink. Have students give a correctly classified example with nonzero loss: correct score 3.2 and rival 2.7 gives 0.5.",
-    "reference_url": "https://cs231n.github.io/linear-classify/",
-    "reference_pages": [],
-    "reference_lecture": null,
-    "kind": "content"
-  },
-  {
-    "id": "07-svm-loss",
-    "title": "Multiclass SVM loss",
-    "file": "source/slides/07-svm-loss.html",
-    "section": "Loss and SVM",
-    "notes": "This is the sum-of-hinges multiclass SVM objective used in the CS231n notes; other multiclass formulations exist. Clarify that it is an alternative to softmax cross-entropy. Class indices in the math can be 1 through C; Python uses 0 through C-1. We optimize the primal weight parameters directly, without teaching kernels or the dual.",
-    "reference_url": "https://cs231n.github.io/linear-classify/",
-    "reference_pages": [],
-    "reference_lecture": null,
-    "kind": "content"
-  },
-  {
-    "id": "08-svm-example",
-    "title": "Work through three training examples",
-    "file": "source/slides/08-svm-example.html",
-    "section": "Loss and SVM",
-    "notes": "Use the same nine numerical scores as the source lecture, reordered consistently to rows cat, car, frog. Pause for 45 seconds after the table: compute the car and frog losses in pairs. Check the frog terms: cat 2.2 minus -3.1 plus 1 = 6.3; car 2.5 minus -3.1 plus 1 = 6.6. The average is 15.8/3, not the sum and not divided by the number of classes.",
-    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_3.pdf",
-    "reference_pages": [
-      12
-    ],
-    "reference_lecture": 3,
-    "kind": "content"
-  },
-  {
-    "id": "09-margin-demo",
-    "title": "Change the scores, inspect the loss",
-    "file": "source/slides/09-margin-demo.html",
-    "section": "Loss and SVM",
-    "notes": "Demonstrate the default loss 2.9, then lower the car score to 3.0: prediction is correct but loss is 0.8. Lower it to 2.2: the car penalty reaches zero. Raising the correct score far enough removes both penalties. All-score translation leaves every score difference unchanged; the sliders vary two scores independently, so this invariance is a discussion question rather than a dedicated control.",
-    "reference_url": "https://cs231n.github.io/linear-classify/",
-    "reference_pages": [],
-    "reference_lecture": null,
-    "kind": "content"
-  },
-  {
-    "id": "10-svm-geometry",
-    "title": "SVM also has a geometric interpretation",
-    "file": "source/slides/10-svm-geometry.html",
-    "section": "Loss and SVM",
-    "notes": "This slide switches explicitly to a binary classifier and uses t, not y, for signed labels. The plot uses w=(1,0), b=0 and canonical planes x1=±1; the full width is 2. With hinge plus L2 we trade violations against margin size. Do not equate Delta=1 in arbitrary multiclass scores with a fixed distance in feature space. No kernel derivation is needed.",
-    "reference_url": "https://cs231n.github.io/linear-classify/",
-    "reference_pages": [],
-    "reference_lecture": null,
-    "kind": "content"
-  },
-  {
     "id": "11-regularization",
     "title": "Fit the data while controlling the weights",
     "file": "source/slides/11-regularization.html",
-    "section": "Loss and SVM",
+    "section": "Learning objective",
     "notes": "Our convention includes 1/2 so the regularizer gradient is lambda W. The source sometimes omits 1/2; then its gradient is 2 lambda W. State the convention once and keep it everywhere. Frobenius norm means sum of squared matrix entries. A regularizer expresses a preference and can improve generalization, but does not guarantee it. Do not use test data to choose lambda.",
     "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_3.pdf",
     "reference_pages": [
@@ -145,32 +64,6 @@
       22
     ],
     "reference_lecture": 3,
-    "kind": "content"
-  },
-  {
-    "id": "12-l2-preference",
-    "title": "L2 expresses a preference among equal fits",
-    "file": "source/slides/12-l2-preference.html",
-    "section": "Loss and SVM",
-    "notes": "Give students 30 seconds to calculate the squared norms. Both L1 norms are 1, so L1 ties these particular vectors; L1 can encourage sparsity across a broader optimization problem. This is an intuition example, not a claim that distributing weights is always better. It illustrates the preference before seeing a generalization result.",
-    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_3.pdf",
-    "reference_pages": [
-      23,
-      24,
-      25
-    ],
-    "reference_lecture": 3,
-    "kind": "content"
-  },
-  {
-    "id": "13-loss-choice",
-    "title": "Hinge loss and softmax cross-entropy",
-    "file": "source/slides/13-loss-choice.html",
-    "section": "Loss and SVM",
-    "notes": "Reinforce the separation of architecture and objective. Hinge reaches zero at finite scores; softmax cross-entropy with at least two classes and finite logits stays positive. For cross-entropy, use stable logsumexp implementations; do not implement raw exponentials on large scores. Both objectives are invariant to adding a common constant to the scores.",
-    "reference_url": "https://cs231n.github.io/linear-classify/",
-    "reference_pages": [],
-    "reference_lecture": null,
     "kind": "content"
   },
   {
@@ -316,7 +209,7 @@
     "title": "One minibatch, one concrete SGD step",
     "file": "source/slides/23-sgd-example.html",
     "section": "Optimization",
-    "notes": "Give 60 seconds to compute before revealing. The point is averaging two gradient vectors before updating. Explicitly lambda=0 here avoids quietly omitting regularization. The illustrative gradients need not equal the full gradient from slide 19. Ask why a noisy estimate can move in a direction that raises full loss on one step.",
+    "notes": "Give 60 seconds to compute before revealing. The point is averaging two gradient vectors before updating. Explicitly lambda=0 here avoids quietly omitting regularization. The illustrative gradients need not equal the full gradient from slide 10. Ask why a noisy estimate can move in a direction that raises full loss on one step.",
     "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_3.pdf",
     "reference_pages": [
       50
@@ -502,7 +395,7 @@
     "title": "Track the shapes through an MLP",
     "file": "source/slides/33-shapes.html",
     "section": "Neural networks",
-    "notes": "The schematic shows three input nodes, four hidden nodes, and two output nodes purely for readability; D, H, C remain general in the formulas. Edges represent scalar weights. Biases are trainable but are not drawn as extra neurons. For CIFAR-10 flattened input D=3072, H=100, C=10 gives 308310 parameters.",
+    "notes": "The schematic shows three input nodes, four hidden nodes, and two output nodes purely for readability; D, H, K remain general in the formulas. Edges represent scalar weights. Biases are trainable but are not drawn as extra neurons. For CIFAR-10 flattened input D=3072, H=100, K=10 gives 308310 parameters. K counts classes, consistently with the preceding SVM lecture; C there was a penalty hyperparameter.",
     "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_4.pdf",
     "reference_pages": [
       20,
@@ -532,7 +425,7 @@
     "title": "Calculate a complete forward pass",
     "file": "source/slides/35-forward.html",
     "section": "Neural networks",
-    "notes": "Ask pairs to compute z and h, then reveal scores. All vectors are columns, all dimensions equal two, and zero biases mean two zero vectors. Class 1 means mathematical first class, Python index 0. These exact W and x also appear in the executable NumPy verification script. This is a toy MLP, not a trained image model.",
+    "notes": "Ask pairs to compute z and h, then reveal scores. All vectors are columns, all dimensions equal two, and zero biases mean two zero vectors. Class 1 means mathematical first class, Python index 0. These exact W and x also appear in the executable NumPy verification script. This is a toy MLP, not a trained image model. The reported softmax loss is log(1+exp(-6)); no activation is applied to output scores.",
     "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_4.pdf",
     "reference_pages": [
       26
@@ -677,7 +570,7 @@
     "title": "Five ideas to take away",
     "file": "source/slides/44-summary.html",
     "section": "Summary",
-    "notes": "Revisit each learning outcome from slide 2. The network is trained end to end by the same objective-and-update pattern as the linear classifier. Keep the focus on these foundations; there is no next-lecture teaser.",
+    "notes": "Revisit the five learning outcomes. SVM belongs to the preceding lecture; here summarize optimization and learned representations. Architecture, loss, differentiation and parameter updates remain distinct.",
     "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_4.pdf",
     "reference_pages": [
       138
@@ -690,7 +583,7 @@
     "title": "Check your understanding",
     "file": "source/slides/45-exit-check.html",
     "section": "Summary",
-    "notes": "Give 90 seconds individually and 30 seconds to compare. Q1 checks exclusion of true class and zero clipping; Q2 checks coordinate signs and step size; Q3 checks function composition. Final verbal answer: backprop computes gradients; the optimizer applies them. Collect responses or use a show of hands; aligned to outcomes 1, 2, 4, and 5.",
+    "notes": "Give90seconds individually then30seconds comparison. Shape3×4, update(.7,2.1), affine collapse. Backprop computes gradients, SGD applies them. Assess MLP shapes, update signs, nonlinearity and differentiation/optimization separation.",
     "reference_url": "https://cs231n.github.io/optimization-1/",
     "reference_pages": [],
     "reference_lecture": null,

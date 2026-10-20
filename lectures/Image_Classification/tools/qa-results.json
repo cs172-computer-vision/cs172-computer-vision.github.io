@@ -1,0 +1,386 @@
+{
+  "slides": 54,
+  "page_errors": [],
+  "external_requests": [],
+  "layout": [
+    {
+      "id": "01-title",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "01 / 54"
+    },
+    {
+      "id": "02a-agenda",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "02 / 54"
+    },
+    {
+      "id": "03-task",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "03 / 54"
+    },
+    {
+      "id": "04-semantic-gap",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "04 / 54"
+    },
+    {
+      "id": "04b-challenge",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "05 / 54"
+    },
+    {
+      "id": "05-view-light",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "06 / 54"
+    },
+    {
+      "id": "06-clutter",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "07 / 54"
+    },
+    {
+      "id": "07-deformation",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "08 / 54"
+    },
+    {
+      "id": "08-context",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "09 / 54"
+    },
+    {
+      "id": "09-rules",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "10 / 54"
+    },
+    {
+      "id": "10-learning",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "11 / 54"
+    },
+    {
+      "id": "10b-nearest-section",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "12 / 54"
+    },
+    {
+      "id": "11-nearest",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "13 / 54"
+    },
+    {
+      "id": "12-distance",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "14 / 54"
+    },
+    {
+      "id": "13-code",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "15 / 54"
+    },
+    {
+      "id": "14-cost",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "16 / 54"
+    },
+    {
+      "id": "15-voting",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "17 / 54"
+    },
+    {
+      "id": "16-knn-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "18 / 54"
+    },
+    {
+      "id": "17-metrics",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "19 / 54"
+    },
+    {
+      "id": "18-metric-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "20 / 54"
+    },
+    {
+      "id": "18b-validation-section",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "21 / 54"
+    },
+    {
+      "id": "18c-generalization",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "22 / 54"
+    },
+    {
+      "id": "18d-complexity",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "23 / 54"
+    },
+    {
+      "id": "18e-data-size",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "24 / 54"
+    },
+    {
+      "id": "19-hyperparameters",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "25 / 54"
+    },
+    {
+      "id": "20-selection",
+      "bad": [],
+      "images": true,
+      "stage": "4",
+      "counter": "26 / 54"
+    },
+    {
+      "id": "21-splits",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "27 / 54"
+    },
+    {
+      "id": "22-cross-validation",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "28 / 54"
+    },
+    {
+      "id": "23-cifar",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "29 / 54"
+    },
+    {
+      "id": "24-neighbor-images",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "30 / 54"
+    },
+    {
+      "id": "25-cv-curve",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "31 / 54"
+    },
+    {
+      "id": "26-pixel-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "32 / 54"
+    },
+    {
+      "id": "27-knn-summary",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "33 / 54"
+    },
+    {
+      "id": "27b-linear-section",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "34 / 54"
+    },
+    {
+      "id": "28-parametric",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "35 / 54"
+    },
+    {
+      "id": "29-dimensions",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "36 / 54"
+    },
+    {
+      "id": "30-algebra",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "37 / 54"
+    },
+    {
+      "id": "31-templates",
+      "bad": [],
+      "images": true,
+      "stage": "4",
+      "counter": "38 / 54"
+    },
+    {
+      "id": "32-geometry",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "39 / 54"
+    },
+    {
+      "id": "32b-multiclass",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "40 / 54"
+    },
+    {
+      "id": "33-hard-cases",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "41 / 54"
+    },
+    {
+      "id": "33c-comparison",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "42 / 54"
+    },
+    {
+      "id": "33b-loss-section",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "43 / 54"
+    },
+    {
+      "id": "34-loss-need",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "44 / 54"
+    },
+    {
+      "id": "36-softmax",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "45 / 54"
+    },
+    {
+      "id": "37-softmax-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "46 / 54"
+    },
+    {
+      "id": "37a-label-evidence",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "47 / 54"
+    },
+    {
+      "id": "39-likelihood",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "48 / 54"
+    },
+    {
+      "id": "38-cross-entropy",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "49 / 54"
+    },
+    {
+      "id": "40-loss-check",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "50 / 54"
+    },
+    {
+      "id": "41-stability",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "51 / 54"
+    },
+    {
+      "id": "42-summary",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "52 / 54"
+    },
+    {
+      "id": "43-exit",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "53 / 54"
+    },
+    {
+      "id": "44-readings",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "54 / 54"
+    }
+  ],
+  "checks": "Offline file://; all-slide layout/counters/images; forward/reverse builds; notes/overview; fullscreen/black screen; toolbar/autohide; responsive scaling; deck-specific interactions and resets."
+}

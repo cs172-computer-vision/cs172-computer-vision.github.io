@@ -28,7 +28,7 @@ body.controls #toolbar{opacity:1;visibility:visible;pointer-events:auto}
 .section-divider h1{position:absolute;top:255px;left:96px;right:96px;border:0;padding:0;font-size:68px;line-height:1.12;letter-spacing:-1.5px}
 .section-divider h1::before{content:"";display:block;width:72px;height:4px;background:#236bc2;margin-bottom:28px}
 .section-divider .content{top:410px;height:245px}
-.section-question{font-size:34px;line-height:1.35;max-width:1120px;color:#53657e}
+.section-question{font-size:34px;line-height:1.35;max-width:1200px;color:#53657e}
 .section-equation{margin-top:35px;text-align:left;font-size:34px}
 .section-equation .katex-display{text-align:left}
 .section-equation .katex-display>.katex{text-align:left}
@@ -86,3 +86,12 @@ body.controls #toolbar{opacity:1;visibility:visible;pointer-events:auto}
 [id="12-distance"] .katex-display{margin:16px 0}
 [id="12-distance"] .content>.small{margin-top:16px}
 [id="17-metrics"] .cols .katex{font-size:.98em}
+
+/* Probability-first sequence retains the established projection type scale. */
+.summary-table{font-size:28px;margin-top:20px}
+.summary-table th,.summary-table td{padding:15px 18px}
+[id="38-cross-entropy"] .katex-display{margin:22px 0}
+[id="37-softmax-demo"] .demo-controls button{font-size:22px;margin:0 5px 19px 0;padding:8px 12px}
+[id="37-softmax-demo"] .demo-controls label{margin-bottom:20px}
+
+.probability-intro{height:100%;align-items:center}

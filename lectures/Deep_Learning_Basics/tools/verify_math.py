@@ -4,9 +4,7 @@ from math import isclose
 from reference_model import initialize,forward,loss_and_grad,train_xor
 
 def close(a,b):assert isclose(a,b,abs_tol=1e-8,rel_tol=1e-8),(a,b)
-def hinge(s,y):return sum(max(0,v-s[y]+1) for j,v in enumerate(s) if j!=y)
-for s,y,expected in [([3.2,5.1,-1.7],0,2.9),([1.3,4.9,2],1,0),([2.2,2.5,-3.1],2,12.9),([2,1.5,-1],0,.5)]:close(hinge(s,y),expected)
-close((2.9+12.9)/3,5.266666666666667)
+close(__import__('math').log1p(__import__('math').exp(-6)),0.0024756851377304495)
 close(.5*(1.8**2+3*(-.7)**2),2.355)
 assert [2-.1*1,-1-.1*(-3)]==[1.9,-.7]
 p={'W1':[[1,-1],[-1,1]],'b1':[0,0],'W2':[[1,-1],[-1,1]],'b2':[0,0]}

@@ -1,6 +1,6 @@
 # Deep Learning Basics · CS172 Computer Vision I
 
-46 slides, 16:9, approximately 90 minutes. Jiayuan Gu, ShanghaiTech University.
+37 slides, 16:9, approximately 90 minutes. Jiayuan Gu, ShanghaiTech University.
 
 Open **index.html** directly in a desktop browser. All presentation resources are local, including figures, KaTeX fonts, CSS, JavaScript, notes, and math. No installation, account, or server is needed. Keep the folder tree together when copying it. External references only need internet when clicked.
 
@@ -9,11 +9,11 @@ Open **index.html** directly in a desktop browser. All presentation resources ar
 - O: overview; N: notes; F: fullscreen; B: black screen.
 - T: show/hide controls; Escape: close a panel or hide controls.
 - Move to the bottom edge for the fixed-size toolbar; it hides after 2.2 seconds away from its controls. Normal keyboard operation is preserved in sliders, selectors, and buttons.
-- URLs retain slide ID and reveal state, for example `index.html#08-svm-example/2`.
+- URLs retain slide ID and reveal state, for example `index.html#23-sgd-example/2`.
 
 ## Included outputs
 
-- **Deep_Learning_Basics.pdf**: 46 completed slides, with default demo states, selectable text, equations, and clickable references. Exact 1080 × 607.5 pt media boxes (16:9).
+- **Deep_Learning_Basics.pdf**: 37 completed slides, with default demo states, selectable text, equations, and clickable references. Exact 1080 × 607.5 pt media boxes (16:9).
 - **../Deep_Learning_Basics.zip**: editable portable package. Extract and open its index.html.
 - **TEACHING_PLAN.md**: outcomes, 90-minute route, activities, assessment, and homework.
 - **SPEAKER_NOTES.md**: notes for every slide, also available with N.
@@ -24,12 +24,13 @@ Open **index.html** directly in a desktop browser. All presentation resources ar
 
 | Slide | Purpose |
 |---|---|
-| 9 | Change true/rival scores, inspect the margin and recomputed SVM loss. |
-| 20 | Change learning rate on a fixed quadratic; compare convergence, oscillation, and divergence. |
-| 25 | Change batch size on a fixed synthetic objective and seeded sampling sequence. |
-| 38 | Switch XOR from input coordinates to two ReLU features. |
+| 11 | Change learning rate on a fixed quadratic; compare convergence, oscillation, and divergence. |
+| 16 | Change batch size on a fixed synthetic objective and seeded sampling sequence. |
+| 29 | Switch XOR from input coordinates to two ReLU features. |
 
-Each demo has a reset. Diagrams are deterministic; synthetic plots are identified on slides and in notes. The scalar computational graph on slide 41 has grouped forward and backward builds. Reveals support reversal and print in their completed state. Reduced-motion preferences are supported.
+SVM geometry, the dual, kernels, and multiclass hinge loss are now in **../Support_Vector_Machines/**. This lecture begins with that lecture’s loss-plus-regularization handoff and teaches SGD in detail.
+
+Each demo has a reset. Diagrams are deterministic; synthetic plots are identified on slides and in notes. The scalar computational graph on slide 32 has grouped forward and backward builds. Reveals support reversal and print in their completed state. Reduced-motion preferences are supported.
 
 ## Installation for authoring
 
@@ -107,7 +108,7 @@ python tools/export_pdf.py --check
 python tools/export_pdf.py --check --screenshots /tmp/deep-learning-slides
 ```
 
-Set `CHROME` to another Chromium executable if desired. Development dependencies are pinned in tools/requirements.txt; the prebuilt presentation does not need them. `tools/reference_model.py` is an executable dependency-free MLP with multiclass hinge loss, weight-only L2, and minibatch SGD on synthetic XOR. `tools/verify_math.py` checks its gradients by independent central differences and verifies displayed examples.
+Set `CHROME` to another Chromium executable if desired. Development dependencies are pinned in tools/requirements.txt; the prebuilt presentation does not need them. `tools/reference_model.py` is an executable dependency-free MLP with softmax cross-entropy, weight-only L2, and minibatch SGD on synthetic XOR. `tools/verify_math.py` checks its gradients by independent central differences and verifies displayed examples.
 
 Create the editable ZIP after rebuilding and exporting:
 

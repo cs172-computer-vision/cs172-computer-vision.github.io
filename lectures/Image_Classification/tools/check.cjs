@@ -15,3 +15,17 @@ assert.equal(D.metricResult({x:0,y:0},'l2').prediction,1);
 assert.equal(D.vote(D.neighbors({x:-.5,y:1.05},1)),1);
 assert.equal(D.vote(D.neighbors({x:-.5,y:1.05},3)),0);
 console.log('Numerical checks passed.');
+// Probability interpretation and the bridge from label likelihood to loss.
+const scores=[3.2,5.1,-1.7],base=D.softmax(scores);
+const close=(a,b)=>assert(Math.abs(a-b)<1e-11,`${a} != ${b}`);
+base.p.forEach(v=>assert(v>0&&v<1));
+assert.equal(base.p.indexOf(Math.max(...base.p)),scores.indexOf(Math.max(...scores)));
+close(base.p[1]/base.p[0],Math.exp(1.9));
+const shifted=D.softmax(scores.map(s=>s+1000));
+base.p.forEach((v,i)=>close(v,shifted.p[i]));close(base.loss,shifted.loss);
+assert.notDeepEqual(base.p,D.softmax(scores.map(s=>s*2)).p);
+close(base.loss,-Math.log(base.p[0]));
+const B=[.3,.6,.1];assert.equal(B.indexOf(Math.max(...B)),1);
+assert(-Math.log(B[0])<base.loss); // Accuracy is unchanged; label likelihood improves.
+assert(!/loss|cross-entropy|true class/i.test(D.softplot()));
+console.log('Probability ratios, translation invariance, likelihood and demo separation passed.');

@@ -1,0 +1,393 @@
+{
+  "slides": 55,
+  "page_errors": [],
+  "external_requests": [],
+  "layout": [
+    {
+      "id": "01-title",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "01 / 55"
+    },
+    {
+      "id": "02-agenda",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "02 / 55"
+    },
+    {
+      "id": "03-binary",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "03 / 55"
+    },
+    {
+      "id": "04-many-lines",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "04 / 55"
+    },
+    {
+      "id": "05-hyperplane",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "05 / 55"
+    },
+    {
+      "id": "06-distance",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "06 / 55"
+    },
+    {
+      "id": "07-scale",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "07 / 55"
+    },
+    {
+      "id": "08-canonical",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "08 / 55"
+    },
+    {
+      "id": "09-margin-example",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "09 / 55"
+    },
+    {
+      "id": "10-support",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "10 / 55"
+    },
+    {
+      "id": "11-margin-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "11 / 55"
+    },
+    {
+      "id": "12-hard-primal",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "12 / 55"
+    },
+    {
+      "id": "13-dual",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "13 / 55"
+    },
+    {
+      "id": "14-lagrangian",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "14 / 55"
+    },
+    {
+      "id": "15-stationarity",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "15 / 55"
+    },
+    {
+      "id": "16-substitution",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "16 / 55"
+    },
+    {
+      "id": "17-dual-form",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "17 / 55"
+    },
+    {
+      "id": "18-kkt",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "18 / 55"
+    },
+    {
+      "id": "19-predict",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "19 / 55"
+    },
+    {
+      "id": "20-dual-example",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "20 / 55"
+    },
+    {
+      "id": "21-smo",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "21 / 55"
+    },
+    {
+      "id": "22-soft",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "22 / 55"
+    },
+    {
+      "id": "23-outlier",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "23 / 55"
+    },
+    {
+      "id": "24-slack",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "24 / 55"
+    },
+    {
+      "id": "25-slack-cases",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "25 / 55"
+    },
+    {
+      "id": "26-soft-primal",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "26 / 55"
+    },
+    {
+      "id": "27-c-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "27 / 55"
+    },
+    {
+      "id": "28-soft-dual",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "28 / 55"
+    },
+    {
+      "id": "29-soft-kkt",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "29 / 55"
+    },
+    {
+      "id": "30-kernels",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "30 / 55"
+    },
+    {
+      "id": "31-kernel-picture",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "31 / 55"
+    },
+    {
+      "id": "32-radius",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "32 / 55"
+    },
+    {
+      "id": "33-inner-products",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "33 / 55"
+    },
+    {
+      "id": "34-polynomial",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "34 / 55"
+    },
+    {
+      "id": "35-kernel-svm",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "35 / 55"
+    },
+    {
+      "id": "36-rbf-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "36 / 55"
+    },
+    {
+      "id": "37-validity",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "37 / 55"
+    },
+    {
+      "id": "38-computation",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "38 / 55"
+    },
+    {
+      "id": "39-multiclass",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "39 / 55"
+    },
+    {
+      "id": "40-reductions",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "40 / 55"
+    },
+    {
+      "id": "41-class-scores",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "41 / 55"
+    },
+    {
+      "id": "42-joint-hinge",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "42 / 55"
+    },
+    {
+      "id": "43-loss-example",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "43 / 55"
+    },
+    {
+      "id": "44-score-demo",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "44 / 55"
+    },
+    {
+      "id": "45-slack-to-hinge",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "45 / 55"
+    },
+    {
+      "id": "46-c-lambda",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "46 / 55"
+    },
+    {
+      "id": "47-objective",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "47 / 55"
+    },
+    {
+      "id": "48-score-gradient",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "48 / 55"
+    },
+    {
+      "id": "49-weight-gradient",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "49 / 55"
+    },
+    {
+      "id": "50-update-example",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "50 / 55"
+    },
+    {
+      "id": "51-sgd",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "51 / 55"
+    },
+    {
+      "id": "52-bridge",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "52 / 55"
+    },
+    {
+      "id": "53-summary",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "53 / 55"
+    },
+    {
+      "id": "54-exit",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "54 / 55"
+    },
+    {
+      "id": "55-readings",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "55 / 55"
+    }
+  ],
+  "checks": "Offline file://; all-slide layout/counters/images; forward/reverse builds; notes/overview; fullscreen/black screen; toolbar/autohide; responsive scaling; deck-specific interactions and resets."
+}
