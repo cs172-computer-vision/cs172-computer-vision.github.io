@@ -1,0 +1,2 @@
+# Optional executable-slide-code verification; not required for presentation.
+torch==2.8.0

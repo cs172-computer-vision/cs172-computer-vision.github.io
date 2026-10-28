@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="CS172 Computer Vision I: CNNs. An offline lecture with convolution, shape and receptive-field demonstrations."><title>Convolutional Neural Networks · CS172</title><link rel="stylesheet" href="vendor/katex.min.css"><link rel="stylesheet" href="source/style.css"></head><body><main id="viewport">
+<section class="slide " id="01-title" aria-label="1. Convolutional Neural Networks">
+<h1>Convolutional Neural Networks</h1>
+<div class="content"><div class="cols title-grid"><div><div class="title-meta"><p class="course-name">CS172 · Computer Vision I</p><p>Jiayuan Gu</p><p>ShanghaiTech University</p><p class="muted">Learning with spatial structure</p></div></div><div><figure class=""><img src="assets/title.svg" alt="An image grid becomes local feature maps and then ten class scores"></figure></div></div></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf" target="_blank" rel="noopener">CS231n · Lecture 5</a></span><span>CNN</span><span>01 / 36</span></footer>
+</section>
+<section class="slide " id="02-roadmap" aria-label="2. From local evidence to a classifier">
+<h1>From local evidence to a classifier</h1>
+<div class="content"><ol class="agenda"><li><b>Image structure</b><span>Local connections and shared filters.</span></li><li><b>Convolution</b><span>Responses, channels, and gradients.</span></li><li><b>Shape and context</b><span>Stride, padding, and receptive fields.</span></li><li><b>A complete CNN</b><span>Layer shapes, cost, and implementation.</span></li></ol></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf" target="_blank" rel="noopener">Lecture structure</a></span><span>Roadmap</span><span>02 / 36</span></footer>
+</section>
+<section class="slide " id="03-outcomes" aria-label="3. What you should be able to do">
+<h1>What you should be able to do</h1>
+<div class="content"><ol class="objectives"><li>Explain locality and parameter sharing.</li><li>Calculate convolution outputs and gradients.</li><li>Derive tensor shapes and computational cost.</li><li>Trace receptive fields and translation behavior.</li><li>Implement and diagnose a small CNN.</li></ol></div>
+<footer><span>Jiayuan Gu · ShanghaiTech University</span><span>Learning outcomes</span><span>03 / 36</span></footer>
+</section>
+<section class="slide " id="04-recap" aria-label="4. A dense layer has no built-in image geometry">
+<h1>A dense layer has no built-in image geometry</h1>
+<div class="content"><div class="cols "><div><p>An RGB image has shape <m>3\times32\times32</m>.</p><m display="true">h=\operatorname{ReLU}(W\operatorname{vec}(X)+b)</m><div class="step" data-stage="1"><p>Flattening retains every pixel value.</p><p class="callout">A dense layer does not enforce which pixels are neighbors.</p></div></div><div><figure class=""><img src="assets/flatten.svg" alt="A 2D image with a highlighted local neighborhood is reshaped into a long vector"></figure></div></div></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html" target="_blank" rel="noopener">D2L · §7.1</a></span><span>Spatial structure</span><span>04 / 36</span></footer>
+</section>
+<section class="slide " id="05-pattern" aria-label="5. The same local pattern can occur anywhere">
+<h1>The same local pattern can occur anywhere</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/pattern.svg" alt="Two binary images contain the same vertical bright edge at different horizontal positions"></figure><div class="step" data-stage="1"><p class="callout">Reuse one local detector across the image.</p></div></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html" target="_blank" rel="noopener">D2L · §7.1</a></span><span>Spatial structure</span><span>05 / 36</span></footer>
+</section>
+<section class="slide " id="06-bias" aria-label="6. Two architectural constraints">
+<h1>Two architectural constraints</h1>
+<div class="content"><div class="two-principles"><div><span class="principle-number">01</span><h2>Local connectivity</h2><p>Each output reads a small spatial neighborhood.</p></div><div class="step" data-stage="1"><span class="principle-number">02</span><h2>Parameter sharing</h2><p>The same filter is applied at every spatial position.</p></div></div><p class="callout step" data-stage="2"><b>Inductive bias:</b> an assumption built into the model’s structure.</p></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html" target="_blank" rel="noopener">D2L · §7.1</a></span><span>Spatial structure</span><span>06 / 36</span></footer>
+</section>
+<section class="slide section-divider" id="07-convolution" aria-label="7. Compute one local response">
+<h1>Compute one local response</h1>
+<div class="content"><p class="section-question">A <b>kernel</b> (filter) is a small array of learned weights.</p><p class="section-question step" data-stage="1">A patch’s dot product with the kernel, plus a learned offset (<b>bias</b>), gives one response.</p></div>
+<footer><span>Jiayuan Gu · ShanghaiTech University</span><span>Convolution</span><span>07 / 36</span></footer>
+</section>
+<section class="slide " id="08-dot" aria-label="8. One patch produces one number">
+<h1>One patch produces one number</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/dot.svg" alt="The first 3 by 3 patch and vertical-edge kernel produce response 6"></figure><m class="step" data-stage="1" display="true">z=\sum_{u=0}^{2}\sum_{v=0}^{2} A_{u,v}K_{u,v}+b</m><p class="small step" data-stage="2">Here <m>b=0</m>: <m>(1-0)+(2-0)+(3-0)=6</m>.</p></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html" target="_blank" rel="noopener">D2L · §7.2</a></span><span>Convolution</span><span>08 / 36</span></footer>
+</section>
+<section class="slide " id="09-slide" aria-label="9. Slide the same kernel across the image">
+<h1>Slide the same kernel across the image</h1>
+<div class="content"><div class="cols "><div><div id="conv-visual" class="demo-visual"></div></div><div><div class="demo-controls"><p>Input <m>5\times5</m> · kernel <m>3\times3</m><br>One-pixel steps · bias 0</p><label>Output position: <b id="position-value">(0, 0)</b><input id="position" aria-label="Convolution output position" type="range" min="0" max="8" step="1" value="0"></label><p id="conv-products" class="small"></p><p id="conv-result" class="query-readout" aria-live="polite"></p><button id="conv-reset">Reset</button></div></div></div></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html" target="_blank" rel="noopener">D2L · §7.2</a></span><span>Convolution</span><span>09 / 36</span></footer>
+</section>
+<section class="slide " id="10-channels" aria-label="10. Sum over every input channel">
+<h1>Sum over every input channel</h1>
+<div class="content"><div class="cols"><div><figure><img src="assets/channels.svg" alt="Three channel contributions are summed into one output response"></figure></div><div><p>An <b>input channel</b> is one image plane, such as red.</p><p><m>C_{\mathrm{in}}</m> counts input channels; <m>C_{\mathrm{out}}</m> counts output channels.</p><p class="callout step" data-stage="1">A standard filter sums across all input channels, then adds one bias.</p></div></div><p class="small step" data-stage="2">A <m>1\times1</m> example: <m>0.5(1)-1(2)+2(3)+0.5=5</m>.</p></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/channels.html" target="_blank" rel="noopener">D2L · §7.4</a></span><span>Convolution</span><span>10 / 36</span></footer>
+</section>
+<section class="slide " id="11-tensors" aria-label="11. A filter bank creates output channels">
+<h1>A filter bank creates output channels</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/tensors.svg" alt="A batch of N RGB images becomes N batches of eight output feature maps"></figure><table class="compact-table step" data-stage="1"><tr><th>Input <m>X</m></th><th>Weights <m>\Theta</m></th><th>Bias <m>b</m></th><th>Output <m>Z</m></th></tr><tr><td><m>N\times3\times32\times32</m></td><td><m>8\times3\times3\times3</m></td><td><m>8</m></td><td><m>N\times8\times32\times32</m></td></tr></table><p class="small"><b>Tensor:</b> a multidimensional array. <b>Feature map:</b> one output channel. <b>Activations:</b> computed values.</p><p class="small step" data-stage="2"><b>NCHW:</b> batch size, channels, height, width.</p></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf" target="_blank" rel="noopener">CS231n · pp. 57–61</a></span><span>Convolution</span><span>11 / 36</span></footer>
+</section>
+<section class="slide " id="12-equation" aria-label="12. Write the operator precisely">
+<h1>Write the operator precisely</h1>
+<div class="content"><m display="true">Z_{n,o,i,j}=b_o+\sum_{c=0}^{C_{\mathrm{in}}-1}\sum_{u=0}^{K-1}\sum_{v=0}^{K-1}\Theta_{o,c,u,v}\,\widetilde X_{n,c,iS+u,jS+v}</m><div class="cols notation step" data-stage="1"><div><p><m>n</m>: image · <m>o</m>: output channel</p><p><m>i,j</m>: output row and column</p><p><m>c</m>: input channel · <m>u,v</m>: kernel offsets</p></div><div><p><m>\widetilde X</m>: input after zero padding</p><p><m>S</m>: spatial stride · <m>K</m>: kernel side</p><p>One <m>b_o</m> is reused across the output map.</p></div></div><p class="callout step" data-stage="2">Deep-learning “convolution” usually computes cross-correlation: the kernel is not flipped.</p></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html" target="_blank" rel="noopener">PyTorch · Conv2d</a></span><span>Convolution</span><span>12 / 36</span></footer>
+</section>
+<section class="slide " id="13-gradient" aria-label="13. Shared weights collect gradients from all uses">
+<h1>Shared weights collect gradients from all uses</h1>
+<div class="content"><m display="true">x=[1,2,3],\quad \theta=[a,b],\quad z=[a+2b,\;2a+3b]</m><p>Gradient arriving from later layers: <m>\partial L/\partial z=[4,5]</m>.</p><div class="gradient-answers step" data-stage="1"><m display="true">\frac{\partial L}{\partial a}=4(1)+5(2)=14</m><m display="true">\frac{\partial L}{\partial b}=4(2)+5(3)=23</m></div><p class="callout step" data-stage="2">Backpropagation sums contributions from every use of a shared parameter.</p></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html" target="_blank" rel="noopener">D2L · §7.2; original gradient example</a></span><span>Convolution</span><span>13 / 36</span></footer>
+</section>
+<section class="slide " id="14-relu" aria-label="14. Nonlinearity makes stacked layers expressive">
+<h1>Nonlinearity makes stacked layers expressive</h1>
+<div class="content"><div class="cols"><div><p><b>ReLU</b> (rectified linear unit) clips negative values to zero.</p><m display="true">A_{n,o,i,j}=\max(0,Z_{n,o,i,j})</m><p class="step" data-stage="1">ReLU preserves tensor shape.</p><p class="callout step" data-stage="2">Without nonlinearities, stacked weighted sums still form one weighted sum.</p></div><div><figure><img src="assets/relu.svg" alt="ReLU clips negative responses while preserving shape"></figure></div></div></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf" target="_blank" rel="noopener">CS231n · pp. 62–68</a></span><span>Convolution</span><span>14 / 36</span></footer>
+</section>
+<section class="slide section-divider" id="15-geometry" aria-label="15. Control shape and cost">
+<h1>Control shape and cost</h1>
+<div class="content"><p class="section-question">Kernel size and step size determine the output shape and the amount of computation.</p></div>
+<footer><span>Jiayuan Gu · ShanghaiTech University</span><span>Geometry and cost</span><span>15 / 36</span></footer>
+</section>
+<section class="slide " id="16-stride" aria-label="16. Stride sets the step size">
+<h1>Stride sets the step size</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/stride.svg" alt="A 7 by 7 input with a 3 by 3 kernel yields 5 by 5 at stride one or 3 by 3 at stride two"></figure><p><b>Stride <m>S</m>:</b> the number of input pixels the kernel moves per step.</p><p class="step" data-stage="1"><m>S=1</m>: every starting position. <m>S=2</m>: every other position.</p></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/padding-and-strides.html" target="_blank" rel="noopener">D2L · §7.3</a></span><span>Geometry and cost</span><span>16 / 36</span></footer>
+</section>
+<section class="slide " id="17-padding" aria-label="17. Padding adds a boundary convention">
+<h1>Padding adds a boundary convention</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/padding.svg" alt="Without padding 7 becomes 5; with one zero border 7 remains 7"></figure><p><b>Zero padding:</b> add <m>P</m> rows or columns of zeros on each side.</p><p class="step" data-stage="1">For odd <m>K</m>, stride 1: <m>P=(K-1)/2</m> preserves spatial size.</p></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/padding-and-strides.html" target="_blank" rel="noopener">D2L · §7.3</a></span><span>Geometry and cost</span><span>17 / 36</span></footer>
+</section>
+<section class="slide " id="18-shape" aria-label="18. Count valid kernel placements">
+<h1>Count valid kernel placements</h1>
+<div class="content"><m display="true">H'=\left\lfloor\frac{H+2P-K}{S}\right\rfloor+1,\qquad W'=\left\lfloor\frac{W+2P-K}{S}\right\rfloor+1</m><p><b>Floor <m>\lfloor\cdot\rfloor</m>:</b> round down to an integer.</p><div class="cols compact"><div class="step" data-stage="1"><h2>Exactly divisible</h2><m display="true">H=7,\;K=3,\;S=2,\;P=0</m><p>Starts <m>0,2,4</m> → <m>H'=3</m>.</p></div><div class="step" data-stage="2"><h2>A trailing strip remains</h2><m display="true">H=8,\;K=3,\;S=2,\;P=0</m><p>Still starts <m>0,2,4</m> → <m>H'=3</m>.</p></div></div></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html" target="_blank" rel="noopener">PyTorch · output shape</a></span><span>Geometry and cost</span><span>18 / 36</span></footer>
+</section>
+<section class="slide " id="19-shape-lab" aria-label="19. See how each setting changes the output">
+<h1>See how each setting changes the output</h1>
+<div class="content"><div class="cols "><div><div id="shape-visual" class="demo-visual"></div></div><div><div class="demo-controls shape-controls"><div class="control-grid"><label>Input side <m>H=W</m><select id="shape-h" aria-label="Input side"><option>7</option><option>8</option><option selected>32</option></select></label><label>Kernel <m>K</m><select id="shape-k" aria-label="Kernel side"><option selected>3</option><option>5</option></select></label><label>Stride <m>S</m><select id="shape-s" aria-label="Stride"><option selected>1</option><option>2</option></select></label><label>Padding <m>P</m><select id="shape-p" aria-label="Padding"><option>0</option><option selected>1</option><option>2</option></select></label></div><p id="shape-result" class="query-readout" aria-live="polite"></p><p id="shape-cost" class="small"></p><button id="shape-reset">Reset</button></div></div></div><p class="small">Fixed <m>C_{\mathrm{in}}=3</m>, <m>C_{\mathrm{out}}=8</m>, one image, bias enabled.</p></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html" target="_blank" rel="noopener">PyTorch · Conv2d; original calculator</a></span><span>Geometry and cost</span><span>19 / 36</span></footer>
+</section>
+<section class="slide " id="20-pair-audit" aria-label="20. Work through a convolutional layer">
+<h1>Work through a convolutional layer</h1>
+<div class="content"><p>Input: <m>N\times8\times16\times16</m></p><p>16 filters · <m>K=3,\ S=2,\ P=1</m> · bias enabled</p><div class="audit-steps"><p class="step" data-stage="1"><b>Weights:</b> <m>16\times8\times3\times3</m></p><p class="step" data-stage="2"><b>Output:</b> <m>N\times16\times8\times8</m></p><p class="step" data-stage="3"><b>Parameters:</b> <m>16(8\cdot9+1)=1{,}168</m></p></div><p class="callout step" data-stage="4">Batch size <m>N</m> changes the number of outputs, not the learned weights.</p></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html" target="_blank" rel="noopener">Original worked example</a></span><span>Geometry and cost</span><span>20 / 36</span></footer>
+</section>
+<section class="slide " id="21-parameters" aria-label="21. Sharing separates parameters from output size">
+<h1>Sharing separates parameters from output size</h1>
+<div class="content"><p>Same input <m>3\times32\times32</m> and output <m>8\times32\times32</m>.</p><table class="parameter-table"><thead><tr><th>Connections</th><th>Parameters, including bias</th></tr></thead><tbody><tr class="step" data-stage="1"><td>Fully connected</td><td><m>8192(3072+1)=25{,}174{,}016</m></td></tr><tr class="step" data-stage="2"><td>Local <m>3\times3</m>, no sharing</td><td><m>8192(27+1)=229{,}376</m></td></tr><tr class="step" data-stage="3"><td>Local <m>3\times3</m>, shared</td><td><m>8(27+1)=224</m></td></tr></tbody></table><m class="step" data-stage="4" display="true">\#\text{Conv parameters}=C_{\mathrm{out}}(C_{\mathrm{in}}K^2+1)</m><p class="small">All three layers produce 8,192 output values. Padding 1 for local layers.</p></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf" target="_blank" rel="noopener">CS231n · counting methods; original comparison</a></span><span>Geometry and cost</span><span>21 / 36</span></footer>
+</section>
+<section class="slide " id="22-compute" aria-label="22. Count the multiply–accumulate operations">
+<h1>Count the multiply–accumulate operations</h1>
+<div class="content"><p><b>MAC = multiply–accumulate.</b> Multiply two numbers, then add the product to a running sum.</p><m display="true">a\leftarrow a+xw</m><div class="step" data-stage="1"><p>Each output uses <m>C_{\mathrm{in}}K^2</m> MACs.</p><m display="true">\#\text{MACs}=H'W'C_{\mathrm{out}}C_{\mathrm{in}}K^2</m></div><div class="step" data-stage="2"><p class="small">One image: <m>3\times32\times32\to8\times32\times32</m>, <m>K=3</m>.</p><m display="true">32\cdot32\cdot8\cdot3\cdot9=221{,}184\;\text{MACs}</m></div><p class="small step" data-stage="3">224 learned parameters; 221,184 MACs per image. Bias additions are excluded.</p></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf" target="_blank" rel="noopener">CS231n · pp. 91–93; original numbers</a></span><span>Geometry and cost</span><span>22 / 36</span></footer>
+</section>
+<section class="slide section-divider" id="23-context" aria-label="23. Let local evidence cover larger regions">
+<h1>Let local evidence cover larger regions</h1>
+<div class="content"><p class="section-question">Stacking layers combines local evidence. Downsampling reduces spatial resolution so later filters cover larger input regions.</p></div>
+<footer><span>Jiayuan Gu · ShanghaiTech University</span><span>Context and downsampling</span><span>23 / 36</span></footer>
+</section>
+<section class="slide " id="24-field" aria-label="24. Stacked layers expand the receptive field">
+<h1>Stacked layers expand the receptive field</h1>
+<div class="content"><div class="cols "><div><div id="rf-visual" class="demo-visual"></div></div><div><div class="demo-controls"><p><b>Receptive field:</b> the input region that can affect one output.</p><p class="small">Every layer: <m>3\times3</m>, stride 1; track an output away from the border.</p><label>Number of convolution layers: <b id="rf-value">3</b><input id="rf-depth" aria-label="Number of convolution layers" type="range" min="1" max="5" step="1" value="3"></label><m display="true">r_L=1+L(K-1)</m><p id="rf-result" class="query-readout" aria-live="polite"></p><button id="rf-reset">Reset</button></div></div></div></div>
+<footer><span><a href="https://distill.pub/2019/computing-receptive-fields/" target="_blank" rel="noopener">Araujo et al. · Distill 2019</a></span><span>Context and downsampling</span><span>24 / 36</span></footer>
+</section>
+<section class="slide " id="25-field-stride" aria-label="25. Downsampling makes later context grow faster">
+<h1>Downsampling makes later context grow faster</h1>
+<div class="content"><p><m>r_\ell</m>: receptive-field side; <m>j_\ell</m>: spacing between output centers in input pixels.</p><m class="step" data-stage="1" display="true">r_\ell=r_{\ell-1}+(K_\ell-1)j_{\ell-1},\qquad j_\ell=S_\ell j_{\ell-1}</m><table class="compact-table rf-table step" data-stage="2"><thead><tr><th>Layer</th><th><m>K,S</m></th><th><m>r</m></th><th><m>j</m></th></tr></thead><tbody><tr><td>Input</td><td>—</td><td>1</td><td>1</td></tr><tr><td>Conv → max pool</td><td>3,1 → 2,2</td><td>3 → 4</td><td>1 → 2</td></tr><tr><td>Conv → max pool</td><td>3,1 → 2,2</td><td>8 → 10</td><td>2 → 4</td></tr></tbody></table><p class="callout step" data-stage="3">The second <m>3\times3</m> convolution adds four input pixels to the field’s side.</p></div>
+<footer><span><a href="https://distill.pub/2019/computing-receptive-fields/" target="_blank" rel="noopener">Araujo et al. · receptive-field recurrence</a></span><span>Context and downsampling</span><span>25 / 36</span></footer>
+</section>
+<section class="slide " id="26-pool" aria-label="26. Pooling summarizes each channel separately">
+<h1>Pooling summarizes each channel separately</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/pool.svg" alt="Four disjoint two by two regions reduce a four by four input to a two by two max-pooled output"></figure><div class="cols compact pool-copy"><div class="step" data-stage="1"><p><b>Max:</b> keep the strongest response.</p><p><b>Average:</b> summarize the mean response.</p></div><div class="step" data-stage="2"><p><m>K=2,S=2</m>: halve each spatial side.</p><p>No learned weights; channel count stays fixed.</p></div></div></div>
+<footer><span><a href="https://d2l.ai/chapter_convolutional-neural-networks/pooling.html" target="_blank" rel="noopener">D2L · §7.5</a></span><span>Context and downsampling</span><span>26 / 36</span></footer>
+</section>
+<section class="slide " id="27-translation" aria-label="27. Equivariance is different from invariance">
+<h1>Equivariance is different from invariance</h1>
+<div class="content"><p class="small"><m>T_\delta</m> shifts an image or feature map by <m>\delta</m> pixels.</p><div class="cols translation"><div><h2>Equivariance</h2><m display="true">f(T_\delta X)=T_\delta f(X)</m><p>Shift the input; the feature map shifts.</p><p class="small">Stride-1 convolution on an infinite grid, or away from affected boundaries.</p></div><div class="step" data-stage="1"><h2>Invariance</h2><m display="true">f(T_\delta X)=f(X)</m><p>Shift the input; the output stays the same.</p><p class="small">An additional property, not implied by sharing.</p></div></div><div class="counterexample step" data-stage="2"><p><b>Max pool, <m>K=2,S=2</m>:</b> <m>[0,1,0,0]\mapsto[1,0]</m></p><p>Shift right one pixel: <m>[0,0,1,0]\mapsto[0,1]</m>.</p></div></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf" target="_blank" rel="noopener">CS231n · pp. 103–105; boundary and stride caveats</a></span><span>Context and downsampling</span><span>27 / 36</span></footer>
+</section>
+<section class="slide " id="28-classifier" aria-label="28. Assemble a small image classifier">
+<h1>Assemble a small image classifier</h1>
+<div class="content"><figure class="network-figure"><img src="assets/network.svg" alt="A two-block CNN maps RGB images through convolution, ReLU, pooling, global averaging and a linear ten-class head"></figure><p class="step" data-stage="1"><b>Global average pooling:</b> average each final <m>8\times8</m> map into one number.</p><p class="callout step" data-stage="2">The <b>classification head</b> maps 16 features to 10 <b>logits</b> (unnormalized class scores).</p></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html" target="_blank" rel="noopener">Original teaching architecture</a></span><span>Build and diagnose</span><span>28 / 36</span></footer>
+</section>
+<section class="slide " id="29-model-audit" aria-label="29. Check every layer before training">
+<h1>Check every layer before training</h1>
+<div class="content"><table class="model-table"><thead><tr><th>Layer</th><th>Output (batch axis omitted)</th><th>Parameters</th></tr></thead><tbody><tr><td>Input</td><td><m>3\times32\times32</m></td><td>0</td></tr><tr class="step" data-stage="1"><td>Conv <m>3\to8</m>, <m>K=3,P=1</m> + ReLU</td><td><m>8\times32\times32</m></td><td>224</td></tr><tr class="step" data-stage="1"><td>Max pool <m>K=2,S=2</m></td><td><m>8\times16\times16</m></td><td>0</td></tr><tr class="step" data-stage="2"><td>Conv <m>8\to16</m>, <m>K=3,P=1</m> + ReLU</td><td><m>16\times16\times16</m></td><td>1,168</td></tr><tr class="step" data-stage="2"><td>Max pool <m>K=2,S=2</m></td><td><m>16\times8\times8</m></td><td>0</td></tr><tr class="step" data-stage="3"><td>Global average → Linear <m>16\to10</m></td><td><m>16\to10</m></td><td>170</td></tr></tbody></table><p class="callout step" data-stage="4">Total: <b>1,562 parameters</b>, including biases. Conv stride is 1.</p></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html" target="_blank" rel="noopener">Original model audit</a></span><span>Build and diagnose</span><span>29 / 36</span></footer>
+</section>
+<section class="slide " id="30-code" aria-label="30. Express the same architecture in PyTorch">
+<h1>Express the same architecture in PyTorch</h1>
+<div class="content"><pre class="code-model" data-code="model">import torch
+from torch import nn
+
+model = nn.Sequential(
+    nn.Conv2d(3, 8, 3, padding=1), nn.ReLU(),
+    nn.MaxPool2d(2),
+<span class="step" data-stage="1">    nn.Conv2d(8, 16, 3, padding=1), nn.ReLU(),
+    nn.MaxPool2d(2),</span>
+<span class="step" data-stage="2">    nn.AdaptiveAvgPool2d(1), nn.Flatten(1),
+    nn.Linear(16, 10),</span>
+)
+<span class="step" data-stage="3">x = torch.randn(4, 3, 32, 32)
+assert model(x).shape == (4, 10)</span></pre></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html" target="_blank" rel="noopener">PyTorch · Conv2d / AdaptiveAvgPool2d</a></span><span>Build and diagnose</span><span>30 / 36</span></footer>
+</section>
+<section class="slide " id="31-training" aria-label="31. Train the logits with the familiar objective">
+<h1>Train the logits with the familiar objective</h1>
+<div class="content"><pre data-code="training">optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+criterion = nn.CrossEntropyLoss()
+model.train()
+
+# One synthetic batch: class indices 0, 1, 2, 3
+target = torch.tensor([0, 1, 2, 3], dtype=torch.long)
+<span class="step" data-stage="1">optimizer.zero_grad()
+logits = model(x)             # shape: (4, 10)
+loss = criterion(logits, target)</span>
+<span class="step" data-stage="2">loss.backward()
+optimizer.step()</span></pre><p class="callout step" data-stage="3">CrossEntropyLoss takes raw class scores and handles probability normalization internally.</p></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html" target="_blank" rel="noopener">PyTorch · CrossEntropyLoss</a></span><span>Build and diagnose</span><span>31 / 36</span></footer>
+</section>
+<section class="slide " id="32-diagnosis" aria-label="32. Repair two common tensor mismatches">
+<h1>Repair two common tensor mismatches</h1>
+<div class="content"><div class="cols compact diagnosis"><div><h2>Channels in the wrong axis</h2><pre>images.shape  # (4, 32, 32, 3)
+nn.Conv2d(3, 8, 3)(images)</pre><p>Conv2d expects channels in axis 1.</p><div class="step" data-stage="1"><p class="answer">Move the last axis to axis 1:</p><pre>images.permute(0, 3, 1, 2)
+# (4, 3, 32, 32)</pre></div></div><div class="step" data-stage="2"><h2>Too many features for the head</h2><pre>features.shape  # (4, 16, 8, 8)
+features.flatten(1)
+# (4, 1024)</pre><p>A 16-feature head cannot take 1,024 values.</p><div class="step" data-stage="3"><p class="answer">Average each map before flattening:</p><pre>nn.AdaptiveAvgPool2d(1)
+# (4, 16, 1, 1) → (4, 16)</pre></div></div></div></div>
+<footer><span><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html" target="_blank" rel="noopener">Original code diagnosis</a></span><span>Build and diagnose</span><span>32 / 36</span></footer>
+</section>
+<section class="slide " id="33-limits" aria-label="33. Architectural assumptions have limits">
+<h1>Architectural assumptions have limits</h1>
+<div class="content"><ul class="summary-list"><li><b>Position:</b> global averaging discards spatial arrangement.</li><li><b>Detail:</b> downsampling can remove small objects and thin structures.</li><li><b>Variation:</b> sharing alone does not handle rotation, scale, or changed imaging conditions.</li><li><b>Influence:</b> pixels inside a receptive field need not affect the output equally.</li></ul></div>
+<footer><span><a href="https://distill.pub/2019/computing-receptive-fields/" target="_blank" rel="noopener">Receptive fields · interpretation and limitations</a></span><span>Build and diagnose</span><span>33 / 36</span></footer>
+</section>
+<section class="slide " id="34-summary" aria-label="34. Connect structure, geometry, and learning">
+<h1>Connect structure, geometry, and learning</h1>
+<div class="content"><ol class="objectives"><li><b>Structure:</b> local connections and shared filters encode reusable evidence.</li><li><b>Computation:</b> each response sums spatial and channel products.</li><li><b>Geometry:</b> kernel, stride, and padding determine output shape.</li><li><b>Context:</b> depth and downsampling expand receptive fields.</li><li><b>Learning:</b> shared gradients and familiar losses train the whole classifier.</li></ol></div>
+<footer><span>Jiayuan Gu · ShanghaiTech University</span><span>Summary</span><span>34 / 36</span></footer>
+</section>
+<section class="slide " id="35-exit" aria-label="35. Check your understanding">
+<h1>Check your understanding</h1>
+<div class="content"><ol class="exit-review"><li><p>Input <m>8\times32\times32</m>; 16 filters, <m>K=3,S=2,P=1</m>.<br>Output shape and parameter count?</p><p class="answer step" data-stage="1"><m>16\times16\times16</m>; <m>16(8\cdot9+1)=1{,}168</m> parameters.</p></li><li><p>Two <m>3\times3</m>, stride-1 convolutions: receptive field?</p><p class="answer step" data-stage="2"><m>5\times5</m> in the original input, for an output away from the border.</p></li><li><p>Does weight sharing imply translation invariance?</p><p class="answer step" data-stage="3">No. A shift can move the feature map; strided pooling can change which window captures a feature.</p></li></ol></div>
+<footer><span>Jiayuan Gu · ShanghaiTech University</span><span>Exit check</span><span>35 / 36</span></footer>
+</section>
+<section class="slide " id="36-reading" aria-label="36. Reading and further study">
+<h1>Reading and further study</h1>
+<div class="content"><ul class="reading-list"><li><a href="https://cs231n.stanford.edu/slides/2026/lecture_5.pdf">Stanford CS231n · Lecture 5</a><p>Convolution, spatial dimensions, computational cost, and pooling.</p></li><li><a href="https://d2l.ai/chapter_convolutional-neural-networks/index.html">Dive into Deep Learning · §§7.1–7.5</a><p>Locality, sharing, padding, channels, and pooling.</p></li><li><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html">PyTorch · Conv2d</a> and <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html">CrossEntropyLoss</a><p>Input/output shapes and loss-function usage.</p></li><li><a href="https://distill.pub/2019/computing-receptive-fields/">Supplementary: Araujo, Norris &amp; Sim · Distill (2019)</a><p>Receptive-field derivations and alignment.</p></li></ul></div>
+<footer><span>Jiayuan Gu · ShanghaiTech University</span><span>Reading</span><span>36 / 36</span></footer>
+</section>
+</main>
+<div id="toolbar-zone" aria-hidden="true"></div><button id="toolbar-reveal" aria-controls="toolbar">Controls (T)</button><nav id="toolbar" aria-label="Presentation controls" aria-hidden="true" inert><button id="previous" title="Previous build or slide">←</button><span class="counter" id="count"></span><button id="next" title="Next build or slide">→</button><span id="stage-count"></span><button id="all">Show all</button><button id="overview-button">Slides</button><button id="notes-button">Notes</button><button id="fullscreen">Full screen</button><button id="pdf-button">Print / PDF</button><button id="help-button">?</button></nav><div id="progress"></div><div id="blank"></div>
+<aside class="overlay" id="overview" role="dialog" aria-label="Slide overview"><button class="close" data-close>Close</button><h2>Convolutional Neural Networks</h2><div id="overview-list" class="overview-list"></div></aside>
+<aside class="overlay" id="notes" role="dialog" aria-label="Speaker notes"><button class="close" data-close>Close</button><h2 id="notes-title"></h2><div id="notes-text"></div></aside>
+<aside class="overlay" id="help" role="dialog" aria-label="Keyboard shortcuts"><button class="close" data-close>Close</button><h2>Presentation controls</h2><table><tr><th>Right / Space / Page Down</th><td>Next reveal or slide</td></tr><tr><th>Left / Page Up</th><td>Previous reveal or slide</td></tr><tr><th>End</th><td>Reveal the entire current slide</td></tr><tr><th>Home</th><td>First slide</td></tr><tr><th>T</th><td>Show or hide the fixed control bar</td></tr><tr><th>O / N / F / B</th><td>Overview / notes / full screen / black screen</td></tr><tr><th>Esc</th><td>Close a panel, black screen, or toolbar</td></tr></table><p>The toolbar stays hidden during presentation. Move to the bottom edge to reveal it temporarily, or press T to show or hide it. It hides after 2.2 seconds away from its buttons. Its size stays fixed across slides.</p><p>For PDF: use Print / PDF, choose Save as PDF, enable background graphics, and disable browser headers and footers. All reveals print in their final state. For a guaranteed 16:9 version, use the supplied PDF.</p><p>Figures, fonts, equations, and interactions are bundled locally. Citation links require internet only when opened.</p></aside>
+<script type="application/json" id="slide-meta">[
+  {
+    "id": "01-title",
+    "title": "Convolutional Neural Networks",
+    "section": "CNN",
+    "notes": "Connect to the previous lecture: preserve losses, gradients, and SGD while adding spatial structure. Figures are original schematics, not measured model outputs.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_5.pdf",
+    "reference_pages": "17–19",
+    "reference_label": "CS231n · Lecture 5",
+    "kind": "content"
+  },
+  {
+    "id": "02-roadmap",
+    "title": "From local evidence to a classifier",
+    "section": "Roadmap",
+    "notes": "90-minute route: motivation 10 min; convolution 22 min; geometry and cost 23 min; context and pooling 18 min; classifier, diagnosis, and exit check 17 min. Activities and demonstrations are included in those times. This bullet-list slide is static: all items appear on entry, without intermediate advances.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_5.pdf",
+    "reference_pages": "43–44, 93, 102, 106",
+    "reference_label": "Lecture structure",
+    "kind": "content"
+  },
+  {
+    "id": "03-outcomes",
+    "title": "What you should be able to do",
+    "section": "Learning outcomes",
+    "notes": "Five outcomes remain: explain spatial assumptions, calculate outputs/gradients, derive shapes/cost, trace context/translation, implement/debug a classifier. Use the final untimed self-check for reflection; intermediate slides are explanatory demonstrations rather than repeated audience quizzes. This bullet-list slide is static: all items appear on entry, without intermediate advances.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "04-recap",
+    "title": "A dense layer has no built-in image geometry",
+    "section": "Spatial structure",
+    "notes": "Correct the common shorthand that flattening destroys information: reshaping is invertible. The loss is an architectural inductive bias, not numerical information. A dense network can learn spatial structure but is not constrained to exploit it. Connect to the previous lecture’s MLP.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.1",
+    "kind": "content"
+  },
+  {
+    "id": "05-pattern",
+    "title": "The same local pattern can occur anywhere",
+    "section": "Spatial structure",
+    "notes": "Show the translated edge and then reveal detector reuse. Shared weights express the same local rule at each location. No audience vote is required.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.1",
+    "kind": "content"
+  },
+  {
+    "id": "06-bias",
+    "title": "Two architectural constraints",
+    "section": "Spatial structure",
+    "notes": "Define inductive bias before using it: a structural assumption that favors some solutions. Reveal locality, sharing, then the name for their role. Absolute position can still matter for some tasks.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.1",
+    "kind": "content"
+  },
+  {
+    "id": "07-convolution",
+    "title": "Compute one local response",
+    "section": "Convolution",
+    "notes": "Define kernel/filter and bias here. The next example uses a hand-selected kernel to make arithmetic inspectable; trained kernels are learned from data.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "section-divider"
+  },
+  {
+    "id": "08-dot",
+    "title": "One patch produces one number",
+    "section": "Convolution",
+    "notes": "Read rows of the patch: [0,0,1], [0,1,2], [0,1,3]. Kernel rows are [-1,0,1]. Multiply corresponding entries, sum all nine products, and add one bias. Positive means right side is brighter for this chosen kernel; it is not a probability.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.2",
+    "kind": "content"
+  },
+  {
+    "id": "09-slide",
+    "title": "Slide the same kernel across the image",
+    "section": "Convolution",
+    "notes": "Demonstrate the scan without requiring a prediction. There are nine valid windows. Zero-based output row=floor(position/3), column=position mod 3. Output [[6,2,-6],[7,1,-7],[6,1,-6]]. Keep the input and kernel fixed. Selection uses outlines as well as color.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.2",
+    "kind": "content"
+  },
+  {
+    "id": "10-channels",
+    "title": "Sum over every input channel",
+    "section": "Convolution",
+    "notes": "The pictured special case uses a 1×1 kernel and three input channels; it mixes channels at one spatial location. General 3×3 kernels do the same after each channel’s nine products. This lecture assumes groups=1 and dilation=1 unless explicitly stated.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/channels.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.4",
+    "kind": "content"
+  },
+  {
+    "id": "11-tensors",
+    "title": "A filter bank creates output channels",
+    "section": "Convolution",
+    "notes": "A feature map is one output channel; activations are computed values. NCHW names the axis order: batch size, channels, height, width. Define N as the number of images, C as channel count, H/W as spatial dimensions. The eight filters are each 3×3×3, with one bias each. One-pixel steps and a zero border preserve spatial size.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_5.pdf",
+    "reference_pages": "57–61",
+    "reference_label": "CS231n · pp. 57–61",
+    "kind": "content"
+  },
+  {
+    "id": "12-equation",
+    "title": "Write the operator precisely",
+    "section": "Convolution",
+    "notes": "All indices are zero-based. This is a square kernel with symmetric padding P and stride S, groups=1, dilation=1. Tilde X includes P zeros on each edge; original X coordinate is (iS+u−P,jS+v−P). True mathematical convolution flips the spatial kernel. For trainable unconstrained kernels the representable family is unchanged.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+    "reference_pages": "",
+    "reference_label": "PyTorch · Conv2d",
+    "kind": "content"
+  },
+  {
+    "id": "13-gradient",
+    "title": "Shared weights collect gradients from all uses",
+    "section": "Convolution",
+    "notes": "The gradient arriving from later layers is often called the upstream gradient. Reveal the two weight derivatives together, then the shared-gradient rule. For L=4z0+5z1, da=14 and db=23. Contributions from every use add. Mean-loss scaling is already included in the incoming derivatives.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.2; original gradient example",
+    "kind": "content"
+  },
+  {
+    "id": "14-relu",
+    "title": "Nonlinearity makes stacked layers expressive",
+    "section": "Convolution",
+    "notes": "ReLU means rectified linear unit. It clips negative values, keeps nonnegative values, and does not change shape. An affine map is a weighted sum plus bias. Composing affine maps without nonlinearities remains affine. Deeper feature interpretations belong in discussion, not an extra paragraph on the slide.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_5.pdf",
+    "reference_pages": "62–68",
+    "reference_label": "CS231n · pp. 62–68",
+    "kind": "content"
+  },
+  {
+    "id": "15-geometry",
+    "title": "Control shape and cost",
+    "section": "Geometry and cost",
+    "notes": "Transition from what one output means to how many outputs a layer creates.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "section-divider"
+  },
+  {
+    "id": "16-stride",
+    "title": "Stride sets the step size",
+    "section": "Geometry and cost",
+    "notes": "Stride is the input-pixel step between successive kernel positions. The same 7×7 input and 3×3 kernel produce 5×5 at stride 1 and 3×3 at stride 2, with no padding. Weight count does not depend on stride.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/padding-and-strides.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.3",
+    "kind": "content"
+  },
+  {
+    "id": "17-padding",
+    "title": "Padding adds a boundary convention",
+    "section": "Geometry and cost",
+    "notes": "Define P as the number of zeros on each side. For K=3 and P=1, padded side is 9 and output side is 7. Same-size padding here assumes odd kernel and stride one; it is not a general statement about every API’s padding=\"same\". Do not claim padding preserves new image information.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/padding-and-strides.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.3",
+    "kind": "content"
+  },
+  {
+    "id": "18-shape",
+    "title": "Count valid kernel placements",
+    "section": "Geometry and cost",
+    "notes": "Assume H+2P≥K, W+2P≥K, positive integer stride, dilation one. Derive the floor from allowed output start indices, not memorization. For the H=8 example the final row at index 7 is unused. The source lecture’s simple expression assumes exact division; PyTorch uses the floor in general.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+    "reference_pages": "",
+    "reference_label": "PyTorch · output shape",
+    "kind": "content"
+  },
+  {
+    "id": "19-shape-lab",
+    "title": "See how each setting changes the output",
+    "section": "Geometry and cost",
+    "notes": "An explanatory calculator, not a prediction prompt. The readout reports parameter count and output values; MAC terminology is introduced on slide 22. Default K3,S1,P1,H32 gives 8×32×32, 224 parameters, 8192 output values. Stride 2 gives 8×16×16 and 2048 output values while keeping 224 parameters. Reset restores defaults.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+    "reference_pages": "",
+    "reference_label": "PyTorch · Conv2d; original calculator",
+    "kind": "content"
+  },
+  {
+    "id": "20-pair-audit",
+    "title": "Work through a convolutional layer",
+    "section": "Geometry and cost",
+    "notes": "Worked example, replacing the timed pair quiz. Reveal weights, output, parameter count, then the batch-size conclusion. Weights 16×8×3×3; bias 16; output N×16×8×8. Parameters 16(8·9+1)=1168. Doubling N changes batch activations and computation, not learned tensors.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+    "reference_pages": "",
+    "reference_label": "Original worked example",
+    "kind": "content"
+  },
+  {
+    "id": "21-parameters",
+    "title": "Sharing separates parameters from output size",
+    "section": "Geometry and cost",
+    "notes": "Holding output count fixed makes this a controlled comparison. Local unshared assumes a full per-position3×3×3 filter even at padded edges; coefficients multiplying fixed zeros are still stored by this convention. A bias is per output for unshared/dense and per output channel for shared convolution. Batch size and input spatial size do not occur in the shared parameter formula.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_5.pdf",
+    "reference_pages": "87–93",
+    "reference_label": "CS231n · counting methods; original comparison",
+    "kind": "content"
+  },
+  {
+    "id": "22-compute",
+    "title": "Count the multiply–accumulate operations",
+    "section": "Geometry and cost",
+    "notes": "Define MAC as multiply–accumulate: multiply x and w, then add the product to accumulator a. Count all kernel products, including padded zeros; omit bias additions, ReLU and backward work. One output uses 27 MACs, and 8192 outputs use 221184 MACs per image. Batch work scales with N. Some FLOP conventions count a MAC as two floating-point operations; this is not a hardware runtime measurement.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_5.pdf",
+    "reference_pages": "91–93",
+    "reference_label": "CS231n · pp. 91–93; original numbers",
+    "kind": "content"
+  },
+  {
+    "id": "23-context",
+    "title": "Let local evidence cover larger regions",
+    "section": "Context and downsampling",
+    "notes": "Bridge: stacking grows receptive fields, while downsampling makes later layers cover larger portions of the input. Avoid equating larger receptive fields with guaranteed use of all their pixels.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "section-divider"
+  },
+  {
+    "id": "24-field",
+    "title": "Stacked layers expand the receptive field",
+    "section": "Context and downsampling",
+    "notes": "Define receptive field as the original-input region that can affect one output. Demonstrate depth changes without posing a prediction task. For K3,S1 and no dilation, depths 1–5 give field sides 3,5,7,9,11. Assume an output away from the border and a sufficiently large input. Theoretical field size does not imply uniform influence.",
+    "reference_url": "https://distill.pub/2019/computing-receptive-fields/",
+    "reference_pages": "",
+    "reference_label": "Araujo et al. · Distill 2019",
+    "kind": "content"
+  },
+  {
+    "id": "25-field-stride",
+    "title": "Downsampling makes later context grow faster",
+    "section": "Context and downsampling",
+    "notes": "Derive using the previous jump, not the new jump. Start r0=j0=1. Conv3S1:r3,j1. Pool2S2:r4,j2. Conv3S1:r8,j2. Pool2S2:r10,j4. ReLU changes neither. These are the feature extractor layers in the classifier shown later. Padding changes alignment/border content, not this theoretical size recurrence. Groups and dilation are outside the main scope.",
+    "reference_url": "https://distill.pub/2019/computing-receptive-fields/",
+    "reference_pages": "",
+    "reference_label": "Araujo et al. · receptive-field recurrence",
+    "kind": "content"
+  },
+  {
+    "id": "26-pool",
+    "title": "Pooling summarizes each channel separately",
+    "section": "Context and downsampling",
+    "notes": "Explain the pictured reductions directly. Max output [[4,5],[2,6]]; average output [[2.5,2],[0.75,3]]. A unique maximum receives the max-pool gradient; an average shares it across the window. Pooling processes each channel separately and has no learned parameters.",
+    "reference_url": "https://d2l.ai/chapter_convolutional-neural-networks/pooling.html",
+    "reference_pages": "",
+    "reference_label": "D2L · §7.5",
+    "kind": "content"
+  },
+  {
+    "id": "27-translation",
+    "title": "Equivariance is different from invariance",
+    "section": "Context and downsampling",
+    "notes": "Define T_delta before comparing the two properties. Reveal invariance after equivariance, then the pooling counterexample. A one-pixel shift [0,1,0,0] to [0,0,1,0] changes stride-2 max pooling from [1,0] to [0,1]. Exact equivariance also depends on compatible boundaries and stride-aligned shifts.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_5.pdf",
+    "reference_pages": "103–105",
+    "reference_label": "CS231n · pp. 103–105; boundary and stride caveats",
+    "kind": "content"
+  },
+  {
+    "id": "28-classifier",
+    "title": "Assemble a small image classifier",
+    "section": "Build and diagnose",
+    "notes": "The classification head is the final mapping from features to class scores. Logits are unnormalized scores before conversion to probabilities. Global average pooling (GAP) averages each channel spatially. The original teaching architecture has 1562 parameters and no claimed benchmark accuracy.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html",
+    "reference_pages": "",
+    "reference_label": "Original teaching architecture",
+    "kind": "content"
+  },
+  {
+    "id": "29-model-audit",
+    "title": "Check every layer before training",
+    "section": "Build and diagnose",
+    "notes": "Reveal the two convolution/pooling blocks, then the classifier row and total. Conv1:224; Conv2:1168; head:170; total:1562. GAP returns 16 features; flattening the unpooled 16×8×8 maps would return 1024.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+    "reference_pages": "",
+    "reference_label": "Original model audit",
+    "kind": "content"
+  },
+  {
+    "id": "30-code",
+    "title": "Express the same architecture in PyTorch",
+    "section": "Build and diagnose",
+    "notes": "Reveal the second block, pooled classifier, then executable shape check. Plain code extraction remains unchanged. Defaults: convolution stride 1, groups 1, dilation 1, enabled bias. Groups partitions channel connectivity; dilation spaces kernel taps. Those optional API features are outside this lecture.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+    "reference_pages": "",
+    "reference_label": "PyTorch · Conv2d / AdaptiveAvgPool2d",
+    "kind": "content"
+  },
+  {
+    "id": "31-training",
+    "title": "Train the logits with the familiar objective",
+    "section": "Build and diagnose",
+    "notes": "This synthetic batch demonstrates one valid update, not training performance. Images and labels are placeholders; real work uses a dataloader, fixed split, training-set normalization, appropriate augmentation, and validation monitoring. Target is long class indices. Do not apply softmax before this criterion. Evaluate with model.eval() and torch.no_grad(); select hyperparameters using validation and reserve the test set.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+    "reference_pages": "",
+    "reference_label": "PyTorch · CrossEntropyLoss",
+    "kind": "content"
+  },
+  {
+    "id": "32-diagnosis",
+    "title": "Repair two common tensor mismatches",
+    "section": "Build and diagnose",
+    "notes": "Explain the first mismatch, reveal its correction, then show the second mismatch and correction. Channels-last input (4,32,32,3) becomes NCHW with permute(0,3,1,2). Flattening (4,16,8,8) gives 1024 features. Global averaging before flattening restores the intended 16-feature input. No timed response is required.",
+    "reference_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+    "reference_pages": "",
+    "reference_label": "Original code diagnosis",
+    "kind": "content"
+  },
+  {
+    "id": "33-limits",
+    "title": "Architectural assumptions have limits",
+    "section": "Build and diagnose",
+    "notes": "Use task choices as discussion: fine-grained boundaries may need high-resolution features; image classification often tolerates compressed spatial detail. These are reasoned architectural tradeoffs, not measured outcomes for this synthetic model. Do not promise robustness from parameter sharing alone. This bullet-list slide is static: all items appear on entry, without intermediate advances.",
+    "reference_url": "https://distill.pub/2019/computing-receptive-fields/",
+    "reference_pages": "",
+    "reference_label": "Receptive fields · interpretation and limitations",
+    "kind": "content"
+  },
+  {
+    "id": "34-summary",
+    "title": "Connect structure, geometry, and learning",
+    "section": "Summary",
+    "notes": "Revisit the five outcomes through the worked examples. Emphasize the order: specify axes, calculate shapes, count parameters, then train. Present the complete summary at once. This bullet-list slide is static: all items appear on entry, without intermediate advances.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "35-exit",
+    "title": "Check your understanding",
+    "section": "Exit check",
+    "notes": "Untimed self-check with no submission requirement. All three questions are initially visible; answers are hidden. Advance reveals answers one at a time; Left hides them in reverse, and End reveals all. Answers: output 16×16×16, 1168 parameters; field 5×5; sharing does not imply invariance. The PDF includes completed answers. Offer discussion or private reflection without collecting or scoring responses.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "36-reading",
+    "title": "Reading and further study",
+    "section": "Reading",
+    "notes": "Point students to the source lecture for the operator overview, D2L for worked explanations, PyTorch for API contracts, and the supplementary Distill article for receptive-field derivations.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  }
+]</script>
+<script src="vendor/katex.min.js"></script><script src="source/math.js"></script><script src="source/diagrams.js"></script><script src="source/interactions.js"></script><script src="source/app.js"></script></body></html>

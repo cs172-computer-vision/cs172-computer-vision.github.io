@@ -1,0 +1,260 @@
+{
+  "slides": 36,
+  "page_errors": [],
+  "external_requests": [],
+  "layout": [
+    {
+      "id": "01-title",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "01 / 36"
+    },
+    {
+      "id": "02-roadmap",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "02 / 36"
+    },
+    {
+      "id": "03-outcomes",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "03 / 36"
+    },
+    {
+      "id": "04-recap",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "04 / 36"
+    },
+    {
+      "id": "05-pattern",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "05 / 36"
+    },
+    {
+      "id": "06-bias",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "06 / 36"
+    },
+    {
+      "id": "07-convolution",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "07 / 36"
+    },
+    {
+      "id": "08-dot",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "08 / 36"
+    },
+    {
+      "id": "09-slide",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "09 / 36"
+    },
+    {
+      "id": "10-channels",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "10 / 36"
+    },
+    {
+      "id": "11-tensors",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "11 / 36"
+    },
+    {
+      "id": "12-equation",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "12 / 36"
+    },
+    {
+      "id": "13-gradient",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "13 / 36"
+    },
+    {
+      "id": "14-relu",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "14 / 36"
+    },
+    {
+      "id": "15-geometry",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "15 / 36"
+    },
+    {
+      "id": "16-stride",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "16 / 36"
+    },
+    {
+      "id": "17-padding",
+      "bad": [],
+      "images": true,
+      "stage": "1",
+      "counter": "17 / 36"
+    },
+    {
+      "id": "18-shape",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "18 / 36"
+    },
+    {
+      "id": "19-shape-lab",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "19 / 36"
+    },
+    {
+      "id": "20-pair-audit",
+      "bad": [],
+      "images": true,
+      "stage": "4",
+      "counter": "20 / 36"
+    },
+    {
+      "id": "21-parameters",
+      "bad": [],
+      "images": true,
+      "stage": "4",
+      "counter": "21 / 36"
+    },
+    {
+      "id": "22-compute",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "22 / 36"
+    },
+    {
+      "id": "23-context",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "23 / 36"
+    },
+    {
+      "id": "24-field",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "24 / 36"
+    },
+    {
+      "id": "25-field-stride",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "25 / 36"
+    },
+    {
+      "id": "26-pool",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "26 / 36"
+    },
+    {
+      "id": "27-translation",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "27 / 36"
+    },
+    {
+      "id": "28-classifier",
+      "bad": [],
+      "images": true,
+      "stage": "2",
+      "counter": "28 / 36"
+    },
+    {
+      "id": "29-model-audit",
+      "bad": [],
+      "images": true,
+      "stage": "4",
+      "counter": "29 / 36"
+    },
+    {
+      "id": "30-code",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "30 / 36"
+    },
+    {
+      "id": "31-training",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "31 / 36"
+    },
+    {
+      "id": "32-diagnosis",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "32 / 36"
+    },
+    {
+      "id": "33-limits",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "33 / 36"
+    },
+    {
+      "id": "34-summary",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "34 / 36"
+    },
+    {
+      "id": "35-exit",
+      "bad": [],
+      "images": true,
+      "stage": "3",
+      "counter": "35 / 36"
+    },
+    {
+      "id": "36-reading",
+      "bad": [],
+      "images": true,
+      "stage": "0",
+      "counter": "36 / 36"
+    }
+  ],
+  "checks": "Offline file://; all-slide layout/counters/images; forward/reverse builds; notes/overview; fullscreen/black screen; toolbar/autohide; responsive scaling; deck-specific interactions and resets."
+}

@@ -1,0 +1,37 @@
+slide,id,title,section,reference_url,reference_pdf_pages_1_based,reference_label
+1,01-title,Convolutional Neural Networks,CNN,https://cs231n.stanford.edu/slides/2026/lecture_5.pdf,17–19,CS231n · Lecture 5
+2,02-roadmap,From local evidence to a classifier,Roadmap,https://cs231n.stanford.edu/slides/2026/lecture_5.pdf,"43–44, 93, 102, 106",Lecture structure
+3,03-outcomes,What you should be able to do,Learning outcomes,,,
+4,04-recap,A dense layer has no built-in image geometry,Spatial structure,https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html,,D2L · §7.1
+5,05-pattern,The same local pattern can occur anywhere,Spatial structure,https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html,,D2L · §7.1
+6,06-bias,Two architectural constraints,Spatial structure,https://d2l.ai/chapter_convolutional-neural-networks/why-conv.html,,D2L · §7.1
+7,07-convolution,Compute one local response,Convolution,,,
+8,08-dot,One patch produces one number,Convolution,https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html,,D2L · §7.2
+9,09-slide,Slide the same kernel across the image,Convolution,https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html,,D2L · §7.2
+10,10-channels,Sum over every input channel,Convolution,https://d2l.ai/chapter_convolutional-neural-networks/channels.html,,D2L · §7.4
+11,11-tensors,A filter bank creates output channels,Convolution,https://cs231n.stanford.edu/slides/2026/lecture_5.pdf,57–61,CS231n · pp. 57–61
+12,12-equation,Write the operator precisely,Convolution,https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html,,PyTorch · Conv2d
+13,13-gradient,Shared weights collect gradients from all uses,Convolution,https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html,,D2L · §7.2; original gradient example
+14,14-relu,Nonlinearity makes stacked layers expressive,Convolution,https://cs231n.stanford.edu/slides/2026/lecture_5.pdf,62–68,CS231n · pp. 62–68
+15,15-geometry,Control shape and cost,Geometry and cost,,,
+16,16-stride,Stride sets the step size,Geometry and cost,https://d2l.ai/chapter_convolutional-neural-networks/padding-and-strides.html,,D2L · §7.3
+17,17-padding,Padding adds a boundary convention,Geometry and cost,https://d2l.ai/chapter_convolutional-neural-networks/padding-and-strides.html,,D2L · §7.3
+18,18-shape,Count valid kernel placements,Geometry and cost,https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html,,PyTorch · output shape
+19,19-shape-lab,See how each setting changes the output,Geometry and cost,https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html,,PyTorch · Conv2d; original calculator
+20,20-pair-audit,Work through a convolutional layer,Geometry and cost,https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html,,Original worked example
+21,21-parameters,Sharing separates parameters from output size,Geometry and cost,https://cs231n.stanford.edu/slides/2026/lecture_5.pdf,87–93,CS231n · counting methods; original comparison
+22,22-compute,Count the multiply–accumulate operations,Geometry and cost,https://cs231n.stanford.edu/slides/2026/lecture_5.pdf,91–93,CS231n · pp. 91–93; original numbers
+23,23-context,Let local evidence cover larger regions,Context and downsampling,,,
+24,24-field,Stacked layers expand the receptive field,Context and downsampling,https://distill.pub/2019/computing-receptive-fields/,,Araujo et al. · Distill 2019
+25,25-field-stride,Downsampling makes later context grow faster,Context and downsampling,https://distill.pub/2019/computing-receptive-fields/,,Araujo et al. · receptive-field recurrence
+26,26-pool,Pooling summarizes each channel separately,Context and downsampling,https://d2l.ai/chapter_convolutional-neural-networks/pooling.html,,D2L · §7.5
+27,27-translation,Equivariance is different from invariance,Context and downsampling,https://cs231n.stanford.edu/slides/2026/lecture_5.pdf,103–105,CS231n · pp. 103–105; boundary and stride caveats
+28,28-classifier,Assemble a small image classifier,Build and diagnose,https://docs.pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html,,Original teaching architecture
+29,29-model-audit,Check every layer before training,Build and diagnose,https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html,,Original model audit
+30,30-code,Express the same architecture in PyTorch,Build and diagnose,https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html,,PyTorch · Conv2d / AdaptiveAvgPool2d
+31,31-training,Train the logits with the familiar objective,Build and diagnose,https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html,,PyTorch · CrossEntropyLoss
+32,32-diagnosis,Repair two common tensor mismatches,Build and diagnose,https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html,,Original code diagnosis
+33,33-limits,Architectural assumptions have limits,Build and diagnose,https://distill.pub/2019/computing-receptive-fields/,,Receptive fields · interpretation and limitations
+34,34-summary,"Connect structure, geometry, and learning",Summary,,,
+35,35-exit,Check your understanding,Exit check,,,
+36,36-reading,Reading and further study,Reading,,,
