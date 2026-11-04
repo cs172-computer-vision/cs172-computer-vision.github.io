@@ -1,0 +1,38 @@
+slide,id,title,section,reference_url,reference_pdf_pages_1_based,reference_label
+1,01-title,CNN Architecture,Introduction,https://cs231n.stanford.edu/slides/2026/lecture_6.pdf,"4, 33–58",CS231n 2026 · Lecture 6
+2,02-roadmap,From layers to design decisions,Roadmap,,,
+3,04-retrieval,Before we add another layer,Building blocks,,,
+4,05-cost,"Convolution: weights, computation, output",Building blocks,,,
+5,06-blocks,A network is a sequence of stages,Building blocks,,,
+6,07-batchnorm,Normalize features within a channel,Building blocks,https://arxiv.org/abs/1502.03167,,Ioffe & Szegedy · BatchNorm
+7,08-training,Architecture needs a training contract,Building blocks,https://cs231n.stanford.edu/slides/2026/lecture_6.pdf,"9–31, 60–66, 70–71",CS231n · Block and training context
+8,09-motifs,Three ways to compose features,Building blocks,,,
+9,10-vgg,"VGG: repeat a small, regular block",Context and branches,https://arxiv.org/abs/1409.1556,,"Simonyan & Zisserman · §2, Table 1"
+10,11-context,Repeated local filters grow context,Context and branches,https://arxiv.org/abs/1409.1556,,VGG · Small-filter rationale
+11,12-small-filters,"Same context, different computation",Context and branches,https://arxiv.org/abs/1409.1556,,VGG · §2.3
+12,13-context-check,Trace a change in resolution,Context and branches,,,
+13,14-global-pooling,The classifier can dominate the weights,Context and branches,,,
+14,15-branches,Combine evidence at different scales,Context and branches,https://arxiv.org/abs/1409.4842,,Szegedy et al. · §4
+15,16-inception,Inception: branches with channel reduction,Context and branches,https://arxiv.org/pdf/1409.4842#page=5,,Szegedy et al. · Original Figure 2(b)
+16,17-pointwise,A 1 × 1 filter mixes channels,Context and branches,,,
+17,18-reduction,Spend spatial computation at a smaller width,Context and branches,,,
+18,19-branch-check,Can these branch outputs be merged?,Context and branches,,,
+19,20-depth,Make depth trainable,Residual networks,https://cs231n.stanford.edu/slides/2026/lecture_6.pdf,45–58,CS231n · Residual architecture case study
+20,21-degradation,Training error diagnoses the failure,Residual networks,https://arxiv.org/pdf/1512.03385#page=1,,He et al. · Original Figure 1
+21,22-residual,Learn a correction to the input,Residual networks,https://cs231n.stanford.edu/slides/2026/lecture_6.pdf#page=52,52,"CS231n 2026 · Original block, p. 52"
+22,23-gradient,The shortcut contributes an identity term,Residual networks,https://arxiv.org/abs/1512.03385,,ResNet · Residual mapping
+23,24-projection,A shortcut must match the residual shape,Residual networks,https://arxiv.org/abs/1512.03385,,"ResNet · §3.2, projection shortcut"
+24,25-resnet18,Read a complete residual network,Residual networks,https://arxiv.org/abs/1512.03385,,ResNet · Table 1
+25,26-bottleneck,A residual bottleneck controls width,Residual networks,https://arxiv.org/pdf/1512.03385#page=6,,He et al. · Original Figure 5
+26,27-code,Implement the block contract,Residual networks,https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html,,PyTorch · ResNet18; executable companion
+27,28-debug,Find the broken residual transition,Residual networks,,,
+28,29-merge-check,Addition and concatenation encode different choices,Residual networks,,,
+29,30-efficiency,Design within a budget,Efficient architecture,https://arxiv.org/abs/1704.04861,,Howard et al. · Efficient convolution
+30,31-depthwise,Factor spatial filtering and channel mixing,Efficient architecture,https://arxiv.org/pdf/1704.04861#page=3,,"Howard et al. · Original Figure 2(b,c)"
+31,32-budget,Explore width and spatial cost,Efficient architecture,https://arxiv.org/abs/1704.04861,,MobileNet · Factorized cost model
+32,33-latency,Fewer MACs do not guarantee lower latency,Efficient architecture,,,
+33,36-transfer,Choose what to reuse and what to learn,Transfer and evaluation,https://cs231n.stanford.edu/slides/2026/lecture_6.pdf,78–87,CS231n · Transfer learning
+34,37-evaluation,An architecture claim needs a fair experiment,Transfer and evaluation,,,
+35,38-summary,Carry the design principles forward,Synthesis,,,
+36,39-exit,Exit check,Assessment,,,
+37,40-reading,Reading and further study,Reading,,,

@@ -1,0 +1,104 @@
+[
+  {
+    "asset": "paper-inception-module.png",
+    "pdf": "inception.pdf",
+    "page": 5,
+    "clip": [
+      312,
+      87,
+      499,
+      182
+    ],
+    "figure": "Figure 2(b)",
+    "url": "https://arxiv.org/pdf/1409.4842",
+    "credit": "Szegedy et al., Going Deeper with Convolutions, CVPR 2015",
+    "source_sha256": "ba83bd105ffa669ccb2aa240d3176b8cb1c98355257ddee8e64aa486d5ade92a",
+    "treatment": "High-resolution crop; original artwork and labels preserved. Neighboring blue annotation is masked only for the lecture block. Authors retain copyright."
+  },
+  {
+    "asset": "paper-resnet-degradation.png",
+    "pdf": "resnet.pdf",
+    "page": 1,
+    "clip": [
+      306,
+      219,
+      546,
+      305
+    ],
+    "figure": "Figure 1 (both plots; caption excluded)",
+    "url": "https://arxiv.org/pdf/1512.03385",
+    "credit": "He et al., Deep Residual Learning for Image Recognition, CVPR 2016",
+    "source_sha256": "1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a",
+    "treatment": "High-resolution crop; original artwork and labels preserved. Neighboring blue annotation is masked only for the lecture block. Authors retain copyright."
+  },
+  {
+    "asset": "lecture-residual-block.png",
+    "pdf": "cs231n-2026-lecture-6.pdf",
+    "page": 52,
+    "clip": [
+      315,
+      127,
+      562,
+      343
+    ],
+    "mask": [
+      535,
+      127,
+      562,
+      177
+    ],
+    "figure": "Residual-block illustration only",
+    "url": "https://cs231n.stanford.edu/slides/2026/lecture_6.pdf",
+    "credit": "Stanford CS231n 2026 Lecture 6, slide 52; credited there to He et al.",
+    "source_sha256": "05ae6b919876b096391acee6d70c36c0ff36be6654378d34825e15ad19c0f47a",
+    "treatment": "High-resolution crop; original artwork and labels preserved. Neighboring blue annotation is masked only for the lecture block. Authors retain copyright."
+  },
+  {
+    "asset": "paper-resnet-blocks.png",
+    "pdf": "resnet.pdf",
+    "page": 6,
+    "clip": [
+      329,
+      70,
+      537,
+      144
+    ],
+    "figure": "Figure 5 (both blocks; caption excluded)",
+    "url": "https://arxiv.org/pdf/1512.03385",
+    "credit": "He et al., Deep Residual Learning for Image Recognition, CVPR 2016",
+    "source_sha256": "1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a",
+    "treatment": "High-resolution crop; original artwork and labels preserved. Neighboring blue annotation is masked only for the lecture block. Authors retain copyright."
+  },
+  {
+    "asset": "paper-depthwise-filters.png",
+    "pdf": "mobilenet.pdf",
+    "page": 3,
+    "clip": [
+      320,
+      190,
+      538,
+      251
+    ],
+    "figure": "Figure 2(b), excluding caption",
+    "url": "https://arxiv.org/pdf/1704.04861",
+    "credit": "Howard et al., MobileNets, 2017",
+    "source_sha256": "9fd87b02ecc96c1ecf2b8c2166faf969a2acb187ab3e1e9333b26d226387ff55",
+    "treatment": "High-resolution crop; original artwork and labels preserved. Neighboring blue annotation is masked only for the lecture block. Authors retain copyright."
+  },
+  {
+    "asset": "paper-pointwise-filters.png",
+    "pdf": "mobilenet.pdf",
+    "page": 3,
+    "clip": [
+      320,
+      286,
+      538,
+      362
+    ],
+    "figure": "Figure 2(c), excluding caption",
+    "url": "https://arxiv.org/pdf/1704.04861",
+    "credit": "Howard et al., MobileNets, 2017",
+    "source_sha256": "9fd87b02ecc96c1ecf2b8c2166faf969a2acb187ab3e1e9333b26d226387ff55",
+    "treatment": "High-resolution crop; original artwork and labels preserved. Neighboring blue annotation is masked only for the lecture block. Authors retain copyright."
+  }
+]

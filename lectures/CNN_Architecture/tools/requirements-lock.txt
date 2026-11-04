@@ -1,0 +1,7 @@
+# Verified authoring environment, Python 3.9 on macOS arm64.
+greenlet==3.2.5
+pillow==11.3.0
+playwright==1.58.0
+pyee==13.0.1
+PyMuPDF==1.26.5
+typing_extensions==4.16.0

@@ -1,0 +1,2 @@
+# Optional authoring check; never needed to present.
+torch==2.8.0

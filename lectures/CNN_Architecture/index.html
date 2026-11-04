@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="CS172 Computer Vision I: CNN Architecture. Offline slides, worked calculations, residual blocks, and an interactive compute explorer."><title>CNN Architecture · CS172</title><link rel="stylesheet" href="vendor/katex.min.css"><link rel="stylesheet" href="source/style.css"></head><body><main id="viewport">
+<section class="slide " id="01-title" aria-label="1. CNN Architecture">
+<h1>CNN Architecture</h1>
+<div class="content"><div class="cols followed"><div><div class="title-meta"><p class="course-name">CS172 · Computer Vision I</p><p>Jiayuan Gu</p><p>ShanghaiTech University</p></div></div><div><figure class="title-figure"><img src="assets/title.svg" alt="Three network motifs: sequential filters, parallel branches, and a residual shortcut"></figure></div></div></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_6.pdf" target="_blank" rel="noopener">CS231n 2026 · Lecture 6</a></span><span>Introduction</span><span>01 / 37</span></footer>
+</section>
+<section class="slide " id="02-roadmap" aria-label="2. From layers to design decisions">
+<h1>From layers to design decisions</h1>
+<div class="content"><ol class="agenda"><li><b>Build a reliable block</b><span>Shapes, cost, normalization, and activation.</span></li><li><b>Grow context and combine paths</b><span>VGG, global pooling, and Inception.</span></li><li><b>Make depth trainable</b><span>Residual learning, projection, and implementation.</span></li><li><b>Design under constraints</b><span>Efficient operators, transfer, and model evaluation.</span></li></ol></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Roadmap</span><span>02 / 37</span></footer>
+</section>
+<section class="slide " id="04-retrieval" aria-label="3. Before we add another layer">
+<h1>Before we add another layer</h1>
+<div class="content"><p>Input: <m>32\times32\times64</m>. Apply a <m>3\times3</m> convolution with 128 output channels, stride 2, padding 1.</p><ol class="spaced"><li>What is the output shape?</li><li>How many weights, excluding bias?</li><li>Does halving the resolution halve the weight count?</li></ol></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Building blocks</span><span>03 / 37</span></footer>
+</section>
+<section class="slide " id="05-cost" aria-label="4. Convolution: weights, computation, output">
+<h1>Convolution: weights, computation, output</h1>
+<div class="content"><m display="true">H_o=\left\lfloor\frac{H+2p-k}{s}\right\rfloor+1</m><div class="cost-concepts"><div><h2>Weights</h2><svg class="lesson-diagram" viewBox="0 0 380 200" role="img" aria-label="A stack of spatial filter weights, spanning input channels"><defs><marker id="flow-1" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="100" y="35" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="132" y="35" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="164" y="35" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="100" y="67" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="132" y="67" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="164" y="67" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="100" y="99" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="132" y="99" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="164" y="99" width="30" height="30" fill="#dceafa" stroke="white"/><rect x="133" y="26" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="165" y="26" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="197" y="26" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="133" y="58" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="165" y="58" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="197" y="58" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="133" y="90" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="165" y="90" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="197" y="90" width="30" height="30" fill="#bad6f5" stroke="white"/><rect x="166" y="17" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="198" y="17" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="230" y="17" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="166" y="49" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="198" y="49" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="230" y="49" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="166" y="81" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="198" y="81" width="30" height="30" fill="#87b6e8" stroke="white"/><rect x="230" y="81" width="30" height="30" fill="#87b6e8" stroke="white"/><text x="190" y="174" font-size="27" fill="#14243c" text-anchor="middle">k × k × Cᵢₙ × Cₒᵤₜ</text></g></svg><m display="true">k^2C_{in}C_{out}\;\text{parameters}</m></div><div class="step" data-stage="1"><h2>Computation</h2><svg class="lesson-diagram" viewBox="0 0 380 200" role="img" aria-label="A filter is applied at every output spatial location"><defs><marker id="flow-2" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="65" y="10" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="107" y="10" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="149" y="10" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="191" y="10" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="233" y="10" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="275" y="10" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="65" y="42" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="107" y="42" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="149" y="42" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="191" y="42" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="233" y="42" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="275" y="42" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="65" y="74" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="107" y="74" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="149" y="74" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="191" y="74" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="233" y="74" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="275" y="74" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="65" y="106" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="107" y="106" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="149" y="106" width="40" height="30" fill="#b9d4f2" stroke="#236bc2" stroke-width="2"/><rect x="191" y="106" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="233" y="106" width="40" height="30" fill="#edf3fa" stroke="white"/><rect x="275" y="106" width="40" height="30" fill="#edf3fa" stroke="white"/><text x="190" y="185" font-size="27" fill="#14243c" text-anchor="middle">Hₒ × Wₒ output positions</text></g></svg><m display="true">H_oW_o\,k^2C_{in}C_{out}\;\text{MACs}</m></div><div class="step" data-stage="2"><h2>Output tensor</h2><svg class="lesson-diagram" viewBox="0 0 380 200" role="img" aria-label="Output responses form a spatial volume with output channels"><defs><marker id="flow-3" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="156" y="20" width="154" height="96" fill="#87b6e8" stroke="white" stroke-width="2"/><rect x="128" y="32" width="154" height="96" fill="#bad6f5" stroke="white" stroke-width="2"/><rect x="100" y="44" width="154" height="96" fill="#dceafa" stroke="white" stroke-width="2"/><text x="190" y="180" font-size="27" fill="#14243c" text-anchor="middle">Hₒ × Wₒ × Cₒᵤₜ</text></g></svg><m display="true">H_oW_oC_{out}\;\text{elements}</m></div></div><p class="callout">Dense convolution, no bias; MACs per image. 1 MAC ≈ 2 FLOPs.</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Building blocks</span><span>04 / 37</span></footer>
+</section>
+<section class="slide " id="06-blocks" aria-label="5. A network is a sequence of stages">
+<h1>A network is a sequence of stages</h1>
+<div class="content"><div class="pipeline"><div>Stem</div><span>→</span><div>Stages</div><span>→</span><div>Pooling</div><span>→</span><div>Classifier</div></div><div class="two-principles"><div><h2>Inside a stage</h2><p>Refine features at a fixed spatial resolution.</p></div><div><h2>Between stages</h2><p>Reduce resolution; often increase channels.</p></div></div></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Building blocks</span><span>05 / 37</span></footer>
+</section>
+<section class="slide " id="07-batchnorm" aria-label="6. Normalize features within a channel">
+<h1>Normalize features within a channel</h1>
+<div class="content"><m display="true">\hat{x}=\frac{x-\mu_c}{\sqrt{\sigma_c^2+\epsilon}},\qquad y=\gamma_c\hat{x}+\beta_c</m><div class="normalization-flow"><svg class="lesson-diagram" viewBox="0 0 1248 320" role="img" aria-label="Training uses current per-channel batch statistics; evaluation uses stored running statistics"><defs><marker id="flow-4" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><text x="0" y="77" font-size="28" fill="#236bc2" text-anchor="start">Training</text><rect x="195" y="20" width="370" height="105" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="380.0" y="65.5" font-size="26" fill="#14243c" text-anchor="middle">Batch × spatial</text><text x="380.0" y="97.5" font-size="26" fill="#14243c" text-anchor="middle">positions in channel c</text><path d="M577,72 L625,72" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-4)"/><rect x="637" y="20" width="220" height="105" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="747.0" y="81.5" font-size="26" fill="#14243c" text-anchor="middle">Current μc, σc²</text><path d="M869,72 L917,72" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-4)"/><rect x="929" y="20" width="303" height="105" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="1080.5" y="65.5" font-size="26" fill="#14243c" text-anchor="middle">Normalize</text><text x="1080.5" y="97.5" font-size="26" fill="#14243c" text-anchor="middle">scale / shift</text><text x="0" y="247" font-size="28" fill="#168a76" text-anchor="start">Evaluation</text><rect x="195" y="190" width="662" height="105" rx="4" fill="#f5f8fc" stroke="#168a76" stroke-width="2"/><text x="526.0" y="251.5" font-size="26" fill="#14243c" text-anchor="middle">Stored running mean and variance</text><path d="M869,242 L917,242" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-4)"/><rect x="929" y="190" width="303" height="105" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="1080.5" y="235.5" font-size="26" fill="#14243c" text-anchor="middle">Normalize</text><text x="1080.5" y="267.5" font-size="26" fill="#14243c" text-anchor="middle">scale / shift</text></g></svg></div><p class="callout">Common block: convolution → BatchNorm → ReLU.</p></div>
+<footer><span><a href="https://arxiv.org/abs/1502.03167" target="_blank" rel="noopener">Ioffe & Szegedy · BatchNorm</a></span><span>Building blocks</span><span>06 / 37</span></footer>
+</section>
+<section class="slide " id="08-training" aria-label="7. Architecture needs a training contract">
+<h1>Architecture needs a training contract</h1>
+<div class="content"><ul class="spaced"><li><b>Nonlinearity:</b> ReLU between linear operators changes the function class.</li><li><b>Initialization:</b> for a ReLU layer, use variance about <m>2/\mathrm{fan\_in}</m>.</li><li><b>Regularization:</b> inverted dropout scales retained units during training.</li></ul><p class="callout">At evaluation: disable dropout and use the intended normalization statistics.</p></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_6.pdf" target="_blank" rel="noopener">CS231n · Block and training context</a></span><span>Building blocks</span><span>07 / 37</span></footer>
+</section>
+<section class="slide " id="09-motifs" aria-label="8. Three ways to compose features">
+<h1>Three ways to compose features</h1>
+<div class="content"><div class="motif-comparison"><div><h2>Sequential</h2><svg class="lesson-diagram" viewBox="0 0 390 230" role="img" aria-label="Sequential composition feeds x through f and then g"><defs><marker id="flow-5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="8" y="78" width="65" height="70" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="40.5" y="122.0" font-size="26" fill="#14243c" text-anchor="middle">x</text><path d="M85,113 L111,113" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-5)"/><rect x="123" y="78" width="80" height="70" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="163.0" y="122.0" font-size="26" fill="#14243c" text-anchor="middle">f</text><path d="M215,113 L241,113" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-5)"/><rect x="253" y="78" width="80" height="70" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="293.0" y="122.0" font-size="26" fill="#14243c" text-anchor="middle">g</text><path d="M345,113 L371,113" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-5)"/></g></svg><p>Refine features in sequence.</p></div><div><h2>Parallel</h2><svg class="lesson-diagram" viewBox="0 0 390 230" role="img" aria-label="Parallel branches transform the same input and concatenate their outputs"><defs><marker id="flow-6" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><path d="M15,113 H45" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round"/><path d="M45,113 V48 H80" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-6)"/><path d="M45,113 V178 H80" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-6)"/><rect x="92" y="16" width="110" height="65" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="147.0" y="57.5" font-size="26" fill="#14243c" text-anchor="middle">f₁</text><rect x="92" y="146" width="110" height="65" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="147.0" y="187.5" font-size="26" fill="#14243c" text-anchor="middle">f₂</text><path d="M214,48 H243 V101 H267" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-6)"/><path d="M214,178 H243 V125 H267" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-6)"/><rect x="279" y="78" width="95" height="70" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="326.5" y="122.0" font-size="24" fill="#14243c" text-anchor="middle">Concat</text></g></svg><p>Concatenate channels.</p></div><div><h2>Residual</h2><svg class="lesson-diagram" viewBox="0 0 390 230" role="img" aria-label="A residual path adds a correction to the shortcut input"><defs><marker id="flow-7" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><path d="M10,148 L78,148" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-7)"/><rect x="90" y="113" width="145" height="70" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="162.5" y="157.0" font-size="26" fill="#14243c" text-anchor="middle">F(x)</text><path d="M247,148 L301,148" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-7)"/><path d="M50,148 V45 H330 V115" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-7)"/><circle cx="330" cy="148" r="22" fill="white" stroke="#168a76" stroke-width="2"/><text x="330" y="157" font-size="32" fill="#168a76" text-anchor="middle">+</text></g></svg><p>Add aligned features.</p></div></div><p class="callout">Every merge comes with a tensor-shape contract.</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Building blocks</span><span>08 / 37</span></footer>
+</section>
+<section class="slide " id="10-vgg" aria-label="9. VGG: repeat a small, regular block">
+<h1>VGG: repeat a small, regular block</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/vgg.svg" alt="VGG16: five convolution stages with 2,2,3,3,3 convolutions, each followed by pooling; three fully connected layers"></figure><p class="small">All convolutions: 3 × 3, stride 1, padding 1. Pooling: 2 × 2, stride 2.</p></div>
+<footer><span><a href="https://arxiv.org/abs/1409.1556" target="_blank" rel="noopener">Simonyan & Zisserman · §2, Table 1</a></span><span>Context and branches</span><span>09 / 37</span></footer>
+</section>
+<section class="slide " id="11-context" aria-label="10. Repeated local filters grow context">
+<h1>Repeated local filters grow context</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/receptive.svg" alt="The theoretical receptive field grows from 3 by 3 to 5 by 5 to 7 by 7 through three stride-one 3 by 3 convolutions"></figure><m display="true">r_\ell=r_{\ell-1}+(k_\ell-1)j_{\ell-1},\quad j_\ell=j_{\ell-1}s_\ell</m></div>
+<footer><span><a href="https://arxiv.org/abs/1409.1556" target="_blank" rel="noopener">VGG · Small-filter rationale</a></span><span>Context and branches</span><span>10 / 37</span></footer>
+</section>
+<section class="slide " id="12-small-filters" aria-label="11. Same context, different computation">
+<h1>Same context, different computation</h1>
+<div class="content"><p class="small">Stride 1, constant spatial size, C channels throughout</p><div class="filter-comparison"><div><h2>One large filter</h2><svg class="lesson-diagram" viewBox="0 0 580 200" role="img" aria-label="A single seven-by-seven convolution followed by ReLU"><defs><marker id="flow-8" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="20" y="62" width="250" height="100" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="145.0" y="105.0" font-size="26" fill="#14243c" text-anchor="middle">7 × 7 conv</text><text x="145.0" y="137.0" font-size="26" fill="#14243c" text-anchor="middle">ReLU</text><path d="M282,112 L355,112" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-8)"/><text x="420" y="122" font-size="27" fill="#14243c" text-anchor="middle">Output</text></g></svg><m display="true">49C^2\text{ weights}</m></div><div class="step" data-stage="1"><h2>A stack of local filters</h2><svg class="lesson-diagram" viewBox="0 0 580 200" role="img" aria-label="Three three-by-three convolutions, with a ReLU after each"><defs><marker id="flow-9" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="8" y="62" width="140" height="100" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="78.0" y="105.0" font-size="26" fill="#14243c" text-anchor="middle">3 × 3</text><text x="78.0" y="137.0" font-size="26" fill="#14243c" text-anchor="middle">ReLU</text><path d="M160,112 L191,112" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-9)"/><rect x="203" y="62" width="140" height="100" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="273.0" y="105.0" font-size="26" fill="#14243c" text-anchor="middle">3 × 3</text><text x="273.0" y="137.0" font-size="26" fill="#14243c" text-anchor="middle">ReLU</text><path d="M355,112 L386,112" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-9)"/><rect x="398" y="62" width="140" height="100" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="468.0" y="105.0" font-size="26" fill="#14243c" text-anchor="middle">3 × 3</text><text x="468.0" y="137.0" font-size="26" fill="#14243c" text-anchor="middle">ReLU</text></g></svg><m display="true">27C^2\text{ weights}</m></div></div><div class="step" data-stage="2"><m display="true">C=64:\quad 200{,}704\;\longrightarrow\;110{,}592</m><p class="callout">Both see a 7 × 7 region; their functions can differ.</p></div></div>
+<footer><span><a href="https://arxiv.org/abs/1409.1556" target="_blank" rel="noopener">VGG · §2.3</a></span><span>Context and branches</span><span>11 / 37</span></footer>
+</section>
+<section class="slide " id="13-context-check" aria-label="12. Trace a change in resolution">
+<h1>Trace a change in resolution</h1>
+<div class="content"><table class="compact-table"><thead><tr><th>Layer</th><th>Output H × W × C</th><th>Receptive field r; jump j</th></tr></thead><tbody><tr><td>Input</td><td>32 × 32 × 64</td><td>1; 1</td></tr><tr><td>3 × 3 conv, s=1, p=1, C=64</td><td>?</td><td>?</td></tr><tr><td>2 × 2 max pool, s=2</td><td>?</td><td>?</td></tr><tr><td>3 × 3 conv, s=1, p=1, C=128</td><td>?</td><td>?</td></tr></tbody></table><p>Which operation changes the spacing of sampled input locations?</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Context and branches</span><span>12 / 37</span></footer>
+</section>
+<section class="slide " id="14-global-pooling" aria-label="13. The classifier can dominate the weights">
+<h1>The classifier can dominate the weights</h1>
+<div class="content"><div class="cols followed"><div><h2>Flatten + dense</h2><p>7 × 7 × 512 → 1000</p><m display="true">49\cdot512\cdot1000</m><p class="large">25,088,000 weights</p></div><div class="step" data-stage="1"><h2>Global average pool + dense</h2><p>7 × 7 × 512 → 512 → 1000</p><m display="true">g_c=\frac{1}{HW}\sum_{h,w}x_{h,w,c}</m><p class="large">512,000 weights</p></div></div><p class="callout step" data-stage="1">A spatial average discards explicit location within each channel.</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Context and branches</span><span>13 / 37</span></footer>
+</section>
+<section class="slide " id="15-branches" aria-label="14. Combine evidence at different scales">
+<h1>Combine evidence at different scales</h1>
+<div class="content"><div class="two-principles"><div><h2>A serial choice</h2><p>Choose one kernel size at each layer.</p></div><div><h2>A parallel choice</h2><p>Compute several transformations from the same input.</p></div></div><m display="true">Y=\mathrm{Concat}_{C}\!\left(f_1(X),f_2(X),f_3(X),f_4(X)\right)</m><p class="callout">Match spatial dimensions; add channel counts.</p></div>
+<footer><span><a href="https://arxiv.org/abs/1409.4842" target="_blank" rel="noopener">Szegedy et al. · §4</a></span><span>Context and branches</span><span>14 / 37</span></footer>
+</section>
+<section class="slide " id="16-inception" aria-label="15. Inception: branches with channel reduction">
+<h1>Inception: branches with channel reduction</h1>
+<div class="content"><figure class="source-inception"><img src="assets/paper-inception-module.png" alt="Original Inception module with dimension reductions, Figure 2(b) from Going Deeper with Convolutions. Read bottom to top: input branches pass through 1×1 reduction before spatial convolutions, then concatenate."></figure><p class="small source-caption">Read bottom → top. The 1 × 1 layers reduce channels before spatial filtering.</p></div>
+<footer><span><a href="https://arxiv.org/pdf/1409.4842#page=5" target="_blank" rel="noopener">Szegedy et al. · Original Figure 2(b)</a></span><span>Context and branches</span><span>15 / 37</span></footer>
+</section>
+<section class="slide " id="17-pointwise" aria-label="16. A 1 × 1 filter mixes channels">
+<h1>A 1 × 1 filter mixes channels</h1>
+<div class="content"><m display="true">y_{h,w,o}=\sum_{c=1}^{C_{in}}W_{o,c}x_{h,w,c}+b_o</m><div class="two-principles"><div><h2>What it changes</h2><p>The channel basis and width.</p></div><div><h2>What it preserves</h2><p>The spatial grid at stride 1.</p></div></div><p class="callout">A pointwise layer sees all input channels at one location.</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Context and branches</span><span>16 / 37</span></footer>
+</section>
+<section class="slide " id="18-reduction" aria-label="17. Spend spatial computation at a smaller width">
+<h1>Spend spatial computation at a smaller width</h1>
+<div class="content"><p class="small">Spatial size stays 28 × 28; output width stays 128 channels.</p><div class="channel-path"><div><h2>Direct spatial filtering</h2><svg class="lesson-diagram" viewBox="0 0 710 125" role="img" aria-label="A three-by-three convolution maps 192 directly to 128 channels"><defs><marker id="flow-10" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="8" y="20" width="170" height="85" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="93.0" y="71.5" font-size="26" fill="#14243c" text-anchor="middle">192 channels</text><path d="M190,62 L238,62" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-10)"/><rect x="250" y="20" width="200" height="85" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="350.0" y="71.5" font-size="26" fill="#14243c" text-anchor="middle">3 × 3 conv</text><path d="M462,62 L510,62" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-10)"/><rect x="522" y="20" width="170" height="85" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="607.0" y="71.5" font-size="26" fill="#14243c" text-anchor="middle">128 channels</text></g></svg></div><div class="path-cost"><p>221,184 weights</p><p>173.408 M MACs</p></div></div><div class="step" data-stage="1"><div class="channel-path"><div><h2>Compress, then filter</h2><svg class="lesson-diagram" viewBox="0 0 710 125" role="img" aria-label="A one-by-one layer compresses 192 to 96 channels before a three-by-three layer outputs 128"><defs><marker id="flow-11" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="8" y="20" width="170" height="85" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="93.0" y="71.5" font-size="26" fill="#14243c" text-anchor="middle">192 channels</text><path d="M190,62 L222,62" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-11)"/><rect x="234" y="20" width="170" height="85" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="319.0" y="71.5" font-size="26" fill="#14243c" text-anchor="middle">1 × 1 → 96</text><path d="M416,62 L448,62" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-11)"/><rect x="460" y="20" width="170" height="85" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="545.0" y="71.5" font-size="26" fill="#14243c" text-anchor="middle">3 × 3 → 128</text></g></svg></div><div class="path-cost"><p>129,024 weights</p><p>101.155 M MACs</p></div></div></div><div class="step" data-stage="2"><p class="callout">41.7% fewer MACs for this branch, at the same spatial size.</p></div></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Context and branches</span><span>17 / 37</span></footer>
+</section>
+<section class="slide " id="19-branch-check" aria-label="18. Can these branch outputs be merged?">
+<h1>Can these branch outputs be merged?</h1>
+<div class="content"><div class="branch-diagnosis"><svg class="lesson-diagram" viewBox="0 0 1248 430" role="img" aria-label="Four branch outputs converge on concatenation; branch B has a smaller spatial grid and is highlighted"><defs><marker id="flow-12" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="450" y="0" width="348" height="60" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="624.0" y="39.0" font-size="26" fill="#14243c" text-anchor="middle">28 × 28 input grid</text><path d="M624,72 V95 H158 V119" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-12)"/><rect x="8" y="131" width="300" height="120" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="158.0" y="184.0" font-size="26" fill="#14243c" text-anchor="middle">A: 1 × 1</text><text x="158.0" y="216.0" font-size="26" fill="#14243c" text-anchor="middle">28 × 28 × 64</text><path d="M158,263 V300 H624" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round"/><path d="M624,72 V95 H470 V119" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-12)"/><rect x="320" y="131" width="300" height="120" rx="4" fill="#f5f8fc" stroke="#bb3948" stroke-width="2"/><text x="470.0" y="184.0" font-size="26" fill="#14243c" text-anchor="middle">B: 3 × 3, p=0</text><text x="470.0" y="216.0" font-size="26" fill="#14243c" text-anchor="middle">26 × 26 × 128</text><path d="M470,263 V300 H624" fill="none" stroke="#bb3948" stroke-width="2.4" stroke-linejoin="round"/><path d="M624,72 V95 H782 V119" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-12)"/><rect x="632" y="131" width="300" height="120" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="782.0" y="184.0" font-size="26" fill="#14243c" text-anchor="middle">C: 5 × 5, p=2</text><text x="782.0" y="216.0" font-size="26" fill="#14243c" text-anchor="middle">28 × 28 × 32</text><path d="M782,263 V300 H624" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round"/><path d="M624,72 V95 H1094 V119" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-12)"/><rect x="944" y="131" width="300" height="120" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="1094.0" y="184.0" font-size="26" fill="#14243c" text-anchor="middle">D: pool + 1 × 1</text><text x="1094.0" y="216.0" font-size="26" fill="#14243c" text-anchor="middle">28 × 28 × 32</text><path d="M1094,263 V300 H624" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round"/><path d="M624,300 V326" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-12)"/><rect x="408" y="338" width="432" height="70" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="624.0" y="382.0" font-size="30" fill="#14243c" text-anchor="middle">Concatenate?</text></g></svg></div><p>Repair one setting. State the concatenated output shape.</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Context and branches</span><span>18 / 37</span></footer>
+</section>
+<section class="slide section-divider" id="20-depth" aria-label="19. Make depth trainable">
+<h1>Make depth trainable</h1>
+<div class="content"><p class="section-question">If a deeper model can represent a shallow solution, why might it fit the training set worse?</p></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_6.pdf" target="_blank" rel="noopener">CS231n · Residual architecture case study</a></span><span>Residual networks</span><span>19 / 37</span></footer>
+</section>
+<section class="slide " id="21-degradation" aria-label="20. Training error diagnoses the failure">
+<h1>Training error diagnoses the failure</h1>
+<div class="content"><p class="small">CIFAR-10 · plain 20- and 56-layer networks · lower error is better</p><figure class="source-degradation"><img src="assets/paper-resnet-degradation.png" alt="Original measured CIFAR-10 training and test error curves from ResNet Figure 1. The 56-layer plain network has higher training and test error than the 20-layer plain network."></figure><p class="callout step" data-stage="1">Higher <b>training error</b> points to an optimization difficulty.</p></div>
+<footer><span><a href="https://arxiv.org/pdf/1512.03385#page=1" target="_blank" rel="noopener">He et al. · Original Figure 1</a></span><span>Residual networks</span><span>20 / 37</span></footer>
+</section>
+<section class="slide " id="22-residual" aria-label="21. Learn a correction to the input">
+<h1>Learn a correction to the input</h1>
+<div class="content"><div class="cols source-residual-layout"><div><figure class="source-residual"><img src="assets/lecture-residual-block.png" alt="Original residual-block illustration from Stanford CS231n Lecture 6, slide 52: input x at the bottom passes through two convolutions and is added through an identity shortcut before final ReLU."></figure></div><div><m display="true">z=x+F(x)</m><m display="true">y=\mathrm{ReLU}(z)</m><div class="step" data-stage="1"><m display="true">F(x)=H(x)-x</m><p>The branch learns a correction.</p></div></div></div></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_6.pdf#page=52" target="_blank" rel="noopener">CS231n 2026 · Original block, p. 52</a></span><span>Residual networks</span><span>21 / 37</span></footer>
+</section>
+<section class="slide " id="23-gradient" aria-label="22. The shortcut contributes an identity term">
+<h1>The shortcut contributes an identity term</h1>
+<div class="content"><m display="true">z=x+F(x),\qquad \frac{\partial z}{\partial x}=I+J_F(x)</m><m class="step" data-stage="1" display="true">\nabla_x L=(I+J_F(x))^T\nabla_z L</m><div class="step" data-stage="2"><p class="callout">For a scalar F(x) = ax: the plain derivative is a; the residual derivative is 1 + a.</p></div><p class="small">The final ReLU also contributes its activation mask.</p></div>
+<footer><span><a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">ResNet · Residual mapping</a></span><span>Residual networks</span><span>22 / 37</span></footer>
+</section>
+<section class="slide " id="24-projection" aria-label="23. A shortcut must match the residual shape">
+<h1>A shortcut must match the residual shape</h1>
+<div class="content"><figure class="wide-figure"><img src="assets/projection.svg" alt="A transition block downsamples the residual branch and projects the shortcut with a stride-two one-by-one convolution"></figure><m display="true">z=F(x)+W_s*x</m></div>
+<footer><span><a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">ResNet · §3.2, projection shortcut</a></span><span>Residual networks</span><span>23 / 37</span></footer>
+</section>
+<section class="slide " id="25-resnet18" aria-label="24. Read a complete residual network">
+<h1>Read a complete residual network</h1>
+<div class="content"><figure class="architecture-figure"><img src="assets/resnet18.svg" alt="ImageNet ResNet18: stem followed by four stages at widths 64,128,256,512 with two basic blocks each, global pooling and classifier"></figure></div>
+<footer><span><a href="https://arxiv.org/abs/1512.03385" target="_blank" rel="noopener">ResNet · Table 1</a></span><span>Residual networks</span><span>24 / 37</span></footer>
+</section>
+<section class="slide " id="26-bottleneck" aria-label="25. A residual bottleneck controls width">
+<h1>A residual bottleneck controls width</h1>
+<div class="content"><figure class="source-bottleneck"><img src="assets/paper-resnet-blocks.png" alt="Original ResNet Figure 5: a 64-channel basic block at left, and a 256-channel bottleneck at right with 1×1 reduction to 64, 3×3 processing, and 1×1 expansion to 256."></figure><p class="small source-caption">Left: 64-channel basic block. Right: 256-channel bottleneck.</p><m class="step" data-stage="1" display="true">P_{\mathrm{right}}=256\cdot64+9\cdot64^2+64\cdot256=69{,}632</m></div>
+<footer><span><a href="https://arxiv.org/pdf/1512.03385#page=6" target="_blank" rel="noopener">He et al. · Original Figure 5</a></span><span>Residual networks</span><span>25 / 37</span></footer>
+</section>
+<section class="slide " id="27-code" aria-label="26. Implement the block contract">
+<h1>Implement the block contract</h1>
+<div class="content"><pre class="block-code"># __init__: input convention is N, C, H, W
+self.f = nn.Sequential(
+    nn.Conv2d(cin, cout, 3, stride, 1, bias=False),
+    nn.BatchNorm2d(cout), nn.ReLU(),
+    nn.Conv2d(cout, cout, 3, 1, 1, bias=False),
+    nn.BatchNorm2d(cout))
+<span class="step" data-stage="1">self.skip = nn.Identity()
+if cin != cout or stride != 1:
+    self.skip = nn.Sequential(
+        nn.Conv2d(cin, cout, 1, stride, bias=False),
+        nn.BatchNorm2d(cout))
+</span><span class="step" data-stage="2"># forward(x):
+return torch.relu(self.f(x) + self.skip(x))</span></pre><p class="small step" data-stage="2">The shortcut test must check both channel count and stride.</p></div>
+<footer><span><a href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html" target="_blank" rel="noopener">PyTorch · ResNet18; executable companion</a></span><span>Residual networks</span><span>26 / 37</span></footer>
+</section>
+<section class="slide " id="28-debug" aria-label="27. Find the broken residual transition">
+<h1>Find the broken residual transition</h1>
+<div class="content"><pre># x: (8, 64, 56, 56), in NCHW
+f = nn.Conv2d(64, 128, 3, stride=2, padding=1)
+skip = nn.Identity()
+y = f(x) + skip(x)</pre><ol><li>Write the shape of each summand.</li><li>Repair the shortcut.</li><li>Would concatenation preserve the intended block?</li></ol></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Residual networks</span><span>27 / 37</span></footer>
+</section>
+<section class="slide " id="29-merge-check" aria-label="28. Addition and concatenation encode different choices">
+<h1>Addition and concatenation encode different choices</h1>
+<div class="content"><p class="small">Two inputs, each H × W × C; spatial dimensions match.</p><div class="merge-comparison"><div><h2>Add corresponding entries</h2><svg class="lesson-diagram" viewBox="0 0 590 210" role="img" aria-label="Add two equal-width feature tensors; output width is C"><defs><marker id="flow-13" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="44" y="6" width="80" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="32" y="11" width="80" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="20" y="16" width="80" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><text x="145" y="49" font-size="26" fill="#236bc2" text-anchor="middle">C</text><rect x="44" y="91" width="80" height="50" fill="#e2f2ed" stroke="#168a76" stroke-width="1.5"/><rect x="32" y="96" width="80" height="50" fill="#e2f2ed" stroke="#168a76" stroke-width="1.5"/><rect x="20" y="101" width="80" height="50" fill="#e2f2ed" stroke="#168a76" stroke-width="1.5"/><text x="145" y="134" font-size="26" fill="#168a76" text-anchor="middle">C</text><path d="M175,42 H210 V87 H250" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-13)"/><path d="M175,127 H210 V111 H250" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-13)"/><rect x="262" y="67" width="130" height="65" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="327.0" y="108.5" font-size="26" fill="#14243c" text-anchor="middle">+</text><path d="M404,99 L445,99" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-13)"/><rect x="478" y="65" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="469" y="70" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="460" y="75" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><text x="505" y="185" font-size="26" fill="#14243c" text-anchor="middle">C channels</text></g></svg><div class="step" data-stage="1"><p>Next 3 × 3 conv to C channels:</p><m display="true">9C^2\text{ weights}</m></div></div><div><h2>Concatenate channels</h2><svg class="lesson-diagram" viewBox="0 0 590 210" role="img" aria-label="Concat two equal-width feature tensors; output width is 2C"><defs><marker id="flow-14" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="44" y="6" width="80" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="32" y="11" width="80" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="20" y="16" width="80" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><text x="145" y="49" font-size="26" fill="#236bc2" text-anchor="middle">C</text><rect x="44" y="91" width="80" height="50" fill="#e2f2ed" stroke="#168a76" stroke-width="1.5"/><rect x="32" y="96" width="80" height="50" fill="#e2f2ed" stroke="#168a76" stroke-width="1.5"/><rect x="20" y="101" width="80" height="50" fill="#e2f2ed" stroke="#168a76" stroke-width="1.5"/><text x="145" y="134" font-size="26" fill="#168a76" text-anchor="middle">C</text><path d="M175,42 H210 V87 H250" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-14)"/><path d="M175,127 H210 V111 H250" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-14)"/><rect x="262" y="67" width="130" height="65" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="327.0" y="108.5" font-size="26" fill="#14243c" text-anchor="middle">Concat</text><path d="M404,99 L445,99" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-14)"/><rect x="505" y="50" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="496" y="55" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="487" y="60" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="478" y="65" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="469" y="70" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><rect x="460" y="75" width="65" height="50" fill="#dceafa" stroke="#236bc2" stroke-width="1.5"/><text x="505" y="185" font-size="26" fill="#14243c" text-anchor="middle">2C channels</text></g></svg><div class="step" data-stage="1"><p>Next 3 × 3 conv to C channels:</p><m display="true">18C^2\text{ weights}</m></div></div></div><div class="step" data-stage="1"><p class="callout">The merge changes the computation of the next layer.</p></div></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Residual networks</span><span>28 / 37</span></footer>
+</section>
+<section class="slide section-divider" id="30-efficiency" aria-label="29. Design within a budget">
+<h1>Design within a budget</h1>
+<div class="content"><p class="section-question">Which costs can we reduce without discarding the evidence our task needs?</p></div>
+<footer><span><a href="https://arxiv.org/abs/1704.04861" target="_blank" rel="noopener">Howard et al. · Efficient convolution</a></span><span>Efficient architecture</span><span>29 / 37</span></footer>
+</section>
+<section class="slide " id="31-depthwise" aria-label="30. Factor spatial filtering and channel mixing">
+<h1>Factor spatial filtering and channel mixing</h1>
+<div class="content"><div class="source-factorization"><div><h2>Depthwise: filter each channel</h2><figure><img src="assets/paper-depthwise-filters.png" alt="Original MobileNet Figure 2(b), one depthwise spatial filter per input channel; source notation D_K denotes kernel size k."></figure><m display="true">k^2M\text{ weights}</m></div><span class="factor-arrow" aria-hidden="true">→</span><div class="step" data-stage="1"><h2>Pointwise: mix channels</h2><figure><img src="assets/paper-pointwise-filters.png" alt="Original MobileNet Figure 2(c), N pointwise one-by-one filters spanning M input channels."></figure><m display="true">MN\text{ weights}</m></div></div><div class="step" data-stage="1"><m display="true">P_{\mathrm{dense}}=k^2MN,\qquad P_{\mathrm{sep}}=k^2M+MN</m></div><p class="small">Source notation: <m>D_K=k</m>; M input channels, N output channels.</p></div>
+<footer><span><a href="https://arxiv.org/pdf/1704.04861#page=3" target="_blank" rel="noopener">Howard et al. · Original Figure 2(b,c)</a></span><span>Efficient architecture</span><span>30 / 37</span></footer>
+</section>
+<section class="slide " id="32-budget" aria-label="31. Explore width and spatial cost">
+<h1>Explore width and spatial cost</h1>
+<div class="content"><div class="cols budget-layout"><div class="demo-controls"><label>Width multiplier α: <b id="width-value">1</b><select id="width"><option value="0.5">0.5</option><option value="1" selected>1</option><option value="1.5">1.5</option></select></label><label>Output side R: <b id="resolution-value">28</b><select id="resolution"><option>14</option><option selected>28</option><option>56</option></select></label><button id="budget-reset">Reset</button><p class="small">k=3; M=64α; N=128α.<br>No bias; one image.</p></div><div><div class="cost-bars" aria-label="MAC comparison"><div><span>Dense</span><i id="dense-bar"></i></div><div><span>Separable</span><i id="sep-bar"></i></div></div><div id="budget-result" aria-live="polite"></div></div></div></div>
+<footer><span><a href="https://arxiv.org/abs/1704.04861" target="_blank" rel="noopener">MobileNet · Factorized cost model</a></span><span>Efficient architecture</span><span>31 / 37</span></footer>
+</section>
+<section class="slide " id="33-latency" aria-label="32. Fewer MACs do not guarantee lower latency">
+<h1>Fewer MACs do not guarantee lower latency</h1>
+<div class="content"><ul class="spaced"><li><b>Compute:</b> count operations with a stated convention.</li><li><b>Memory:</b> include activations, data movement, and precision.</li><li><b>Latency:</b> measure the target device at the intended batch size.</li></ul><p class="callout">Compare accuracy and resource use under the same evaluation protocol.</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Efficient architecture</span><span>32 / 37</span></footer>
+</section>
+<section class="slide " id="36-transfer" aria-label="33. Choose what to reuse and what to learn">
+<h1>Choose what to reuse and what to learn</h1>
+<div class="content"><div class="pipeline"><div>Pretrained<br>backbone</div><span>→</span><div>Global<br>pooling</div><span>→</span><div>New K-class<br>head</div></div><ul><li>Start with a frozen-feature baseline.</li><li>Use validation evidence to decide what to fine-tune.</li><li>Retain the pretrained input normalization contract.</li></ul><p class="callout">Freezing weights does not automatically freeze BatchNorm statistics.</p></div>
+<footer><span><a href="https://cs231n.stanford.edu/slides/2026/lecture_6.pdf" target="_blank" rel="noopener">CS231n · Transfer learning</a></span><span>Transfer and evaluation</span><span>33 / 37</span></footer>
+</section>
+<section class="slide " id="37-evaluation" aria-label="34. An architecture claim needs a fair experiment">
+<h1>An architecture claim needs a fair experiment</h1>
+<div class="content"><div class="experiment-flow"><svg class="lesson-diagram" viewBox="0 0 1248 405" role="img" aria-label="A baseline and a one-change variant share the data split and comparable training and tuning budgets, then use a common evaluation protocol"><defs><marker id="flow-15" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" viewBox="0 -4.5 9 9" refX="9" refY="0" orient="auto"><path d="M0,-4 L9,0 L0,4 Z" fill="#236bc2"/></marker></defs><g font-family="Arial,Helvetica,sans-serif"><rect x="8" y="145" width="270" height="110" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="143.0" y="193.0" font-size="26" fill="#14243c" text-anchor="middle">Shared data split</text><text x="143.0" y="225.0" font-size="26" fill="#14243c" text-anchor="middle">and preprocessing</text><path d="M290,200 H340 V75 H388" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-15)"/><path d="M340,200 V325 H388" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-15)"/><rect x="400" y="20" width="360" height="110" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="580.0" y="68.0" font-size="26" fill="#14243c" text-anchor="middle">Baseline</text><text x="580.0" y="100.0" font-size="26" fill="#14243c" text-anchor="middle">same training budget</text><rect x="400" y="270" width="360" height="110" rx="4" fill="#f5f8fc" stroke="#168a76" stroke-width="2"/><text x="580.0" y="318.0" font-size="26" fill="#14243c" text-anchor="middle">Variant: one change</text><text x="580.0" y="350.0" font-size="26" fill="#14243c" text-anchor="middle">same training budget</text><path d="M772,75 H830 V180 H878" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-15)"/><path d="M772,325 H830 V220 H878" fill="none" stroke="#236bc2" stroke-width="2.4" stroke-linejoin="round" marker-end="url(#flow-15)"/><rect x="890" y="145" width="342" height="110" rx="4" fill="#f5f8fc" stroke="#236bc2" stroke-width="2"/><text x="1061.0" y="193.0" font-size="26" fill="#14243c" text-anchor="middle">Common evaluation</text><text x="1061.0" y="225.0" font-size="26" fill="#14243c" text-anchor="middle">and target device</text></g></svg></div><p><b>Measure:</b> accuracy, MACs, memory, latency, and variation.</p><p class="callout">Use validation for selection; reserve the test set for the final report.</p></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Transfer and evaluation</span><span>34 / 37</span></footer>
+</section>
+<section class="slide " id="38-summary" aria-label="35. Carry the design principles forward">
+<h1>Carry the design principles forward</h1>
+<div class="content"><ul class="summary-list"><li><b>Context:</b> stacked small filters expand what a feature can see.</li><li><b>Composition:</b> concatenate branches; add residual corrections.</li><li><b>Optimization:</b> shortcuts, normalization, and training choices interact.</li><li><b>Efficiency:</b> compression and factorization change cost and capacity.</li><li><b>Evidence:</b> choose using validation and measurements on the target system.</li></ul></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Synthesis</span><span>35 / 37</span></footer>
+</section>
+<section class="slide " id="39-exit" aria-label="36. Exit check">
+<h1>Exit check</h1>
+<div class="content"><ol class="exit-review"><li><p>Two stride-1 3 × 3 layers: what receptive-field extent?</p><p class="answer step">5 × 5, with no earlier downsampling.</p></li><li><p>When must an identity shortcut be replaced?</p><p class="answer step">When shape changes; align spatial size and channels.</p></li><li><p>Does half the MAC count prove half the latency?</p><p class="answer step">No. Measure on the target device with a fixed protocol.</p></li></ol></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Assessment</span><span>36 / 37</span></footer>
+</section>
+<section class="slide " id="40-reading" aria-label="37. Reading and further study">
+<h1>Reading and further study</h1>
+<div class="content"><ul class="reading-list"><li><a href="https://cs231n.stanford.edu/slides/2026/lecture_6.pdf">CS231n 2026, Lecture 6, pp. 33–58</a><p>VGG and residual networks; training and transfer elsewhere in the lecture.</p></li><li><a href="https://arxiv.org/abs/1409.1556">VGG, §2</a> · <a href="https://arxiv.org/abs/1512.03385">ResNet, §3 and Table 1</a><p>Small filters, residual mappings, and full-network specifications.</p></li><li><a href="https://arxiv.org/abs/1409.4842">Going Deeper with Convolutions, §4</a><p>Inception branches and channel reduction.</p></li><li><a href="https://arxiv.org/abs/1704.04861">Supplementary: MobileNets, §3</a> · <a href="https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html">PyTorch ResNet18</a><p>Efficient operators and an implementation reference.</p></li></ul></div>
+<footer><span>CS172 · Jiayuan Gu · ShanghaiTech University</span><span>Reading</span><span>37 / 37</span></footer>
+</section>
+</main>
+<div id="toolbar-zone" aria-hidden="true"></div><button id="toolbar-reveal" aria-controls="toolbar">Controls (T)</button><nav id="toolbar" aria-label="Presentation controls" aria-hidden="true" inert><button id="previous" title="Previous build or slide">←</button><span class="counter" id="count"></span><button id="next" title="Next build or slide">→</button><span id="stage-count"></span><button id="all">Show all</button><button id="overview-button">Slides</button><button id="notes-button">Notes</button><button id="fullscreen">Full screen</button><button id="pdf-button">Print / PDF</button><button id="help-button">?</button></nav><div id="progress"></div><div id="blank"></div>
+<aside class="overlay" id="overview" role="dialog" aria-label="Slide overview"><button class="close" data-close>Close</button><h2>CNN Architecture</h2><div id="overview-list" class="overview-list"></div></aside>
+<aside class="overlay" id="notes" role="dialog" aria-label="Speaker notes"><button class="close" data-close>Close</button><h2 id="notes-title"></h2><div id="notes-text"></div></aside>
+<aside class="overlay" id="help" role="dialog" aria-label="Keyboard shortcuts"><button class="close" data-close>Close</button><h2>Presentation controls</h2><table><tr><th>Right / Space / Page Down</th><td>Next reveal or slide</td></tr><tr><th>Left / Page Up</th><td>Previous reveal or slide</td></tr><tr><th>End</th><td>Reveal the entire current slide</td></tr><tr><th>Home</th><td>First slide</td></tr><tr><th>T</th><td>Show or hide the fixed control bar</td></tr><tr><th>O / N / F / B</th><td>Overview / notes / full screen / black screen</td></tr><tr><th>Esc</th><td>Close a panel, black screen, or toolbar</td></tr></table><p>The toolbar stays hidden during presentation. Move to the bottom edge to reveal it temporarily, or press T to show or hide it. It hides after 2.2 seconds away from its buttons. Its size stays fixed across slides.</p><p>For PDF: use Print / PDF, choose Save as PDF, enable background graphics, and disable browser headers and footers. All reveals print in their final state. For a guaranteed 16:9 version, use the supplied PDF.</p><p>Figures, fonts, equations, and interactions are bundled locally. Citation links require internet only when opened.</p></aside>
+<script type="application/json" id="slide-meta">[
+  {
+    "id": "01-title",
+    "title": "CNN Architecture",
+    "section": "Introduction",
+    "notes": "Open with the question: if we can implement convolution, what makes a good network? Relate the architecture choice to a concrete constraint. Prerequisites: convolution, padding, stride, receptive fields, backpropagation, ReLU, SGD, and tensor shapes. This is a separate architecture lecture following CNN fundamentals.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_6.pdf",
+    "reference_pages": "4, 33–58",
+    "reference_label": "CS231n 2026 · Lecture 6",
+    "kind": "content"
+  },
+  {
+    "id": "02-roadmap",
+    "title": "From layers to design decisions",
+    "section": "Roadmap",
+    "notes": "Lecture sequence: layer and shape contracts; context and branching; trainable residual depth; efficient operators and fair model evaluation. The original source figures and numerical examples remain. Builds are restricted to calculations, code, and visual comparisons; bullet-only exposition stays static.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "04-retrieval",
+    "title": "Before we add another layer",
+    "section": "Building blocks",
+    "notes": "Output: 16×16×128. Weights: 3×3×64×128 = 73,728, excluding bias. Shared weights are independent of spatial size; MACs depend on the number of output locations. Shapes omit batch and use HWC. A frequent error is multiplying weight count by H×W.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "05-cost",
+    "title": "Convolution: weights, computation, output",
+    "section": "Building blocks",
+    "notes": "Weights: k²CinCout learned parameters for a dense convolution without bias. The illustrated filter bank has dimensions k×k×Cin×Cout in the spatial-first notation used here; PyTorch stores convolution weights as Cout×Cin×k×k. Computation: applying the bank at HoWo output positions requires HoWo k²CinCout MACs per image. Output tensor: Ho×Wo×Cout, storing HoWoCout scalar elements. The outlined cell marks one output position; no pointer is needed. Diagrams are schematic, not literal channel counts. Reveal computation, then the output tensor. For the preceding example: 73,728 parameters, 18,874,368 MACs, 32,768 output elements (128 KiB in FP32). Training memory also includes saved activations, gradients, and optimizer state.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "06-blocks",
+    "title": "A network is a sequence of stages",
+    "section": "Building blocks",
+    "notes": "Stem transforms the raw image. A stage contains blocks with compatible feature shapes; a transition changes resolution or channel count. Reducing H and W saves spatial computation but removes detail that later layers cannot recover exactly. Increasing channels grows representational capacity and can offset some of the computation saved. Ask why early downsampling may hurt very small objects.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "07-batchnorm",
+    "title": "Normalize features within a channel",
+    "section": "Building blocks",
+    "notes": "For NCHW tensors, BatchNorm2d computes per-channel batch statistics across N,H,W during training. Gamma and beta each have C learned values. Running means/variances are buffers, not learned weights. Default evaluation uses tracked running statistics; model.eval() matters even if gradients are disabled. Very small batches or domain shifts can make these statistics unreliable. Do not present internal covariate shift as a settled causal explanation.",
+    "reference_url": "https://arxiv.org/abs/1502.03167",
+    "reference_pages": "",
+    "reference_label": "Ioffe & Szegedy · BatchNorm",
+    "kind": "content"
+  },
+  {
+    "id": "08-training",
+    "title": "Architecture needs a training contract",
+    "section": "Building blocks",
+    "notes": "For a dense conv, fan_in = k²Cin (adjust for groups). Kaiming initialization is a useful starting point, not a proof of stable training for an arbitrary graph. With dropout probability p, retained activations are divided by 1−p in train mode; evaluation is identity. This differs from the source lecture’s test-time scaling convention but has the same expectation. Dropout is not required after every convolution; common residual blocks rely on other regularizers. Training details are kept brief to preserve the architecture focus.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_6.pdf",
+    "reference_pages": "9–31, 60–66, 70–71",
+    "reference_label": "CS231n · Block and training context",
+    "kind": "content"
+  },
+  {
+    "id": "09-motifs",
+    "title": "Three ways to compose features",
+    "section": "Building blocks",
+    "notes": "The three diagrams show information routing rather than a list of model names. Sequential composition passes one transformation into the next. Parallel branches preserve their outputs in separate channel ranges. A residual sum superposes aligned entries. Concatenation and addition therefore impose different shape contracts. The drawing is schematic; arrows indicate information flow, not time or measured cost.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "10-vgg",
+    "title": "VGG: repeat a small, regular block",
+    "section": "Context and branches",
+    "notes": "Trace each stage output after pooling. Channels are 64,128,256,512,512. The schematic is VGG configuration D (VGG16); fully connected layers operate on 7×7×512 after the fifth pool. ReLU follows hidden weight layers and dropout appears in the hidden FC head in the original model. The diagram omits those operations for readability. No BatchNorm is implied in original VGG16.",
+    "reference_url": "https://arxiv.org/abs/1409.1556",
+    "reference_pages": "",
+    "reference_label": "Simonyan & Zisserman · §2, Table 1",
+    "kind": "content"
+  },
+  {
+    "id": "11-context",
+    "title": "Repeated local filters grow context",
+    "section": "Context and branches",
+    "notes": "Start r0=j0=1. Three stride-one 3×3 layers give r=3,5,7 and j=1. j is the spacing between adjacent output centers measured in input pixels. These are theoretical receptive-field extents; the learned influence within that region need not be uniform. Padding can make some edge positions depend partly on padding rather than real pixels. The source calls this effective receptive field; distinguish it from empirical effective influence.",
+    "reference_url": "https://arxiv.org/abs/1409.1556",
+    "reference_pages": "",
+    "reference_label": "VGG · Small-filter rationale",
+    "kind": "content"
+  },
+  {
+    "id": "12-small-filters",
+    "title": "Same context, different computation",
+    "section": "Context and branches",
+    "notes": "Assume all layers preserve H×W, channels are C in/out and hidden, dilation 1, and no bias. Weight ratio 27/49 ≈ .551, a 44.9% reduction; MAC ratio is the same under these fixed spatial sizes. Three nonlinear layers add representational flexibility but also serial dependencies and saved activations. Without nonlinearities, composing convolutions gives a constrained linear operator; do not claim arbitrary equivalence to a dense 7×7 kernel. Build: show the large kernel first, then the small-filter stack, then its numeric comparison and limitation.",
+    "reference_url": "https://arxiv.org/abs/1409.1556",
+    "reference_pages": "",
+    "reference_label": "VGG · §2.3",
+    "kind": "content"
+  },
+  {
+    "id": "13-context-check",
+    "title": "Trace a change in resolution",
+    "section": "Context and branches",
+    "notes": "After conv: 32×32×64, r=3, j=1. After pool: 16×16×64, r=4, j=2. After final conv: 16×16×128, r=8, j=2. Pooling changes the spacing of sampled input locations. The last convolution adds 2×j=4 input pixels of context. These are theoretical receptive-field extents. The table is retained because its aligned rows support the tensor and context calculation.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "14-global-pooling",
+    "title": "The classifier can dominate the weights",
+    "section": "Context and branches",
+    "notes": "This is a controlled head-only comparison, NOT the original VGG classifier count, which first maps to 4096. Exclude bias in both; including it adds 1000 to each. Global pooling has no learned weights. It permits varying spatial dimensions at the feature level but does not remove preprocessing requirements or guarantee spatial invariance of the whole model. Ask when location information matters for a task. Build: present the flatten head before revealing global pooling and the consequence.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "15-branches",
+    "title": "Combine evidence at different scales",
+    "section": "Context and branches",
+    "notes": "Bridge from repeated uniform VGG blocks to Inception. Different branches can expose local and broader context to the following layer, but learned features are not guaranteed to correspond to specific object scales. All branch outputs must share batch, height, and width; only channel dimension changes under concatenation. This is the conceptual rule, independent of the exact Inception configuration.",
+    "reference_url": "https://arxiv.org/abs/1409.4842",
+    "reference_pages": "",
+    "reference_label": "Szegedy et al. · §4",
+    "kind": "content"
+  },
+  {
+    "id": "16-inception",
+    "title": "Inception: branches with channel reduction",
+    "section": "Context and branches",
+    "notes": "Original figure crop from Figure 2(b), paper PDF page 5; labels and arrows are preserved. This generic module does not print channel counts. Read the input at the bottom and concatenation at the top. Inception3a (Table 1) has input 28×28×192 and outputs 64,128,32,32 channels, totaling 256. The 3×3 branch uses a 96-channel 1×1 reduction and the 5×5 branch uses a 16-channel reduction. All spatial branches preserve H,W at stride 1 with padding; pooling is padded. Connect those values to the calculation on the reduction slide. This source figure replaces the reconstructed module.",
+    "reference_url": "https://arxiv.org/pdf/1409.4842#page=5",
+    "reference_pages": "",
+    "reference_label": "Szegedy et al. · Original Figure 2(b)",
+    "kind": "content"
+  },
+  {
+    "id": "17-pointwise",
+    "title": "A 1 × 1 filter mixes channels",
+    "section": "Context and branches",
+    "notes": "Use the analogy of the same small fully connected layer applied at every pixel. It has Cin×Cout weights plus Cout biases. It does not directly expand the spatial receptive field at stride 1. With a subsequent activation it also adds nonlinearity. A 1×1 stride-two layer subsamples positions; preservation of the grid here explicitly assumes stride 1.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "18-reduction",
+    "title": "Spend spatial computation at a smaller width",
+    "section": "Context and branches",
+    "notes": "The paths hold spatial size and output width fixed. Direct weights: 9×192×128 = 221,184. With reduction: 192×96 + 9×96×128 = 129,024. Both stages of the reduced path operate at 28×28, so MAC counts are 173,408,256 versus 101,154,816; ratio 7/12, a 41.7% reduction. Reveal compression before the numerical savings. The branch is not guaranteed to retain equal accuracy; very aggressive width reduction can discard useful information. Bias, BN, activations, and pooling are excluded.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "19-branch-check",
+    "title": "Can these branch outputs be merged?",
+    "section": "Context and branches",
+    "notes": "Branch B is smaller because its stride-one 3×3 convolution uses padding 0. Set its padding to 1 so all four branches have a 28×28 grid. The concatenated tensor is 28×28×256, from 64+128+32+32 channels. Branch D uses size-preserving pooling and a pointwise projection. Concatenation cannot repair spatial mismatch. Addition also would require matching channel counts. The highlighted incompatible output is part of the question; the answer remains here.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "20-depth",
+    "title": "Make depth trainable",
+    "section": "Residual networks",
+    "notes": "Transition: VGG and branches offer expressive graphs, but fitting their weights is a separate problem. Distinguish optimization from generalization. The next section follows the VGG-to-ResNet narrative in the supplied lecture.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_6.pdf",
+    "reference_pages": "45–58",
+    "reference_label": "CS231n · Residual architecture case study",
+    "kind": "divider"
+  },
+  {
+    "id": "21-degradation",
+    "title": "Training error diagnoses the failure",
+    "section": "Residual networks",
+    "notes": "Display the actual measured curves from He et al., Figure 1, paper PDF page 1. Left: training error (%); right: test error (%); horizontal axis: iterations in units of 10,000. Red is the 56-layer plain network; yellow-green is the 20-layer plain network. Lower error is better. Ask students to compare the training curves before revealing the interpretation. This empirical observation is different from the source lecture’s schematic curves and is not a universal law about depth. Higher training error is evidence of an optimization difficulty under this procedure, not merely an overfitting pattern. Do not recolor or redraw the measured curves.",
+    "reference_url": "https://arxiv.org/pdf/1512.03385#page=1",
+    "reference_pages": "",
+    "reference_label": "He et al. · Original Figure 1",
+    "kind": "content"
+  },
+  {
+    "id": "22-residual",
+    "title": "Learn a correction to the input",
+    "section": "Residual networks",
+    "notes": "Original figure crop of the residual-block illustration on CS231n 2026 Lecture 6 slide 52, credited there to He et al. Preserve its bottom-to-top direction and explain that the x labels refer to the same input. The source figure omits normalization; the implementation later includes BN. First establish the sum and final ReLU, then reveal the residual reparameterization. H denotes the desired mapping before final ReLU. A zero residual gives z=x, but y=ReLU(x); this is an exact identity only on nonnegative inputs. Original post-activation formulation, not the pre-activation variant.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_6.pdf#page=52",
+    "reference_pages": "52",
+    "reference_label": "CS231n 2026 · Original block, p. 52",
+    "kind": "content"
+  },
+  {
+    "id": "23-gradient",
+    "title": "The shortcut contributes an identity term",
+    "section": "Residual networks",
+    "notes": "Derive with column gradients; JF is the output-by-input Jacobian. The direct additive route can help propagation, but no guarantee follows: a=-1 cancels the identity, a near -1 can shrink it, and large a can amplify it. With the final ReLU, grad_z = diag(z>0) grad_y almost everywhere. Do not say residual connections solve vanishing gradients universally. This extends the paper’s mapping intuition with an original chain-rule derivation. Build: establish the Jacobian, reveal the chain-rule gradient, then the scalar example.",
+    "reference_url": "https://arxiv.org/abs/1512.03385",
+    "reference_pages": "",
+    "reference_label": "ResNet · Residual mapping",
+    "kind": "content"
+  },
+  {
+    "id": "24-projection",
+    "title": "A shortcut must match the residual shape",
+    "section": "Residual networks",
+    "notes": "Input 56×56×64; output 28×28×128 on both paths. Main branch first conv has stride 2, second stride 1, both 3×3 padding 1. Shortcut 1×1 stride 2 padding 0 changes both resolution and channels, followed by BN in the implementation. It contributes 64×128 = 8192 weights plus 256 BN parameters. A shape-correct projection is not an identity route: derivative is Js+JF. The paper also considers zero-padding shortcuts; here we choose a learned projection for a consistent implementation.",
+    "reference_url": "https://arxiv.org/abs/1512.03385",
+    "reference_pages": "",
+    "reference_label": "ResNet · §3.2, projection shortcut",
+    "kind": "content"
+  },
+  {
+    "id": "25-resnet18",
+    "title": "Read a complete residual network",
+    "section": "Residual networks",
+    "notes": "For input 224×224×3, stem 7×7 stride 2 padding 3 gives 112×112×64; 3×3 maxpool stride 2 padding 1 gives 56×56×64. Stage outputs are shown. First blocks of stages 2,3,4 downsample. Final GAP gives 512 features then 1000 logits. Depth counts main-path weighted layers and FC, excludes shortcuts, BN, and activations. Thus 18 is a naming convention, not the total number of modules. Original diagram from ResNet Table 1 configuration.",
+    "reference_url": "https://arxiv.org/abs/1512.03385",
+    "reference_pages": "",
+    "reference_label": "ResNet · Table 1",
+    "kind": "content"
+  },
+  {
+    "id": "26-bottleneck",
+    "title": "A residual bottleneck controls width",
+    "section": "Residual networks",
+    "notes": "Original Figure 5, paper PDF page 6. The left basic block has width 64, not 256, so its two spatial convolutions have 2×9×64²=73,728 weights. The right bottleneck has 256 input/output channels and internal width 64, giving 69,632 weights. These differently shaped blocks have similar convolutional parameter cost; do not claim they are the same function. Reveal the right-block calculation after tracing its compression and expansion. A hypothetical pair of 256→256 spatial convolutions would cost 1,179,648 weights, but that is NOT the left block in the original figure. BN and activations are excluded from these counts. ResNet50 counts 1+3×(3+4+6+3)+1=50 main-path weight layers.",
+    "reference_url": "https://arxiv.org/pdf/1512.03385#page=6",
+    "reference_pages": "",
+    "reference_label": "He et al. · Original Figure 5",
+    "kind": "content"
+  },
+  {
+    "id": "27-code",
+    "title": "Implement the block contract",
+    "section": "Residual networks",
+    "notes": "This is an excerpt from a BasicBlock class: import torch and from torch import nn, subclass nn.Module, call super().__init__(), place initialization inside __init__, forward code inside forward. Full executable class is in tools/check_model.py and follows this exact module order. Conv uses no bias because following BN includes an affine offset. NCHW in code versus HWC on diagrams is explicit. The example handles stride 1 and 2, dilation 1, no groups. Check on synthetic input; no accuracy claim. Build: residual branch, shortcut contract, then final addition and its reminder.",
+    "reference_url": "https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.resnet18.html",
+    "reference_pages": "",
+    "reference_label": "PyTorch · ResNet18; executable companion",
+    "kind": "content"
+  },
+  {
+    "id": "28-debug",
+    "title": "Find the broken residual transition",
+    "section": "Residual networks",
+    "notes": "Main output: (8,128,28,28); identity output: (8,64,56,56). Replace the shortcut with a 1×1 stride-two 64→128 convolution, typically followed by BN. Concatenation alone cannot repair the spatial mismatch; even after alignment it would change the output width and block meaning. The snippet isolates addition; a complete basic block also contains its second convolution and normalization.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "29-merge-check",
+    "title": "Addition and concatenation encode different choices",
+    "section": "Residual networks",
+    "notes": "The colored stacks are schematic feature volumes, each H×W×C. Addition combines corresponding entries and preserves C channels; concatenation carries both channel groups and produces 2C channels. The number of drawn sheets is illustrative, not the numeric value C. A subsequent dense 3×3 convolution to C channels therefore has 9C² versus 18C² weights, with the same spatial output size. Reveal only the downstream cost after the routing comparison. Neither merge guarantees higher accuracy.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "30-efficiency",
+    "title": "Design within a budget",
+    "section": "Efficient architecture",
+    "notes": "Architecture is constrained by resolution, width, serial depth, activation memory, and hardware. Use MobileNet’s factorization as one concrete tool rather than a catalogue of every modern model. The material that follows extends the supplied lecture and supports the cost and evaluation examples.",
+    "reference_url": "https://arxiv.org/abs/1704.04861",
+    "reference_pages": "",
+    "reference_label": "Howard et al. · Efficient convolution",
+    "kind": "divider"
+  },
+  {
+    "id": "31-depthwise",
+    "title": "Factor spatial filtering and channel mixing",
+    "section": "Efficient architecture",
+    "notes": "Two original figure crops from MobileNet Figure 2(b) and (c), PDF page 3. The dense-filter subpanel (a) is omitted. Original D_K is the kernel side k used in our equations; M is input channels, N output channels. First show the spatial filter bank, then reveal the pointwise bank and combined weight formula as one grouped build. Captions are retyped outside the artwork for projection readability. Depthwise multiplier 1, stride 1, same spatial sizes. No bias, BN, or activation cost is counted. These are filter banks, not feature maps. Factorization constrains spatial–channel coupling and is not an arbitrary dense kernel expressed for free.",
+    "reference_url": "https://arxiv.org/pdf/1704.04861#page=3",
+    "reference_pages": "",
+    "reference_label": "Howard et al. · Original Figure 2(b,c)",
+    "kind": "content"
+  },
+  {
+    "id": "32-budget",
+    "title": "Explore width and spatial cost",
+    "section": "Efficient architecture",
+    "notes": "Predict before touching a control: halving R quarters both MAC counts; halving width approximately quarters dense conv cost. Depthwise cost is linear in width, pointwise cost quadratic. At default: dense 73728 weights and 57802752 MACs; separable 8768 weights and 6874112 MACs; ratio 8.409×. Alpha=0.5 gives M32 N64. Alpha=1.5 gives M96 N192. Bars share the selected dense MAC baseline of 100%. Default values are restored on print. No timing or trained accuracy is simulated.",
+    "reference_url": "https://arxiv.org/abs/1704.04861",
+    "reference_pages": "",
+    "reference_label": "MobileNet · Factorized cost model",
+    "kind": "content"
+  },
+  {
+    "id": "33-latency",
+    "title": "Fewer MACs do not guarantee lower latency",
+    "section": "Efficient architecture",
+    "notes": "A depthwise kernel can have fewer MACs yet run poorly on a given backend because of memory bandwidth, kernel availability, and small operations. Width and resolution can also change utilization. Do not infer measured speedups from the preceding algebra. A fair report includes preprocessing, device, batch size, numerical precision, warmup, synchronization, repeats, and timing scope. Use validation data for selection and reserve a test set for the final report.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "36-transfer",
+    "title": "Choose what to reuse and what to learn",
+    "section": "Transfer and evaluation",
+    "notes": "A frozen backbone requires requires_grad_(False) to stop parameter gradients; use eval() on it to freeze default BN running statistics. model.train() resets submodule modes, so reapply backbone.eval() for the frozen baseline. The classifier may remain in train mode. If fine-tuning, use smaller backbone learning rates as a starting hypothesis and evaluate; domain shift and data size matter, not a universal image-count threshold. Avoid leaking validation examples into training augmentation or preprocessing fitting.",
+    "reference_url": "https://cs231n.stanford.edu/slides/2026/lecture_6.pdf",
+    "reference_pages": "78–87",
+    "reference_label": "CS231n · Transfer learning",
+    "kind": "content"
+  },
+  {
+    "id": "37-evaluation",
+    "title": "An architecture claim needs a fair experiment",
+    "section": "Transfer and evaluation",
+    "notes": "The fork defines a controlled comparison. Share data splits and preprocessing; hold pretraining, augmentation, resolution, optimizer family, and evaluation protocol fixed or report differences. Give both models comparable tuning effort: identical hyperparameters are not automatically equally favorable. The variant changes one architectural choice. Measure accuracy plus resource use under a documented device, precision, and batch size. Report seed variation when available. Select on validation data and use the held-out test only after decisions are fixed. No empirical result is invented in this schematic.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "38-summary",
+    "title": "Carry the design principles forward",
+    "section": "Synthesis",
+    "notes": "Ask students to name a calculation they can now do and a claim they can no longer justify from MACs alone. Avoid introducing new architectures here. Depth, width, and resolution are coupled choices rather than independent guarantees of quality.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "39-exit",
+    "title": "Exit check",
+    "section": "Assessment",
+    "notes": "Three checks: two stride-one 3×3 layers give a 5×5 theoretical receptive-field extent with no prior downsampling; a shortcut must align spatial and channel dimensions when shape changes; MAC counts do not establish latency without measurements. Reveal answers separately and use Left to hide them. No design-case question remains.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  },
+  {
+    "id": "40-reading",
+    "title": "Reading and further study",
+    "section": "Reading",
+    "notes": "Required follow-up: source architecture section and ResNet §3. VGG and Inception support the calculations; MobileNet is supplementary depth. Explain that the teaching plan contains homework and an aligned rubric. External links need internet; all presentation resources and figures are local.",
+    "reference_url": "",
+    "reference_pages": "",
+    "reference_label": "",
+    "kind": "content"
+  }
+]</script>
+<script src="vendor/katex.min.js"></script><script src="source/math.js"></script><script src="source/interactions.js"></script><script src="source/app.js"></script></body></html>
